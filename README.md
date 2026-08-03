@@ -19,7 +19,8 @@ npm run preview
 ## Interface
 
 - **Carte interactive** intégrée dans un conteneur encadré (marges, coins
-  arrondis, ombre légère) plutôt qu'en arrière-plan plein écran.
+  arrondis, ombre légère) plutôt qu'en arrière-plan plein écran, centrée par
+  défaut sur la France.
 - **Sidebar escamotable** (bouton `‹ / ›`) avec recherche libre (ville/code
   postal), un sélecteur de ville dédié et des filtres par marque.
 - **Aucune liste par défaut** : les opticiens ne s'affichent (dans la sidebar
@@ -36,13 +37,12 @@ npm run preview
 
 ## Données des opticiens
 
-Les opticiens affichés sont définis dans `public/stores.json`. Ce fichier est
-désormais généré à partir de la base réelle du client (fichier Excel
-`SCRAPPING_DATABASE_SEPT 2025_...xlsx`, 14 marques, ~39 500 lignes), filtrée
-sur la France : **4 465 opticiens partenaires** répartis sur 13 marques
-(Julbo, Maui Jim, Serengeti, Chanel, Cartier, Moscot, Mykita, Thierry Lasry,
-Lindberg, Dita, JMM, Thom Browne, Oakley — Porsche Design n'a aucune entrée
-française dans la base).
+Les opticiens affichés sont définis dans `public/stores.json` — **5 542
+opticiens partenaires en France au total**, tous issus des données réelles du
+client (aucune donnée fictive), répartis sur 15 marques : les 13 marques du
+premier lot (Julbo, Maui Jim, Serengeti, Chanel, Cartier, Moscot, Mykita,
+Thierry Lasry, Lindberg, Dita, JMM, Thom Browne, Oakley — Porsche Design n'a
+aucune entrée française) plus Barton Perreira et Vuarnet (voir plus bas).
 
 Le script `scripts/build_stores_from_excel.py` effectue ce traitement :
 
@@ -87,9 +87,27 @@ champ qui alimente à la fois les filtres, le code couleur des marqueurs et les
 réponses du chatbot.
 
 Les deux marques mises en avant (Barton Perreira et Vuarnet) sont définies
-dans `src/utils/brands.js` (`FEATURED_BRANDS`). Elles n'apparaissent pas
-encore dans le jeu de données actuel (en attente de vos données spécifiques) :
-tous les marqueurs sont donc actuellement gris/anthracite jusqu'à leur ajout.
+dans `src/utils/brands.js` (`FEATURED_BRANDS`) et alimentées séparément par
+`scripts/build_featured_brands_from_doors.py`, à partir du fichier client
+`TH5584C Doors Master data (75).xlsx` (export "Doors Master Data" de Thélios) :
+
+1. Filtrage des lignes `Country Name = France` **et** contrat actif
+   (`Date To` = année 9999, la valeur sentinelle du fichier pour "sans date de
+   fin" — les contrats expirant réellement en 2024/2025/2026 sont exclus).
+2. Regroupement par `Door Code` (identifiant unique du point de vente) pour
+   fusionner les opticiens qui distribuent les deux marques en une seule fiche.
+3. Géocodage à l'adresse complète (rue + code postal + ville) via l'API
+   Adresse du gouvernement français — précision bien supérieure au
+   géocodage par ville utilisé pour le premier lot de marques.
+
+Résultat : **1 077 opticiens Vuarnet/Barton Perreira** ajoutés à
+`stores.json` (fusionnés avec les 4 465 existants, sans tentative de
+dédoublonnage entre les deux fichiers sources), avec adresse précise,
+téléphone et email quand disponibles. Pour régénérer :
+
+```bash
+python3 scripts/build_featured_brands_from_doors.py
+```
 
 ## Regroupement des marqueurs (clustering)
 

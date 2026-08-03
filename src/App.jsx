@@ -118,7 +118,7 @@ function App() {
                   <p className="mt-1.5 text-sm text-neutral-500">
                     Utilisez la recherche, une ville ou une marque dans le
                     panneau latéral pour afficher nos opticiens partenaires
-                    dans le monde.
+                    en France.
                   </p>
                 </div>
               </div>

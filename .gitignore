@@ -23,4 +23,4 @@ __pycache__/
 *.njsproj
 *.sln
 *.sw?
-scripts/.geocode_cache.json
+scripts/.geocode_cache*.json
