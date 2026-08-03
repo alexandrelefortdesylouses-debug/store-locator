@@ -21,6 +21,9 @@ export default function StoreDetailPanel({ store, open, onClose }) {
             {store.name}
           </h2>
           <p className="mt-1 text-sm text-neutral-500">{store.address}</p>
+          <p className="mt-0.5 text-sm text-neutral-400">
+            {store.city}, {store.country}
+          </p>
         </div>
         <button
           type="button"

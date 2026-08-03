@@ -1,4 +1,5 @@
 import SearchBar from "./SearchBar";
+import CitySelect from "./CitySelect";
 import BrandFilter from "./BrandFilter";
 import StoreList from "./StoreList";
 
@@ -7,17 +8,21 @@ export default function Sidebar({
   onToggleCollapse,
   search,
   onSearchChange,
+  cities,
+  selectedCity,
+  onCityChange,
   brands,
   selectedBrands,
   onToggleBrand,
   onClearBrands,
   stores,
+  hasActiveFilter,
   selectedStoreId,
   onSelectStore,
 }) {
   return (
     <aside
-      className={`relative h-72 shrink-0 border-b border-neutral-200 bg-white transition-all duration-300 md:h-full md:border-b-0 md:border-r ${
+      className={`relative h-80 shrink-0 border-b border-neutral-200 bg-white transition-all duration-300 md:h-full md:border-b-0 md:border-r ${
         collapsed ? "md:w-16" : "md:w-[340px]"
       } w-full overflow-hidden`}
     >
@@ -33,12 +38,13 @@ export default function Sidebar({
       {collapsed ? (
         <div className="hidden h-full flex-col items-center gap-2 pt-6 text-neutral-400 md:flex">
           <span className="text-[10px] font-semibold uppercase tracking-widest [writing-mode:vertical-rl]">
-            {stores.length} opticiens
+            Opticiens Thélios
           </span>
         </div>
       ) : (
         <div className="flex h-full flex-col gap-4 p-4">
           <SearchBar value={search} onChange={onSearchChange} />
+          <CitySelect cities={cities} value={selectedCity} onChange={onCityChange} />
           <BrandFilter
             brands={brands}
             selected={selectedBrands}
@@ -46,14 +52,23 @@ export default function Sidebar({
             onClear={onClearBrands}
           />
           <div className="flex flex-1 flex-col overflow-hidden">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              {stores.length} opticien{stores.length > 1 ? "s" : ""}
-            </p>
-            <StoreList
-              stores={stores}
-              selectedStoreId={selectedStoreId}
-              onSelectStore={onSelectStore}
-            />
+            {hasActiveFilter ? (
+              <>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  {stores.length} opticien{stores.length > 1 ? "s" : ""}
+                </p>
+                <StoreList
+                  stores={stores}
+                  selectedStoreId={selectedStoreId}
+                  onSelectStore={onSelectStore}
+                />
+              </>
+            ) : (
+              <p className="px-1 text-sm leading-relaxed text-neutral-500">
+                Utilisez la recherche, une ville ou une marque pour afficher
+                les opticiens partenaires Thélios.
+              </p>
+            )}
           </div>
         </div>
       )}

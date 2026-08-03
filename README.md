@@ -18,25 +18,32 @@ npm run preview
 
 ## Interface
 
-- **Carte interactive** en grand format, au centre de l'écran.
-- **Sidebar escamotable** (bouton `‹ / ›`) avec recherche par ville/code postal,
-  filtres par marque et liste des opticiens.
+- **Carte interactive** intégrée dans un conteneur encadré (marges, coins
+  arrondis, ombre légère) plutôt qu'en arrière-plan plein écran.
+- **Sidebar escamotable** (bouton `‹ / ›`) avec recherche libre (ville/code
+  postal), un sélecteur de ville dédié et des filtres par marque.
+- **Aucune liste par défaut** : les opticiens ne s'affichent (dans la sidebar
+  et sur la carte) qu'une fois une recherche, une ville ou une marque
+  sélectionnée. Un message d'accueil invite à utiliser les filtres.
 - **Fiche opticien** : un panneau détaillé s'ouvre au clic sur un opticien (dans
-  la liste ou sur la carte), avec les marques distribuées, les horaires, un
+  la liste ou sur la carte), avec ville/pays, marques distribuées, horaires,
   bouton d'itinéraire (Google Maps) et la section avis clients.
 
 ## Données des opticiens
 
 Les opticiens affichés sont définis dans `public/stores.json`. Le fichier
-fourni contient 5 opticiens fictifs en France, à titre de démonstration. Pour
-utiliser vos propres données, remplacez ce fichier en conservant la même
-structure :
+fourni contient une vingtaine d'opticiens fictifs répartis dans le monde
+(Paris, Lyon, New York, Tokyo, Milan, Londres, Madrid, Dubaï, Genève, Hong
+Kong, Los Angeles, etc.), à titre de démonstration. Pour utiliser vos propres
+données, remplacez ce fichier en conservant la même structure :
 
 ```json
 {
   "id": "identifiant-unique",
   "name": "Nom de l'opticien",
   "address": "Adresse complète",
+  "city": "Ville",
+  "country": "Pays",
   "lat": 48.8532,
   "lng": 2.3708,
   "brands": ["Dior", "Celine", "Fendi"],
@@ -48,9 +55,10 @@ structure :
 }
 ```
 
-Le filtre par marque de la sidebar est généré automatiquement à partir des
-marques présentes dans ce fichier : il suffit d'ajouter/retirer des marques
-dans `stores.json` pour que les filtres se mettent à jour.
+Le filtre par marque et le sélecteur de ville de la sidebar sont générés
+automatiquement à partir des valeurs `brands` et `city` présentes dans ce
+fichier : il suffit d'ajouter/retirer des entrées dans `stores.json` pour que
+les filtres se mettent à jour.
 
 ## Avis clients et code secret
 
@@ -74,12 +82,13 @@ poser des questions en langage naturel sur les opticiens partenaires. Il
 répond en interrogeant directement les données de `stores.json` (aucun appel
 à un service externe ni clé d'API) :
 
-- **Ville / code postal** : "Quels opticiens à Lyon ?", "Opticiens au 75011 ?"
+- **Ville / code postal** : "Quels opticiens à Tokyo ?", "Opticiens au 75011 ?"
 - **Marques** : "Où trouver Dior ?"
-- **Horaires** : "Horaires du magasin de Bordeaux ?"
+- **Horaires** : "Horaires du magasin de Londres ?"
 
 La logique de correspondance se trouve dans `src/utils/chatbot.js` : elle
-reconnaît les villes, codes postaux, marques et noms d'enseignes présents
-dans `stores.json`, sans dépendance à un LLM. Pour brancher un vrai service
-d'IA générative à la place, il suffit de remplacer l'appel à
-`answerQuestion()` dans `src/components/ChatWidget.jsx` par un appel API.
+reconnaît les villes (champ `city`), codes postaux, marques et noms
+d'enseignes présents dans `stores.json`, sans dépendance à un LLM. Pour
+brancher un vrai service d'IA générative à la place, il suffit de remplacer
+l'appel à `answerQuestion()` dans `src/components/ChatWidget.jsx` par un
+appel API.

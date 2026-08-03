@@ -32,6 +32,13 @@ export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
               >
                 {store.address}
               </p>
+              <p
+                className={`text-[11px] uppercase tracking-wide ${
+                  isSelected ? "text-neutral-400" : "text-neutral-400"
+                }`}
+              >
+                {store.city}, {store.country}
+              </p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {store.brands.map((brand) => (
                   <span

@@ -3,6 +3,8 @@
     "id": "paris-bastille",
     "name": "Optique Paris Bastille",
     "address": "12 Rue de la Roquette, 75011 Paris",
+    "city": "Paris",
+    "country": "France",
     "lat": 48.8532,
     "lng": 2.3708,
     "brands": ["Dior", "Celine", "Fendi"],
@@ -20,6 +22,8 @@
     "id": "lyon-presqu-ile",
     "name": "Optique Lyon Presqu'île",
     "address": "24 Rue de la République, 69002 Lyon",
+    "city": "Lyon",
+    "country": "France",
     "lat": 45.7607,
     "lng": 4.8357,
     "brands": ["Loewe", "Givenchy"],
@@ -37,6 +41,8 @@
     "id": "marseille-vieux-port",
     "name": "Optique Marseille Vieux-Port",
     "address": "5 Quai des Belges, 13001 Marseille",
+    "city": "Marseille",
+    "country": "France",
     "lat": 43.2952,
     "lng": 5.3697,
     "brands": ["Dior", "Stella McCartney"],
@@ -54,6 +60,8 @@
     "id": "toulouse-capitole",
     "name": "Optique Toulouse Capitole",
     "address": "8 Place du Capitole, 31000 Toulouse",
+    "city": "Toulouse",
+    "country": "France",
     "lat": 43.6045,
     "lng": 1.4442,
     "brands": ["Celine", "Fendi", "Loewe"],
@@ -71,6 +79,8 @@
     "id": "bordeaux-sainte-catherine",
     "name": "Optique Bordeaux Sainte-Catherine",
     "address": "45 Rue Sainte-Catherine, 33000 Bordeaux",
+    "city": "Bordeaux",
+    "country": "France",
     "lat": 44.8404,
     "lng": -0.5722,
     "brands": ["Givenchy", "Stella McCartney", "Dior"],
@@ -82,6 +92,291 @@
       "vendredi": "10h00 - 19h30",
       "samedi": "10h00 - 19h30",
       "dimanche": "Fermé"
+    }
+  },
+  {
+    "id": "new-york-fifth-avenue",
+    "name": "Optique New York Fifth Avenue",
+    "address": "645 Fifth Avenue, New York, NY 10022",
+    "city": "New York",
+    "country": "États-Unis",
+    "lat": 40.7605,
+    "lng": -73.9733,
+    "brands": ["Dior", "Celine", "Fendi"],
+    "hours": {
+      "lundi": "10h00 - 19h00",
+      "mardi": "10h00 - 19h00",
+      "mercredi": "10h00 - 19h00",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 19h00",
+      "samedi": "10h00 - 20h00",
+      "dimanche": "12h00 - 18h00"
+    }
+  },
+  {
+    "id": "los-angeles-rodeo-drive",
+    "name": "Optique Los Angeles Rodeo Drive",
+    "address": "9570 Rodeo Drive, Beverly Hills, CA 90210",
+    "city": "Los Angeles",
+    "country": "États-Unis",
+    "lat": 34.0696,
+    "lng": -118.4053,
+    "brands": ["Loewe", "Givenchy", "Stella McCartney"],
+    "hours": {
+      "lundi": "10h00 - 19h00",
+      "mardi": "10h00 - 19h00",
+      "mercredi": "10h00 - 19h00",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 19h00",
+      "samedi": "10h00 - 19h00",
+      "dimanche": "11h00 - 18h00"
+    }
+  },
+  {
+    "id": "miami-design-district",
+    "name": "Optique Miami Design District",
+    "address": "140 NE 39th St, Miami, FL 33137",
+    "city": "Miami",
+    "country": "États-Unis",
+    "lat": 25.8210,
+    "lng": -80.1937,
+    "brands": ["Dior", "Fendi"],
+    "hours": {
+      "lundi": "10h00 - 19h00",
+      "mardi": "10h00 - 19h00",
+      "mercredi": "10h00 - 19h00",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 20h00",
+      "samedi": "10h00 - 20h00",
+      "dimanche": "11h00 - 18h00"
+    }
+  },
+  {
+    "id": "tokyo-ginza",
+    "name": "Optique Tokyo Ginza",
+    "address": "5-4-1 Ginza, Chuo City, Tokyo",
+    "city": "Tokyo",
+    "country": "Japon",
+    "lat": 35.6712,
+    "lng": 139.7660,
+    "brands": ["Dior", "Celine", "Loewe"],
+    "hours": {
+      "lundi": "11h00 - 20h00",
+      "mardi": "11h00 - 20h00",
+      "mercredi": "11h00 - 20h00",
+      "jeudi": "11h00 - 20h00",
+      "vendredi": "11h00 - 20h00",
+      "samedi": "11h00 - 20h00",
+      "dimanche": "11h00 - 19h00"
+    }
+  },
+  {
+    "id": "osaka-shinsaibashi",
+    "name": "Optique Osaka Shinsaibashi",
+    "address": "1-8-3 Shinsaibashisuji, Chuo-ku, Osaka",
+    "city": "Osaka",
+    "country": "Japon",
+    "lat": 34.6746,
+    "lng": 135.5010,
+    "brands": ["Fendi", "Givenchy"],
+    "hours": {
+      "lundi": "11h00 - 20h00",
+      "mardi": "11h00 - 20h00",
+      "mercredi": "11h00 - 20h00",
+      "jeudi": "11h00 - 20h00",
+      "vendredi": "11h00 - 20h00",
+      "samedi": "11h00 - 20h00",
+      "dimanche": "11h00 - 19h00"
+    }
+  },
+  {
+    "id": "hong-kong-central",
+    "name": "Optique Hong Kong Central",
+    "address": "8 Finance Street, Central",
+    "city": "Hong Kong",
+    "country": "Hong Kong",
+    "lat": 22.2810,
+    "lng": 114.1577,
+    "brands": ["Dior", "Celine", "Stella McCartney"],
+    "hours": {
+      "lundi": "10h30 - 20h00",
+      "mardi": "10h30 - 20h00",
+      "mercredi": "10h30 - 20h00",
+      "jeudi": "10h30 - 20h00",
+      "vendredi": "10h30 - 20h00",
+      "samedi": "10h30 - 20h00",
+      "dimanche": "10h30 - 19h00"
+    }
+  },
+  {
+    "id": "singapour-orchard-road",
+    "name": "Optique Singapour Orchard Road",
+    "address": "391 Orchard Road, Singapore 238873",
+    "city": "Singapour",
+    "country": "Singapour",
+    "lat": 1.3048,
+    "lng": 103.8318,
+    "brands": ["Fendi", "Loewe"],
+    "hours": {
+      "lundi": "10h30 - 21h00",
+      "mardi": "10h30 - 21h00",
+      "mercredi": "10h30 - 21h00",
+      "jeudi": "10h30 - 21h00",
+      "vendredi": "10h30 - 21h00",
+      "samedi": "10h30 - 21h00",
+      "dimanche": "10h30 - 21h00"
+    }
+  },
+  {
+    "id": "shanghai-xintiandi",
+    "name": "Optique Shanghai Xintiandi",
+    "address": "123 Xintiandi, Huangpu, Shanghai",
+    "city": "Shanghai",
+    "country": "Chine",
+    "lat": 31.2222,
+    "lng": 121.4767,
+    "brands": ["Dior", "Givenchy"],
+    "hours": {
+      "lundi": "10h00 - 20h00",
+      "mardi": "10h00 - 20h00",
+      "mercredi": "10h00 - 20h00",
+      "jeudi": "10h00 - 20h00",
+      "vendredi": "10h00 - 20h00",
+      "samedi": "10h00 - 21h00",
+      "dimanche": "10h00 - 21h00"
+    }
+  },
+  {
+    "id": "seoul-gangnam",
+    "name": "Optique Séoul Gangnam",
+    "address": "466 Apgujeong-ro, Gangnam-gu, Seoul",
+    "city": "Séoul",
+    "country": "Corée du Sud",
+    "lat": 37.5272,
+    "lng": 127.0286,
+    "brands": ["Celine", "Loewe"],
+    "hours": {
+      "lundi": "11h00 - 20h00",
+      "mardi": "11h00 - 20h00",
+      "mercredi": "11h00 - 20h00",
+      "jeudi": "11h00 - 20h00",
+      "vendredi": "11h00 - 20h00",
+      "samedi": "11h00 - 20h00",
+      "dimanche": "11h00 - 19h00"
+    }
+  },
+  {
+    "id": "dubai-mall",
+    "name": "Optique Dubaï Mall",
+    "address": "The Dubai Mall, Financial Centre Road",
+    "city": "Dubaï",
+    "country": "Émirats Arabes Unis",
+    "lat": 25.1975,
+    "lng": 55.2796,
+    "brands": ["Dior", "Fendi", "Stella McCartney"],
+    "hours": {
+      "lundi": "10h00 - 22h00",
+      "mardi": "10h00 - 22h00",
+      "mercredi": "10h00 - 22h00",
+      "jeudi": "10h00 - 22h00",
+      "vendredi": "10h00 - 22h00",
+      "samedi": "10h00 - 23h00",
+      "dimanche": "10h00 - 22h00"
+    }
+  },
+  {
+    "id": "londres-mayfair",
+    "name": "Optique Londres Mayfair",
+    "address": "30 New Bond Street, London W1S 2RH",
+    "city": "Londres",
+    "country": "Royaume-Uni",
+    "lat": 51.5117,
+    "lng": -0.1470,
+    "brands": ["Dior", "Celine", "Fendi", "Loewe"],
+    "hours": {
+      "lundi": "10h00 - 18h30",
+      "mardi": "10h00 - 18h30",
+      "mercredi": "10h00 - 18h30",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 19h00",
+      "samedi": "10h00 - 19h00",
+      "dimanche": "12h00 - 18h00"
+    }
+  },
+  {
+    "id": "milan-montenapoleone",
+    "name": "Optique Milan Montenapoleone",
+    "address": "Via Monte Napoleone 8, 20121 Milano",
+    "city": "Milan",
+    "country": "Italie",
+    "lat": 45.4685,
+    "lng": 9.1950,
+    "brands": ["Dior", "Fendi"],
+    "hours": {
+      "lundi": "15h00 - 19h00",
+      "mardi": "10h00 - 19h00",
+      "mercredi": "10h00 - 19h00",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 19h00",
+      "samedi": "10h00 - 19h00",
+      "dimanche": "11h00 - 19h00"
+    }
+  },
+  {
+    "id": "madrid-serrano",
+    "name": "Optique Madrid Serrano",
+    "address": "Calle de Serrano 52, 28001 Madrid",
+    "city": "Madrid",
+    "country": "Espagne",
+    "lat": 40.4300,
+    "lng": -3.6880,
+    "brands": ["Loewe", "Celine"],
+    "hours": {
+      "lundi": "10h00 - 20h30",
+      "mardi": "10h00 - 20h30",
+      "mercredi": "10h00 - 20h30",
+      "jeudi": "10h00 - 20h30",
+      "vendredi": "10h00 - 20h30",
+      "samedi": "10h00 - 20h30",
+      "dimanche": "Fermé"
+    }
+  },
+  {
+    "id": "geneve-rue-du-rhone",
+    "name": "Optique Genève Rue du Rhône",
+    "address": "34 Rue du Rhône, 1204 Genève",
+    "city": "Genève",
+    "country": "Suisse",
+    "lat": 46.2044,
+    "lng": 6.1432,
+    "brands": ["Dior", "Fendi", "Stella McCartney"],
+    "hours": {
+      "lundi": "10h00 - 18h30",
+      "mardi": "10h00 - 18h30",
+      "mercredi": "10h00 - 18h30",
+      "jeudi": "10h00 - 18h30",
+      "vendredi": "10h00 - 18h30",
+      "samedi": "10h00 - 18h00",
+      "dimanche": "Fermé"
+    }
+  },
+  {
+    "id": "sydney-cbd",
+    "name": "Optique Sydney CBD",
+    "address": "60 Castlereagh Street, Sydney NSW 2000",
+    "city": "Sydney",
+    "country": "Australie",
+    "lat": -33.8688,
+    "lng": 151.2093,
+    "brands": ["Dior", "Loewe"],
+    "hours": {
+      "lundi": "10h00 - 18h00",
+      "mardi": "10h00 - 18h00",
+      "mercredi": "10h00 - 18h00",
+      "jeudi": "10h00 - 19h00",
+      "vendredi": "10h00 - 19h00",
+      "samedi": "10h00 - 18h00",
+      "dimanche": "11h00 - 17h00"
     }
   }
 ]
