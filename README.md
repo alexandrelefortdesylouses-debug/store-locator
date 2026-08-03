@@ -36,11 +36,33 @@ npm run preview
 
 ## Données des opticiens
 
-Les opticiens affichés sont définis dans `public/stores.json`. Le fichier
-fourni contient une vingtaine d'opticiens fictifs répartis dans le monde
-(Paris, Lyon, New York, Tokyo, Milan, Londres, Madrid, Dubaï, Genève, Hong
-Kong, Los Angeles, etc.), à titre de démonstration. Pour utiliser vos propres
-données, remplacez ce fichier en conservant la même structure :
+Les opticiens affichés sont définis dans `public/stores.json`. Ce fichier est
+désormais généré à partir de la base réelle du client (fichier Excel
+`SCRAPPING_DATABASE_SEPT 2025_...xlsx`, 14 marques, ~39 500 lignes), filtrée
+sur la France : **4 465 opticiens partenaires** répartis sur 13 marques
+(Julbo, Maui Jim, Serengeti, Chanel, Cartier, Moscot, Mykita, Thierry Lasry,
+Lindberg, Dita, JMM, Thom Browne, Oakley — Porsche Design n'a aucune entrée
+française dans la base).
+
+Le script `scripts/build_stores_from_excel.py` effectue ce traitement :
+
+1. Lecture des 14 onglets du fichier Excel et filtrage des lignes `Country = France`.
+2. Fusion des opticiens présents sur plusieurs onglets (même enseigne, marques différentes) en une seule fiche avec un tableau `brands` combiné.
+3. Géocodage de chaque ville via l'API officielle Adresse du gouvernement français (`api-adresse.data.gouv.fr`, gratuite, sans clé) — **précision au niveau de la ville**, pas de l'adresse exacte (choix validé pour ce lot : l'Excel ne fournit pas de latitude/longitude sauf pour la marque JMM).
+
+Pour régénérer `stores.json` après une mise à jour de l'Excel :
+
+```bash
+pip install openpyxl
+python3 scripts/build_stores_from_excel.py
+```
+
+**Limites connues** de cette conversion, héritées de la qualité des données sources :
+- Quelques dizaines d'entrées (~55 sur 4 465) ont été écartées faute de géocodage fiable (villes mal renseignées dans l'Excel, ex. des adresses portugaises/suisses marquées par erreur "France", ou des noms de villes tronqués/mal orthographiés).
+- Les horaires d'ouverture ne sont pas fournis par l'Excel : le champ `hours` est donc absent pour ces opticiens (la fiche détaillée masque simplement cette section).
+- La géolocalisation étant au niveau ville, plusieurs opticiens d'une même ville partagent exactement les mêmes coordonnées — la carte les regroupe visuellement via un système de clusters (voir plus bas).
+
+Structure d'une entrée :
 
 ```json
 {
@@ -51,26 +73,30 @@ données, remplacez ce fichier en conservant la même structure :
   "country": "Pays",
   "lat": 48.8532,
   "lng": 2.3708,
-  "brands": ["Dior", "Celine", "Fendi"],
-  "hours": {
-    "lundi": "10h00 - 19h00",
-    "mardi": "10h00 - 19h00",
-    "...": "..."
-  }
+  "brands": ["Julbo", "Maui Jim"],
+  "phone": "Optionnel",
+  "email": "Optionnel",
+  "website": "Optionnel"
 }
 ```
 
 Le filtre par marque et le sélecteur de ville de la sidebar sont générés
 automatiquement à partir des valeurs `brands` et `city` présentes dans ce
-fichier : il suffit d'ajouter/retirer des entrées dans `stores.json` pour que
-les filtres se mettent à jour. Chaque opticien doit avoir un tableau `brands`
-non vide (même à terme, une fois remplacé par votre fichier Excel) : c'est ce
+fichier. Chaque opticien doit avoir un tableau `brands` non vide : c'est ce
 champ qui alimente à la fois les filtres, le code couleur des marqueurs et les
 réponses du chatbot.
 
 Les deux marques mises en avant (Barton Perreira et Vuarnet) sont définies
-dans `src/utils/brands.js` (`FEATURED_BRANDS`) : pour changer les marques
-mises en avant, il suffit de modifier cette liste.
+dans `src/utils/brands.js` (`FEATURED_BRANDS`). Elles n'apparaissent pas
+encore dans le jeu de données actuel (en attente de vos données spécifiques) :
+tous les marqueurs sont donc actuellement gris/anthracite jusqu'à leur ajout.
+
+## Regroupement des marqueurs (clustering)
+
+Avec plusieurs milliers d'opticiens, la carte utilise `react-leaflet-cluster`
+pour regrouper les marqueurs proches en bulles numérotées, qui se dissocient
+au fur et à mesure du zoom. Cela garde la carte lisible et performante même
+lorsqu'un filtre par marque affiche plus d'un millier de résultats.
 
 ## Avis clients et code secret
 
@@ -94,9 +120,9 @@ poser des questions en langage naturel sur les opticiens partenaires. Il
 répond en interrogeant directement les données de `stores.json` (aucun appel
 à un service externe ni clé d'API) :
 
-- **Ville / code postal** : "Quels opticiens à Tokyo ?", "Opticiens au 75011 ?"
-- **Marques** : "Où trouver Dior ?"
-- **Horaires** : "Horaires du magasin de Londres ?"
+- **Ville / code postal** : "Quels opticiens à Lyon ?", "Opticiens au 75011 ?"
+- **Marques** : "Où trouver Julbo ?"
+- **Horaires** : "Horaires du magasin de Nice ?" (répond que l'information n'est pas disponible si absente des données)
 
 La logique de correspondance se trouve dans `src/utils/chatbot.js` : elle
 reconnaît les villes (champ `city`), codes postaux, marques et noms

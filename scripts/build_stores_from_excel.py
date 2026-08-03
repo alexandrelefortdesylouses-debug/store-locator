@@ -9,6 +9,7 @@ import openpyxl
 
 EXCEL_PATH = "SCRAPPING_DATABASE_SEPT 2025_AF_JMM+CARTIER+LINDBERG+SERENGETI+DITA+MAUIJIM+MYKITA+CHANEL+PORSCHE DESIGN+OAKLEY+JULBO.xlsx"
 OUTPUT_PATH = "public/stores.json"
+CACHE_PATH = "scripts/.geocode_cache.json"
 
 BRAND_LABELS = {
     "PORSCHE DESIGN": "Porsche Design",
@@ -69,25 +70,45 @@ def slugify(text):
     return text or "store"
 
 
-def geocode_city(city_name, cache):
+def geocode_city(city_name, cache, retries=3):
     key = city_name.lower()
-    if key in cache:
+    if key in cache and cache[key] is not None:
         return cache[key]
+
     query = urllib.parse.urlencode({"q": city_name, "type": "municipality", "limit": 1})
     url = f"https://api-adresse.data.gouv.fr/search/?{query}"
+    last_error = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(url, timeout=15) as response:
+                data = json.load(response)
+            features = data.get("features") or []
+            if not features:
+                cache[key] = None
+                return None
+            lng, lat = features[0]["geometry"]["coordinates"]
+            cache[key] = (lat, lng)
+            return cache[key]
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            time.sleep(1.5 * (attempt + 1))
+    print(f"  geocode failed for {city_name!r}: {last_error}", file=sys.stderr)
+    cache[key] = None
+    return None
+
+
+def load_cache():
     try:
-        with urllib.request.urlopen(url, timeout=10) as response:
-            data = json.load(response)
-        features = data.get("features") or []
-        if not features:
-            cache[key] = None
-            return None
-        lng, lat = features[0]["geometry"]["coordinates"]
-        cache[key] = (lat, lng)
-    except Exception as exc:  # noqa: BLE001
-        print(f"  geocode failed for {city_name!r}: {exc}", file=sys.stderr)
-        cache[key] = None
-    return cache[key]
+        with open(CACHE_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        return {k: (tuple(v) if v is not None else None) for k, v in raw.items()}
+    except FileNotFoundError:
+        return {}
+
+
+def save_cache(cache):
+    with open(CACHE_PATH, "w", encoding="utf-8") as f:
+        json.dump(cache, f)
 
 
 def main():
@@ -132,11 +153,12 @@ def main():
     unique_cities = sorted({s["city"] for s in stores.values()})
     print(f"Unique cities to geocode: {len(unique_cities)}", file=sys.stderr)
 
-    cache = {}
+    cache = load_cache()
     for i, city in enumerate(unique_cities):
         geocode_city(city, cache)
         if (i + 1) % 100 == 0:
             print(f"  geocoded {i + 1}/{len(unique_cities)}", file=sys.stderr)
+    save_cache(cache)
 
     result = []
     used_ids = set()
