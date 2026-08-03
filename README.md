@@ -66,3 +66,20 @@ d'ajout d'avis est protégé par un code secret (par défaut : `1234`).
 
 > Pour une mise en production réelle avec des avis partagés entre tous les
 > visiteurs, il faudra remplacer le stockage `localStorage` par une API/backend.
+
+## Assistant Thélios (chatbot)
+
+Un widget de chat flottant (bouton en bas à droite) permet aux visiteurs de
+poser des questions en langage naturel sur les opticiens partenaires. Il
+répond en interrogeant directement les données de `stores.json` (aucun appel
+à un service externe ni clé d'API) :
+
+- **Ville / code postal** : "Quels opticiens à Lyon ?", "Opticiens au 75011 ?"
+- **Marques** : "Où trouver Dior ?"
+- **Horaires** : "Horaires du magasin de Bordeaux ?"
+
+La logique de correspondance se trouve dans `src/utils/chatbot.js` : elle
+reconnaît les villes, codes postaux, marques et noms d'enseignes présents
+dans `stores.json`, sans dépendance à un LLM. Pour brancher un vrai service
+d'IA générative à la place, il suffit de remplacer l'appel à
+`answerQuestion()` dans `src/components/ChatWidget.jsx` par un appel API.

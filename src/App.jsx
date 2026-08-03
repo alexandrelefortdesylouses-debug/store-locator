@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
+import ChatWidget from "./components/ChatWidget";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 
@@ -93,6 +94,8 @@ function App() {
       {showSettings && (
         <SecretCodeSettings onClose={() => setShowSettings(false)} />
       )}
+
+      <ChatWidget stores={stores} />
     </div>
   );
 }
