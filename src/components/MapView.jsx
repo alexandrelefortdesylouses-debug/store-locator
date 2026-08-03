@@ -38,8 +38,12 @@ function FlyToSelected({ store }) {
   return null;
 }
 
-export default function MapView({ stores, selectedStoreId, onSelectStore }) {
-  const selectedStore = stores.find((s) => s.id === selectedStoreId);
+export default function MapView({
+  stores,
+  selectedStoreId,
+  selectedStore,
+  onSelectStore,
+}) {
   const center = selectedStore
     ? [selectedStore.lat, selectedStore.lng]
     : [46.6, 2.4];
@@ -49,7 +53,7 @@ export default function MapView({ stores, selectedStoreId, onSelectStore }) {
       center={center}
       zoom={selectedStore ? 12 : 6}
       scrollWheelZoom={true}
-      className="h-full w-full rounded-lg z-0"
+      className="z-0 h-full w-full"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

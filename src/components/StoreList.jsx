@@ -1,6 +1,14 @@
 export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
+  if (stores.length === 0) {
+    return (
+      <p className="px-1 text-sm text-neutral-500">
+        Aucun opticien ne correspond à votre recherche.
+      </p>
+    );
+  }
+
   return (
-    <ul className="flex flex-col gap-2 overflow-y-auto h-full pr-1">
+    <ul className="thin-scrollbar flex h-full flex-col gap-2 overflow-y-auto pr-1">
       {stores.map((store) => {
         const isSelected = store.id === selectedStoreId;
         return (
@@ -8,18 +16,36 @@ export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
             <button
               type="button"
               onClick={() => onSelectStore(store.id)}
-              className={`w-full text-left rounded-lg border p-3 transition cursor-pointer ${
+              className={`w-full cursor-pointer rounded-xl border p-3 text-left transition ${
                 isSelected
-                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
-                  : "border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "border-neutral-900 bg-neutral-900 text-white"
+                  : "border-neutral-200 bg-white text-neutral-900 hover:border-amber-300 hover:bg-amber-50/40"
               }`}
             >
-              <p className="font-semibold text-gray-900 dark:text-gray-100">
+              <p className="font-serif text-[15px] leading-snug">
                 {store.name}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p
+                className={`mt-0.5 text-xs ${
+                  isSelected ? "text-neutral-300" : "text-neutral-500"
+                }`}
+              >
                 {store.address}
               </p>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {store.brands.map((brand) => (
+                  <span
+                    key={brand}
+                    className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
+                      isSelected
+                        ? "bg-white/15 text-amber-100"
+                        : "bg-amber-50 text-amber-800"
+                    }`}
+                  >
+                    {brand}
+                  </span>
+                ))}
+              </div>
             </button>
           </li>
         );

@@ -1,62 +1,94 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
-import StoreList from "./components/StoreList";
-import StoreCard from "./components/StoreCard";
+import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
+
+const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
+
+function normalize(text) {
+  return text.normalize("NFD").replace(DIACRITICS_REGEX, "").toLowerCase();
+}
 
 function App() {
   const [stores, setStores] = useState([]);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedBrands, setSelectedBrands] = useState([]);
 
   useEffect(() => {
     fetch("/stores.json")
       .then((res) => res.json())
-      .then((data) => {
-        setStores(data);
-        if (data.length > 0) setSelectedStoreId(data[0].id);
-      });
+      .then((data) => setStores(data));
   }, []);
+
+  const allBrands = useMemo(() => {
+    const set = new Set();
+    stores.forEach((store) => store.brands.forEach((brand) => set.add(brand)));
+    return [...set].sort();
+  }, [stores]);
+
+  const filteredStores = useMemo(() => {
+    const query = normalize(search.trim());
+    return stores.filter((store) => {
+      const matchesSearch = query === "" || normalize(store.address).includes(query);
+      const matchesBrands =
+        selectedBrands.length === 0 ||
+        store.brands.some((brand) => selectedBrands.includes(brand));
+      return matchesSearch && matchesBrands;
+    });
+  }, [stores, search, selectedBrands]);
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);
 
+  function handleSelectStore(id) {
+    setSelectedStoreId(id);
+    setDetailOpen(true);
+  }
+
+  function toggleBrand(brand) {
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      <header className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-4 py-3 md:px-8">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Store Locator
-        </h1>
-        <button
-          type="button"
-          onClick={() => setShowSettings(true)}
-          className="rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-        >
-          ⚙️ Paramètres
-        </button>
-      </header>
+    <div className="flex h-screen flex-col bg-neutral-100">
+      <Header onOpenSettings={() => setShowSettings(true)} />
 
-      <main className="mx-auto max-w-6xl px-4 py-6 md:px-8">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="md:col-span-1 h-[420px]">
-            <StoreList
-              stores={stores}
-              selectedStoreId={selectedStoreId}
-              onSelectStore={setSelectedStoreId}
-            />
-          </div>
-          <div className="md:col-span-2 h-[420px]">
-            <MapView
-              stores={stores}
-              selectedStoreId={selectedStoreId}
-              onSelectStore={setSelectedStoreId}
-            />
-          </div>
-        </div>
+      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+          search={search}
+          onSearchChange={setSearch}
+          brands={allBrands}
+          selectedBrands={selectedBrands}
+          onToggleBrand={toggleBrand}
+          onClearBrands={() => setSelectedBrands([])}
+          stores={filteredStores}
+          selectedStoreId={selectedStoreId}
+          onSelectStore={handleSelectStore}
+        />
 
-        <div className="mt-6">
-          <StoreCard store={selectedStore} />
+        <div className="relative flex-1">
+          <MapView
+            stores={filteredStores}
+            selectedStoreId={selectedStoreId}
+            selectedStore={selectedStore}
+            onSelectStore={handleSelectStore}
+          />
+          <StoreDetailPanel
+            store={selectedStore}
+            open={detailOpen && Boolean(selectedStore)}
+            onClose={() => setDetailOpen(false)}
+          />
         </div>
-      </main>
+      </div>
 
       {showSettings && (
         <SecretCodeSettings onClose={() => setShowSettings(false)} />

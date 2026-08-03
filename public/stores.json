@@ -1,10 +1,11 @@
 [
   {
     "id": "paris-bastille",
-    "name": "Boutique Paris Bastille",
+    "name": "Optique Paris Bastille",
     "address": "12 Rue de la Roquette, 75011 Paris",
     "lat": 48.8532,
     "lng": 2.3708,
+    "brands": ["Dior", "Celine", "Fendi"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -17,10 +18,11 @@
   },
   {
     "id": "lyon-presqu-ile",
-    "name": "Boutique Lyon Presqu'île",
+    "name": "Optique Lyon Presqu'île",
     "address": "24 Rue de la République, 69002 Lyon",
     "lat": 45.7607,
     "lng": 4.8357,
+    "brands": ["Loewe", "Givenchy"],
     "hours": {
       "lundi": "Fermé",
       "mardi": "9h30 - 19h00",
@@ -33,10 +35,11 @@
   },
   {
     "id": "marseille-vieux-port",
-    "name": "Boutique Marseille Vieux-Port",
+    "name": "Optique Marseille Vieux-Port",
     "address": "5 Quai des Belges, 13001 Marseille",
     "lat": 43.2952,
     "lng": 5.3697,
+    "brands": ["Dior", "Stella McCartney"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -49,10 +52,11 @@
   },
   {
     "id": "toulouse-capitole",
-    "name": "Boutique Toulouse Capitole",
+    "name": "Optique Toulouse Capitole",
     "address": "8 Place du Capitole, 31000 Toulouse",
     "lat": 43.6045,
     "lng": 1.4442,
+    "brands": ["Celine", "Fendi", "Loewe"],
     "hours": {
       "lundi": "10h00 - 18h30",
       "mardi": "10h00 - 18h30",
@@ -65,10 +69,11 @@
   },
   {
     "id": "bordeaux-sainte-catherine",
-    "name": "Boutique Bordeaux Sainte-Catherine",
+    "name": "Optique Bordeaux Sainte-Catherine",
     "address": "45 Rue Sainte-Catherine, 33000 Bordeaux",
     "lat": 44.8404,
     "lng": -0.5722,
+    "brands": ["Givenchy", "Stella McCartney", "Dior"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",

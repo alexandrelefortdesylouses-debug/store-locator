@@ -1,6 +1,6 @@
-# Store Locator
+# Store Locator — Thélios / LVMH Eyewear
 
-Application web de localisation de magasins (React + TailwindCSS + Leaflet).
+Application web de localisation d'opticiens partenaires (React + TailwindCSS + Leaflet).
 
 ## Lancer le projet
 
@@ -16,19 +16,30 @@ npm run build
 npm run preview
 ```
 
-## Données des magasins
+## Interface
 
-Les magasins affichés sont définis dans `public/stores.json`. Le fichier fourni
-contient 5 magasins fictifs en France, à titre de démonstration. Pour utiliser
-vos propres données, remplacez ce fichier en conservant la même structure :
+- **Carte interactive** en grand format, au centre de l'écran.
+- **Sidebar escamotable** (bouton `‹ / ›`) avec recherche par ville/code postal,
+  filtres par marque et liste des opticiens.
+- **Fiche opticien** : un panneau détaillé s'ouvre au clic sur un opticien (dans
+  la liste ou sur la carte), avec les marques distribuées, les horaires, un
+  bouton d'itinéraire (Google Maps) et la section avis clients.
+
+## Données des opticiens
+
+Les opticiens affichés sont définis dans `public/stores.json`. Le fichier
+fourni contient 5 opticiens fictifs en France, à titre de démonstration. Pour
+utiliser vos propres données, remplacez ce fichier en conservant la même
+structure :
 
 ```json
 {
   "id": "identifiant-unique",
-  "name": "Nom du magasin",
+  "name": "Nom de l'opticien",
   "address": "Adresse complète",
   "lat": 48.8532,
   "lng": 2.3708,
+  "brands": ["Dior", "Celine", "Fendi"],
   "hours": {
     "lundi": "10h00 - 19h00",
     "mardi": "10h00 - 19h00",
@@ -37,14 +48,18 @@ vos propres données, remplacez ce fichier en conservant la même structure :
 }
 ```
 
+Le filtre par marque de la sidebar est généré automatiquement à partir des
+marques présentes dans ce fichier : il suffit d'ajouter/retirer des marques
+dans `stores.json` pour que les filtres se mettent à jour.
+
 ## Avis clients et code secret
 
-Chaque fiche magasin affiche une section d'avis clients. Le formulaire
+Chaque fiche opticien affiche une section d'avis clients. Le formulaire
 d'ajout d'avis est protégé par un code secret (par défaut : `1234`).
 
 - Les avis sont enregistrés dans le `localStorage` du navigateur (par magasin).
 - Le code secret peut être modifié à tout moment via le bouton
-  **⚙️ Paramètres** en haut de la page (il faut connaître le code actuel pour
+  **Paramètres** en haut de la page (il faut connaître le code actuel pour
   le changer).
 - Le code est stocké dans le `localStorage` de l'appareil : il est donc propre
   à chaque navigateur/appareil utilisé pour administrer le site.
