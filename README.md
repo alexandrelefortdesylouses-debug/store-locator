@@ -22,18 +22,25 @@ npm run preview
   arrondis, ombre légère) plutôt qu'en arrière-plan plein écran, centrée par
   défaut sur la France.
 - **Sidebar escamotable** (bouton `‹ / ›`) avec recherche libre (ville/code
-  postal), un sélecteur de ville dédié et des filtres par marque.
+  postal), un sélecteur de région, un sélecteur de ville (grandes villes
+  françaises épinglées en haut de la liste) et des filtres par marque, plus un
+  bouton **Réinitialiser les filtres** qui remet tout à zéro en un clic.
 - **Aucune liste par défaut** : les opticiens ne s'affichent (dans la sidebar
-  et sur la carte) qu'une fois une recherche, une ville ou une marque
-  sélectionnée. Un message d'accueil invite à utiliser les filtres.
+  et sur la carte) qu'une fois une recherche, une région, une ville ou une
+  marque sélectionnée — ou en cliquant sur **Mode libre** pour afficher
+  l'ensemble des opticiens sans filtre.
 - **Fiche opticien** : un panneau détaillé s'ouvre au clic sur un opticien (dans
   la liste ou sur la carte), avec ville/pays, marques distribuées, horaires,
   bouton d'itinéraire (Google Maps) et la section avis clients.
 - **Marques mises en avant** : dans le filtre par marque, une section
-  "Nos marques" distingue Barton Perreira et Vuarnet du reste des marques.
+  "Marques Thélios" distingue Barton Perreira et Vuarnet du reste des marques.
   Sur la carte, les opticiens qui distribuent l'une de ces deux marques
   affichent un marqueur doré, les autres un marqueur gris/anthracite (une
   légende en bas à gauche de la carte rappelle ce code couleur).
+- **Bilingue FR / EN** : sélecteur de langue dans l'en-tête qui bascule toute
+  l'interface (filtres, fiches, chatbot, messages d'erreur) en anglais. Les
+  données des opticiens (noms, adresses, marques) restent inchangées — seule
+  l'interface est traduite. Voir la section dédiée plus bas.
 
 ## Données des opticiens
 
@@ -116,6 +123,34 @@ pour regrouper les marqueurs proches en bulles numérotées, qui se dissocient
 au fur et à mesure du zoom. Cela garde la carte lisible et performante même
 lorsqu'un filtre par marque affiche plus d'un millier de résultats.
 
+## Filtre par région et tri des villes
+
+Le champ `region` n'existe pas dans `stores.json` : il est déduit à la volée
+côté client (`src/utils/regions.js`) à partir du code postal contenu dans le
+champ `address` de chaque opticien, via la table officielle de correspondance
+département → région (13 régions métropolitaines + DOM). Les opticiens dont
+l'adresse ne contient pas de code postal exploitable (rares, cf. limites plus
+haut) n'apparaissent simplement dans aucun filtre région.
+
+La liste déroulante des villes (`src/utils/frenchCities.js`) épingle en premier
+les grandes villes françaises (Paris, Marseille, Lyon, Toulouse, Nice, Nantes,
+Bordeaux, Lille, etc.) dans un groupe "Grandes villes", suivies de toutes les
+autres villes triées alphabétiquement dans un second groupe.
+
+## Langue (FR / EN)
+
+Le sélecteur `FR / EN` dans l'en-tête bascule toute l'interface. La logique se
+trouve dans `src/i18n/` :
+
+- `translations.js` : dictionnaire plat `{ fr: {...}, en: {...} }`.
+- `LanguageContext.jsx` : fournit `useLanguage()` (`{ lang, setLang, t }`),
+  persiste le choix dans le `localStorage` de l'appareil.
+
+Le chatbot (`src/utils/chatbot.js`) répond aussi dans la langue active
+(templates de réponse séparés par langue), sans dépendre d'un service de
+traduction externe. Pour ajouter une langue, dupliquer un bloc dans
+`translations.js` et l'ajouter au sélecteur dans `Header.jsx`.
+
 ## Avis clients et code secret
 
 Chaque fiche opticien affiche une section d'avis clients. Le formulaire
@@ -144,7 +179,20 @@ répond en interrogeant directement les données de `stores.json` (aucun appel
 
 La logique de correspondance se trouve dans `src/utils/chatbot.js` : elle
 reconnaît les villes (champ `city`), codes postaux, marques et noms
-d'enseignes présents dans `stores.json`, sans dépendance à un LLM. Pour
+d'enseignes présents dans `stores.json`, sans dépendance à un LLM. Les
+correspondances de nom de magasin utilisent une limite de mots (regex
+`\b...\b`) pour éviter qu'un nom générique/court ne matche par erreur à
+l'intérieur d'un autre mot, et n'identifie un magasin par son nom que si ce
+nom est unique dans les données (ou peut être précisé par une ville
+mentionnée dans la question) — utile vu le nombre d'enseignes en franchise
+(Krys, Optic 2000, etc.) qui apparaissent des centaines de fois. Pour
 brancher un vrai service d'IA générative à la place, il suffit de remplacer
 l'appel à `answerQuestion()` dans `src/components/ChatWidget.jsx` par un
 appel API.
+
+## Prochaine étape (non traitée dans cette itération)
+
+Le point "page d'accueil + système de compte (favoris, avis personnalisés,
+historique)" a été explicitement mis de côté pour une itération future, le
+temps de décider de l'architecture (compte local au navigateur vs backend
+réel type Supabase/Firebase).

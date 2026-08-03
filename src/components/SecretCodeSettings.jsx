@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { getSecretCode, setSecretCode } from "../utils/storage";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function SecretCodeSettings({ onClose }) {
+  const { t } = useLanguage();
   const [currentCode, setCurrentCode] = useState("");
   const [newCode, setNewCode] = useState("");
   const [confirmCode, setConfirmCode] = useState("");
@@ -11,22 +13,22 @@ export default function SecretCodeSettings({ onClose }) {
     e.preventDefault();
 
     if (currentCode !== getSecretCode()) {
-      setMessage({ type: "error", text: "Code secret actuel incorrect." });
+      setMessage({ type: "error", text: t("settings.errorWrongCurrent") });
       return;
     }
 
     if (!newCode.trim()) {
-      setMessage({ type: "error", text: "Le nouveau code ne peut pas être vide." });
+      setMessage({ type: "error", text: t("settings.errorEmptyNew") });
       return;
     }
 
     if (newCode !== confirmCode) {
-      setMessage({ type: "error", text: "Les deux nouveaux codes ne correspondent pas." });
+      setMessage({ type: "error", text: t("settings.errorMismatch") });
       return;
     }
 
     setSecretCode(newCode.trim());
-    setMessage({ type: "success", text: "Code secret mis à jour avec succès." });
+    setMessage({ type: "success", text: t("settings.success") });
     setCurrentCode("");
     setNewCode("");
     setConfirmCode("");
@@ -37,26 +39,25 @@ export default function SecretCodeSettings({ onClose }) {
       <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-serif text-lg text-neutral-900">
-            Changer le code secret
+            {t("settings.title")}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="cursor-pointer text-neutral-400 hover:text-neutral-700"
-            aria-label="Fermer"
+            aria-label={t("settings.close")}
           >
             ✕
           </button>
         </div>
 
         <p className="mb-3 text-sm text-neutral-500">
-          Ce code protège le formulaire d'ajout d'avis. Il est stocké
-          uniquement sur cet appareil.
+          {t("settings.description")}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 text-left">
           <label className="text-sm text-neutral-700">
-            Code secret actuel
+            {t("settings.currentCode")}
             <input
               type="password"
               value={currentCode}
@@ -65,7 +66,7 @@ export default function SecretCodeSettings({ onClose }) {
             />
           </label>
           <label className="text-sm text-neutral-700">
-            Nouveau code
+            {t("settings.newCode")}
             <input
               type="password"
               value={newCode}
@@ -74,7 +75,7 @@ export default function SecretCodeSettings({ onClose }) {
             />
           </label>
           <label className="text-sm text-neutral-700">
-            Confirmer le nouveau code
+            {t("settings.confirmCode")}
             <input
               type="password"
               value={confirmCode}
@@ -97,7 +98,7 @@ export default function SecretCodeSettings({ onClose }) {
             type="submit"
             className="mt-2 cursor-pointer rounded-full bg-neutral-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-amber-700"
           >
-            Enregistrer
+            {t("settings.save")}
           </button>
         </form>
       </div>

@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { answerQuestion } from "../utils/chatbot";
-
-const WELCOME_MESSAGE = {
-  role: "bot",
-  text: "Bonjour, je suis l'Assistant Thélios. Demandez-moi une ville, un code postal ou une marque pour trouver un opticien partenaire.",
-};
+import { useLanguage } from "../i18n/LanguageContext";
 
 function ChatBubbleIcon() {
   return (
@@ -19,8 +15,11 @@ function ChatBubbleIcon() {
 }
 
 export default function ChatWidget({ stores }) {
+  const { t, lang } = useLanguage();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState(() => [
+    { role: "bot", text: t("chat.welcome") },
+  ]);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
 
@@ -29,12 +28,21 @@ export default function ChatWidget({ stores }) {
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, open]);
 
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.length === 1 && prev[0].role === "bot"
+        ? [{ role: "bot", text: t("chat.welcome") }]
+        : prev,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   function handleSend(e) {
     e.preventDefault();
     const question = input.trim();
     if (!question) return;
 
-    const reply = answerQuestion(question, stores);
+    const reply = answerQuestion(question, stores, lang);
     setMessages((prev) => [
       ...prev,
       { role: "user", text: question },
@@ -55,7 +63,7 @@ export default function ChatWidget({ stores }) {
               <div className="leading-tight">
                 <p className="text-sm font-medium text-white">Assistant Thélios</p>
                 <p className="text-[10px] uppercase tracking-wide text-amber-200/70">
-                  En ligne
+                  {t("chat.online")}
                 </p>
               </div>
             </div>
@@ -63,7 +71,7 @@ export default function ChatWidget({ stores }) {
               type="button"
               onClick={() => setOpen(false)}
               className="cursor-pointer rounded-full p-1 text-neutral-400 hover:bg-neutral-800 hover:text-white"
-              aria-label="Fermer l'assistant"
+              aria-label={t("chat.closeAria")}
             >
               ✕
             </button>
@@ -99,14 +107,14 @@ export default function ChatWidget({ stores }) {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez votre question…"
+              placeholder={t("chat.inputPlaceholder")}
               className="flex-1 rounded-full border border-neutral-300 px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
             />
             <button
               type="submit"
               className="cursor-pointer rounded-full bg-neutral-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-amber-700"
             >
-              Envoyer
+              {t("chat.send")}
             </button>
           </form>
         </div>
@@ -116,7 +124,7 @@ export default function ChatWidget({ stores }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-neutral-950 text-amber-200 shadow-xl transition hover:bg-neutral-800"
-        aria-label={open ? "Fermer l'assistant Thélios" : "Ouvrir l'assistant Thélios"}
+        aria-label={open ? t("chat.closeAria") : t("chat.openAria")}
       >
         {open ? <span className="text-xl leading-none">✕</span> : <ChatBubbleIcon />}
       </button>

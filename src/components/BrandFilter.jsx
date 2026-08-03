@@ -1,4 +1,5 @@
 import { FEATURED_BRANDS } from "../utils/brands";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function BrandChip({ brand, active, featured, onToggle }) {
   const activeClass = featured
@@ -21,31 +22,21 @@ function BrandChip({ brand, active, featured, onToggle }) {
   );
 }
 
-export default function BrandFilter({ brands, selected, onToggle, onClear }) {
+export default function BrandFilter({ brands, selected, onToggle }) {
+  const { t } = useLanguage();
   const featuredBrands = FEATURED_BRANDS.filter((brand) => brands.includes(brand));
   const otherBrands = brands.filter((brand) => !FEATURED_BRANDS.includes(brand));
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Marques
-        </p>
-        {selected.length > 0 && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="cursor-pointer text-xs text-amber-700 hover:underline"
-          >
-            Réinitialiser
-          </button>
-        )}
-      </div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        {t("sidebar.brandsTitle")}
+      </p>
 
       {featuredBrands.length > 0 && (
         <div className="mb-2.5">
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
-            Nos marques
+            {t("sidebar.theliosBrands")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {featuredBrands.map((brand) => (
@@ -65,7 +56,7 @@ export default function BrandFilter({ brands, selected, onToggle, onClear }) {
         <div>
           {featuredBrands.length > 0 && (
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-              Autres marques
+              {t("sidebar.otherBrands")}
             </p>
           )}
           <div className="flex flex-wrap gap-1.5">

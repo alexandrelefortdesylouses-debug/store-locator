@@ -6,6 +6,8 @@ import MapLegend from "./components/MapLegend";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
+import { getStoreRegion } from "./utils/regions";
+import { useLanguage } from "./i18n/LanguageContext";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 
@@ -14,6 +16,7 @@ function normalize(text) {
 }
 
 function App() {
+  const { t } = useLanguage();
   const [stores, setStores] = useState([]);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -21,7 +24,9 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [browseAll, setBrowseAll] = useState(false);
 
   useEffect(() => {
     fetch("/stores.json")
@@ -40,11 +45,23 @@ function App() {
     return [...set].sort();
   }, [stores]);
 
+  const allRegions = useMemo(() => {
+    const set = new Set();
+    stores.forEach((store) => {
+      const region = getStoreRegion(store);
+      if (region) set.add(region);
+    });
+    return [...set].sort();
+  }, [stores]);
+
   const hasActiveFilter =
-    search.trim() !== "" || selectedCity !== "" || selectedBrands.length > 0;
+    search.trim() !== "" ||
+    selectedCity !== "" ||
+    selectedRegion !== "" ||
+    selectedBrands.length > 0;
 
   const filteredStores = useMemo(() => {
-    if (!hasActiveFilter) return [];
+    if (!hasActiveFilter) return browseAll ? stores : [];
 
     const query = normalize(search.trim());
     return stores.filter((store) => {
@@ -53,15 +70,18 @@ function App() {
       );
       const matchesSearch = query === "" || haystack.includes(query);
       const matchesCity = selectedCity === "" || store.city === selectedCity;
+      const matchesRegion =
+        selectedRegion === "" || getStoreRegion(store) === selectedRegion;
       const matchesBrands =
         selectedBrands.length === 0 ||
         store.brands.some((brand) => selectedBrands.includes(brand));
-      return matchesSearch && matchesCity && matchesBrands;
+      return matchesSearch && matchesCity && matchesRegion && matchesBrands;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stores, search, selectedCity, selectedBrands, hasActiveFilter]);
+  }, [stores, search, selectedCity, selectedRegion, selectedBrands, hasActiveFilter, browseAll]);
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);
+  const showResults = hasActiveFilter || browseAll;
 
   function handleSelectStore(id) {
     setSelectedStoreId(id);
@@ -72,6 +92,14 @@ function App() {
     setSelectedBrands((prev) =>
       prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
     );
+  }
+
+  function handleResetFilters() {
+    setSearch("");
+    setSelectedCity("");
+    setSelectedRegion("");
+    setSelectedBrands([]);
+    setBrowseAll(false);
   }
 
   return (
@@ -87,12 +115,15 @@ function App() {
           cities={allCities}
           selectedCity={selectedCity}
           onCityChange={setSelectedCity}
+          regions={allRegions}
+          selectedRegion={selectedRegion}
+          onRegionChange={setSelectedRegion}
           brands={allBrands}
           selectedBrands={selectedBrands}
           onToggleBrand={toggleBrand}
-          onClearBrands={() => setSelectedBrands([])}
           stores={filteredStores}
-          hasActiveFilter={hasActiveFilter}
+          hasActiveFilter={showResults}
+          onResetFilters={handleResetFilters}
           selectedStoreId={selectedStoreId}
           onSelectStore={handleSelectStore}
         />
@@ -107,19 +138,24 @@ function App() {
               resizeTrigger={sidebarCollapsed}
             />
 
-            {hasActiveFilter && filteredStores.length > 0 && <MapLegend />}
+            {showResults && filteredStores.length > 0 && <MapLegend />}
 
-            {!hasActiveFilter && (
+            {!showResults && (
               <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
                 <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur">
                   <p className="font-serif text-lg text-neutral-900">
-                    Trouvez un opticien Thélios
+                    {t("map.emptyTitle")}
                   </p>
                   <p className="mt-1.5 text-sm text-neutral-500">
-                    Utilisez la recherche, une ville ou une marque dans le
-                    panneau latéral pour afficher nos opticiens partenaires
-                    en France.
+                    {t("map.emptyBody")}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setBrowseAll(true)}
+                    className="mt-4 cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
+                  >
+                    {t("map.freeMode")}
+                  </button>
                 </div>
               </div>
             )}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 import { addReview, getReviews, getSecretCode } from "../utils/storage";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const initialForm = { author: "", rating: 5, comment: "", secretCode: "" };
 
 export default function ReviewSection({ storeId }) {
+  const { t, lang } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
@@ -19,12 +21,12 @@ export default function ReviewSection({ storeId }) {
     e.preventDefault();
 
     if (!form.author.trim() || !form.comment.trim()) {
-      setError("Merci de renseigner votre nom et votre commentaire.");
+      setError(t("reviews.errorMissingFields"));
       return;
     }
 
     if (form.secretCode !== getSecretCode()) {
-      setError("Code secret incorrect.");
+      setError(t("reviews.errorWrongCode"));
       return;
     }
 
@@ -43,13 +45,11 @@ export default function ReviewSection({ storeId }) {
   return (
     <div className="border-t border-neutral-200 pt-5 text-left">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-        Avis clients ({reviews.length})
+        {t("reviews.title", { count: reviews.length })}
       </p>
 
       {reviews.length === 0 ? (
-        <p className="text-sm text-neutral-500">
-          Aucun avis pour cet opticien pour le moment.
-        </p>
+        <p className="text-sm text-neutral-500">{t("reviews.none")}</p>
       ) : (
         <ul className="thin-scrollbar mb-4 flex max-h-60 flex-col gap-3 overflow-y-auto pr-1">
           {reviews.map((review, i) => (
@@ -62,7 +62,9 @@ export default function ReviewSection({ storeId }) {
               </div>
               <p className="text-neutral-600">{review.comment}</p>
               <p className="mt-1 text-xs text-neutral-400">
-                {new Date(review.date).toLocaleDateString("fr-FR")}
+                {new Date(review.date).toLocaleDateString(
+                  lang === "en" ? "en-US" : "fr-FR",
+                )}
               </p>
             </li>
           ))}
@@ -70,23 +72,27 @@ export default function ReviewSection({ storeId }) {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-neutral-700">Laisser un avis</p>
+        <p className="text-sm font-medium text-neutral-700">
+          {t("reviews.leaveReview")}
+        </p>
         <input
           type="text"
-          placeholder="Votre nom"
+          placeholder={t("reviews.namePlaceholder")}
           value={form.author}
           onChange={(e) => setForm({ ...form, author: e.target.value })}
           className="rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
         />
         <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-600">Note :</span>
+          <span className="text-sm text-neutral-600">
+            {t("reviews.ratingLabel")}
+          </span>
           <StarRating
             value={form.rating}
             onChange={(rating) => setForm({ ...form, rating })}
           />
         </div>
         <textarea
-          placeholder="Votre commentaire"
+          placeholder={t("reviews.commentPlaceholder")}
           value={form.comment}
           onChange={(e) => setForm({ ...form, comment: e.target.value })}
           rows={3}
@@ -94,7 +100,7 @@ export default function ReviewSection({ storeId }) {
         />
         <input
           type="password"
-          placeholder="Code secret pour publier"
+          placeholder={t("reviews.codePlaceholder")}
           value={form.secretCode}
           onChange={(e) => setForm({ ...form, secretCode: e.target.value })}
           className="rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
@@ -104,7 +110,7 @@ export default function ReviewSection({ storeId }) {
           type="submit"
           className="cursor-pointer self-start rounded-full bg-neutral-900 px-5 py-1.5 text-sm font-medium text-white transition hover:bg-amber-700"
         >
-          Publier l'avis
+          {t("reviews.submit")}
         </button>
       </form>
     </div>

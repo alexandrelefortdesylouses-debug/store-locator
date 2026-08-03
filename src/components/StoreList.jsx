@@ -1,11 +1,12 @@
 import { FEATURED_BRANDS } from "../utils/brands";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
+  const { t } = useLanguage();
+
   if (stores.length === 0) {
     return (
-      <p className="px-1 text-sm text-neutral-500">
-        Aucun opticien ne correspond à votre recherche.
-      </p>
+      <p className="px-1 text-sm text-neutral-500">{t("sidebar.noResults")}</p>
     );
   }
 

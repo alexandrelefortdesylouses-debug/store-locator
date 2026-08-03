@@ -1,8 +1,11 @@
 import { Fragment } from "react";
 import ReviewSection from "./ReviewSection";
 import { FEATURED_BRANDS } from "../utils/brands";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function StoreDetailPanel({ store, open, onClose }) {
+  const { t } = useLanguage();
+
   if (!store) return null;
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
@@ -16,7 +19,7 @@ export default function StoreDetailPanel({ store, open, onClose }) {
       <div className="flex items-start justify-between gap-3 border-b border-neutral-200 p-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-700">
-            Opticien partenaire
+            {t("storeDetail.partner")}
           </p>
           <h2 className="mt-1 font-serif text-xl leading-snug text-neutral-900">
             {store.name}
@@ -30,7 +33,7 @@ export default function StoreDetailPanel({ store, open, onClose }) {
           type="button"
           onClick={onClose}
           className="shrink-0 cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
-          aria-label="Fermer la fiche"
+          aria-label={t("storeDetail.close")}
         >
           ✕
         </button>
@@ -39,7 +42,7 @@ export default function StoreDetailPanel({ store, open, onClose }) {
       <div className="p-5">
         <div className="mb-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Marques distribuées
+            {t("storeDetail.brands")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {store.brands.map((brand) => {
@@ -63,7 +66,7 @@ export default function StoreDetailPanel({ store, open, onClose }) {
         {store.hours && Object.keys(store.hours).length > 0 && (
           <div className="mb-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Horaires d'ouverture
+              {t("storeDetail.hours")}
             </p>
             <div className="grid max-w-sm grid-cols-2 gap-x-4 gap-y-1 text-sm">
               {Object.entries(store.hours).map(([day, hours]) => (
@@ -105,7 +108,7 @@ export default function StoreDetailPanel({ store, open, onClose }) {
           rel="noreferrer"
           className="mb-6 inline-flex items-center gap-2 rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
         >
-          Itinéraire
+          {t("storeDetail.directions")}
           <span aria-hidden>→</span>
         </a>
 

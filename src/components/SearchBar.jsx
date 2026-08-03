@@ -1,4 +1,8 @@
+import { useLanguage } from "../i18n/LanguageContext";
+
 export default function SearchBar({ value, onChange }) {
+  const { t } = useLanguage();
+
   return (
     <div className="relative">
       <svg
@@ -18,7 +22,7 @@ export default function SearchBar({ value, onChange }) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Ville ou code postal"
+        placeholder={t("sidebar.searchPlaceholder")}
         className="w-full rounded-full border border-neutral-300 bg-white py-2 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
       />
     </div>
