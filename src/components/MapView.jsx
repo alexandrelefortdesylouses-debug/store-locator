@@ -1,33 +1,51 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { isFeaturedStore } from "../utils/brands";
 
 const WORLD_CENTER = [20, 10];
 const WORLD_ZOOM = 2;
 
-const defaultIcon = L.icon({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+const GOLD = "#b45309";
+const NEUTRAL = "#57534e";
 
-const selectedIcon = L.icon({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [32, 52],
-  iconAnchor: [16, 52],
-  popupAnchor: [1, -44],
-  shadowSize: [52, 52],
-  className: "hue-rotate-[130deg] saturate-150",
-});
+function createPinIcon(color, selected) {
+  const width = selected ? 34 : 26;
+  const height = Math.round(width * 1.4);
+
+  return L.divIcon({
+    className: "",
+    html: `
+      <svg width="${width}" height="${height}" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15 0C6.716 0 0 6.716 0 15c0 11.25 15 27 15 27s15-15.75 15-27C30 6.716 23.284 0 15 0z"
+          fill="${color}"
+          stroke="${selected ? "#111827" : "#ffffff"}"
+          stroke-width="${selected ? 2 : 1.5}"
+        />
+        <circle cx="15" cy="15" r="6" fill="#ffffff" opacity="0.95" />
+      </svg>
+    `,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height],
+    popupAnchor: [0, -height],
+  });
+}
+
+const icons = {
+  featuredDefault: createPinIcon(GOLD, false),
+  featuredSelected: createPinIcon(GOLD, true),
+  neutralDefault: createPinIcon(NEUTRAL, false),
+  neutralSelected: createPinIcon(NEUTRAL, true),
+};
+
+function getIcon(store, selected) {
+  const featured = isFeaturedStore(store);
+  if (featured) {
+    return selected ? icons.featuredSelected : icons.featuredDefault;
+  }
+  return selected ? icons.neutralSelected : icons.neutralDefault;
+}
 
 function FlyToSelected({ store }) {
   const map = useMap();
@@ -97,7 +115,7 @@ export default function MapView({
         <Marker
           key={store.id}
           position={[store.lat, store.lng]}
-          icon={store.id === selectedStoreId ? selectedIcon : defaultIcon}
+          icon={getIcon(store, store.id === selectedStoreId)}
           eventHandlers={{
             click: () => onSelectStore(store.id),
           }}

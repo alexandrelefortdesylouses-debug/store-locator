@@ -7,7 +7,7 @@
     "country": "France",
     "lat": 48.8532,
     "lng": 2.3708,
-    "brands": ["Dior", "Celine", "Fendi"],
+    "brands": ["Dior", "Celine", "Fendi", "Vuarnet"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -45,7 +45,7 @@
     "country": "France",
     "lat": 43.2952,
     "lng": 5.3697,
-    "brands": ["Dior", "Stella McCartney"],
+    "brands": ["Dior", "Stella McCartney", "Vuarnet"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -102,7 +102,7 @@
     "country": "États-Unis",
     "lat": 40.7605,
     "lng": -73.9733,
-    "brands": ["Dior", "Celine", "Fendi"],
+    "brands": ["Dior", "Celine", "Fendi", "Barton Perreira"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -121,7 +121,7 @@
     "country": "États-Unis",
     "lat": 34.0696,
     "lng": -118.4053,
-    "brands": ["Loewe", "Givenchy", "Stella McCartney"],
+    "brands": ["Loewe", "Givenchy", "Stella McCartney", "Barton Perreira"],
     "hours": {
       "lundi": "10h00 - 19h00",
       "mardi": "10h00 - 19h00",
@@ -159,7 +159,7 @@
     "country": "Japon",
     "lat": 35.6712,
     "lng": 139.7660,
-    "brands": ["Dior", "Celine", "Loewe"],
+    "brands": ["Dior", "Celine", "Loewe", "Barton Perreira"],
     "hours": {
       "lundi": "11h00 - 20h00",
       "mardi": "11h00 - 20h00",
@@ -235,7 +235,7 @@
     "country": "Chine",
     "lat": 31.2222,
     "lng": 121.4767,
-    "brands": ["Dior", "Givenchy"],
+    "brands": ["Dior", "Givenchy", "Vuarnet"],
     "hours": {
       "lundi": "10h00 - 20h00",
       "mardi": "10h00 - 20h00",
@@ -273,7 +273,7 @@
     "country": "Émirats Arabes Unis",
     "lat": 25.1975,
     "lng": 55.2796,
-    "brands": ["Dior", "Fendi", "Stella McCartney"],
+    "brands": ["Dior", "Fendi", "Stella McCartney", "Barton Perreira"],
     "hours": {
       "lundi": "10h00 - 22h00",
       "mardi": "10h00 - 22h00",
@@ -292,7 +292,7 @@
     "country": "Royaume-Uni",
     "lat": 51.5117,
     "lng": -0.1470,
-    "brands": ["Dior", "Celine", "Fendi", "Loewe"],
+    "brands": ["Dior", "Celine", "Fendi", "Loewe", "Vuarnet"],
     "hours": {
       "lundi": "10h00 - 18h30",
       "mardi": "10h00 - 18h30",
@@ -349,7 +349,7 @@
     "country": "Suisse",
     "lat": 46.2044,
     "lng": 6.1432,
-    "brands": ["Dior", "Fendi", "Stella McCartney"],
+    "brands": ["Dior", "Fendi", "Stella McCartney", "Vuarnet"],
     "hours": {
       "lundi": "10h00 - 18h30",
       "mardi": "10h00 - 18h30",
@@ -368,7 +368,7 @@
     "country": "Australie",
     "lat": -33.8688,
     "lng": 151.2093,
-    "brands": ["Dior", "Loewe"],
+    "brands": ["Dior", "Loewe", "Barton Perreira"],
     "hours": {
       "lundi": "10h00 - 18h00",
       "mardi": "10h00 - 18h00",

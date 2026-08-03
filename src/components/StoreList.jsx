@@ -1,3 +1,5 @@
+import { FEATURED_BRANDS } from "../utils/brands";
+
 export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
   if (stores.length === 0) {
     return (
@@ -40,18 +42,25 @@ export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
                 {store.city}, {store.country}
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
-                {store.brands.map((brand) => (
-                  <span
-                    key={brand}
-                    className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
-                      isSelected
-                        ? "bg-white/15 text-amber-100"
-                        : "bg-amber-50 text-amber-800"
-                    }`}
-                  >
-                    {brand}
-                  </span>
-                ))}
+                {store.brands.map((brand) => {
+                  const featured = FEATURED_BRANDS.includes(brand);
+                  return (
+                    <span
+                      key={brand}
+                      className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
+                        featured
+                          ? isSelected
+                            ? "bg-amber-500 text-neutral-900"
+                            : "bg-amber-700 text-white"
+                          : isSelected
+                            ? "bg-white/15 text-amber-100"
+                            : "bg-amber-50 text-amber-800"
+                      }`}
+                    >
+                      {brand}
+                    </span>
+                  );
+                })}
               </div>
             </button>
           </li>

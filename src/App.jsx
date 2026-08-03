@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
+import MapLegend from "./components/MapLegend";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
@@ -105,6 +106,8 @@ function App() {
               onSelectStore={handleSelectStore}
               resizeTrigger={sidebarCollapsed}
             />
+
+            {hasActiveFilter && filteredStores.length > 0 && <MapLegend />}
 
             {!hasActiveFilter && (
               <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">

@@ -28,6 +28,11 @@ npm run preview
 - **Fiche opticien** : un panneau détaillé s'ouvre au clic sur un opticien (dans
   la liste ou sur la carte), avec ville/pays, marques distribuées, horaires,
   bouton d'itinéraire (Google Maps) et la section avis clients.
+- **Marques mises en avant** : dans le filtre par marque, une section
+  "Nos marques" distingue Barton Perreira et Vuarnet du reste des marques.
+  Sur la carte, les opticiens qui distribuent l'une de ces deux marques
+  affichent un marqueur doré, les autres un marqueur gris/anthracite (une
+  légende en bas à gauche de la carte rappelle ce code couleur).
 
 ## Données des opticiens
 
@@ -58,7 +63,14 @@ données, remplacez ce fichier en conservant la même structure :
 Le filtre par marque et le sélecteur de ville de la sidebar sont générés
 automatiquement à partir des valeurs `brands` et `city` présentes dans ce
 fichier : il suffit d'ajouter/retirer des entrées dans `stores.json` pour que
-les filtres se mettent à jour.
+les filtres se mettent à jour. Chaque opticien doit avoir un tableau `brands`
+non vide (même à terme, une fois remplacé par votre fichier Excel) : c'est ce
+champ qui alimente à la fois les filtres, le code couleur des marqueurs et les
+réponses du chatbot.
+
+Les deux marques mises en avant (Barton Perreira et Vuarnet) sont définies
+dans `src/utils/brands.js` (`FEATURED_BRANDS`) : pour changer les marques
+mises en avant, il suffit de modifier cette liste.
 
 ## Avis clients et code secret
 

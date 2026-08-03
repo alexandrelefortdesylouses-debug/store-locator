@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import ReviewSection from "./ReviewSection";
+import { FEATURED_BRANDS } from "../utils/brands";
 
 export default function StoreDetailPanel({ store, open, onClose }) {
   if (!store) return null;
@@ -41,14 +42,21 @@ export default function StoreDetailPanel({ store, open, onClose }) {
             Marques distribuées
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {store.brands.map((brand) => (
-              <span
-                key={brand}
-                className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-800"
-              >
-                {brand}
-              </span>
-            ))}
+            {store.brands.map((brand) => {
+              const featured = FEATURED_BRANDS.includes(brand);
+              return (
+                <span
+                  key={brand}
+                  className={`rounded-full border px-3 py-1 text-xs ${
+                    featured
+                      ? "border-amber-700 bg-amber-700 text-white"
+                      : "border-amber-200 bg-amber-50 text-amber-800"
+                  }`}
+                >
+                  {brand}
+                </span>
+              );
+            })}
           </div>
         </div>
 
