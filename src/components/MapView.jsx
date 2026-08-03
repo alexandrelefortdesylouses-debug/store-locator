@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import { isFeaturedStore } from "../utils/brands";
 
@@ -45,6 +46,23 @@ function getIcon(store, selected) {
     return selected ? icons.featuredSelected : icons.featuredDefault;
   }
   return selected ? icons.neutralSelected : icons.neutralDefault;
+}
+
+function createClusterIcon(cluster) {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 34 : count < 100 ? 40 : 48;
+
+  return L.divIcon({
+    html: `<div style="
+      display:flex;align-items:center;justify-content:center;
+      width:${size}px;height:${size}px;border-radius:9999px;
+      background:#1c1917;color:#fbbf6b;border:2px solid #ffffff;
+      box-shadow:0 2px 8px rgba(0,0,0,0.35);
+      font-family:ui-serif,Georgia,serif;font-size:${size < 40 ? 12 : 14}px;
+    ">${count}</div>`,
+    className: "",
+    iconSize: [size, size],
+  });
 }
 
 function FlyToSelected({ store }) {
@@ -111,22 +129,30 @@ export default function MapView({
       <FitBoundsToStores stores={stores} />
       <FlyToSelected store={selectedStore} />
       <InvalidateOnResize trigger={resizeTrigger} />
-      {stores.map((store) => (
-        <Marker
-          key={store.id}
-          position={[store.lat, store.lng]}
-          icon={getIcon(store, store.id === selectedStoreId)}
-          eventHandlers={{
-            click: () => onSelectStore(store.id),
-          }}
-        >
-          <Popup>
-            <strong>{store.name}</strong>
-            <br />
-            {store.address}
-          </Popup>
-        </Marker>
-      ))}
+      <MarkerClusterGroup
+        key={stores.length}
+        chunkedLoading
+        iconCreateFunction={createClusterIcon}
+        maxClusterRadius={50}
+        spiderfyOnMaxZoom
+      >
+        {stores.map((store) => (
+          <Marker
+            key={store.id}
+            position={[store.lat, store.lng]}
+            icon={getIcon(store, store.id === selectedStoreId)}
+            eventHandlers={{
+              click: () => onSelectStore(store.id),
+            }}
+          >
+            <Popup>
+              <strong>{store.name}</strong>
+              <br />
+              {store.address}
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 }

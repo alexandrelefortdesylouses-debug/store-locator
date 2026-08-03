@@ -60,19 +60,44 @@ export default function StoreDetailPanel({ store, open, onClose }) {
           </div>
         </div>
 
-        <div className="mb-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Horaires d'ouverture
-          </p>
-          <div className="grid max-w-sm grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            {Object.entries(store.hours).map(([day, hours]) => (
-              <Fragment key={day}>
-                <span className="capitalize text-neutral-600">{day}</span>
-                <span className="text-right text-neutral-900">{hours}</span>
-              </Fragment>
-            ))}
+        {store.hours && Object.keys(store.hours).length > 0 && (
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Horaires d'ouverture
+            </p>
+            <div className="grid max-w-sm grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {Object.entries(store.hours).map(([day, hours]) => (
+                <Fragment key={day}>
+                  <span className="capitalize text-neutral-600">{day}</span>
+                  <span className="text-right text-neutral-900">{hours}</span>
+                </Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {(store.phone || store.email || store.website) && (
+          <div className="mb-6 text-sm text-neutral-600">
+            {store.phone && <p>{store.phone}</p>}
+            {store.email && <p>{store.email}</p>}
+            {store.website && (
+              <p>
+                <a
+                  href={
+                    store.website.startsWith("http")
+                      ? store.website
+                      : `https://${store.website}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-amber-700 hover:underline"
+                >
+                  {store.website}
+                </a>
+              </p>
+            )}
+          </div>
+        )}
 
         <a
           href={directionsUrl}
