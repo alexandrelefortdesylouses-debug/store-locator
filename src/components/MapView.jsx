@@ -4,8 +4,8 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import { isFeaturedStore } from "../utils/brands";
 
-const WORLD_CENTER = [20, 10];
-const WORLD_ZOOM = 2;
+const FRANCE_CENTER = [46.6, 2.4];
+const FRANCE_ZOOM = 6;
 
 const GOLD = "#b45309";
 const NEUTRAL = "#57534e";
@@ -82,7 +82,7 @@ function FitBoundsToStores({ stores }) {
 
   useEffect(() => {
     if (stores.length === 0) {
-      map.flyTo(WORLD_CENTER, WORLD_ZOOM, { duration: 0.6 });
+      map.flyTo(FRANCE_CENTER, FRANCE_ZOOM, { duration: 0.6 });
       return;
     }
     if (stores.length === 1) {
@@ -117,8 +117,8 @@ export default function MapView({
 }) {
   return (
     <MapContainer
-      center={WORLD_CENTER}
-      zoom={WORLD_ZOOM}
+      center={FRANCE_CENTER}
+      zoom={FRANCE_ZOOM}
       scrollWheelZoom={true}
       className="z-0 h-full w-full"
     >
