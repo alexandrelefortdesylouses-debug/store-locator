@@ -10,7 +10,7 @@ export default function CitySelect({ cities, value, onChange }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full cursor-pointer appearance-none rounded-full border border-neutral-300 bg-white py-2 pl-3 pr-8 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+        className="w-full cursor-pointer appearance-none rounded-full border border-neutral-300 bg-white py-2.5 pl-3 pr-8 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
       >
         <option value="">{t("sidebar.allCities")}</option>
         {major.length > 0 && (

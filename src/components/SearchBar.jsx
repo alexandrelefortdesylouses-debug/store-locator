@@ -23,7 +23,7 @@ export default function SearchBar({ value, onChange }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t("sidebar.searchPlaceholder")}
-        className="w-full rounded-full border border-neutral-300 bg-white py-2 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+        className="w-full rounded-full border border-neutral-300 bg-white py-2.5 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
       />
     </div>
   );

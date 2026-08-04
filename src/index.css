@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html,
 body,
 #root {
@@ -31,6 +33,14 @@ body {
   border-radius: 999px;
 }
 
+.dark .thin-scrollbar {
+  scrollbar-color: #52525b transparent;
+}
+
+.dark .thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #52525b;
+}
+
 /* "You are here" pulsing ring for the geolocation marker */
 @keyframes location-pulse {
   0% {
@@ -45,4 +55,34 @@ body {
 
 .location-pulse-ring {
   animation: location-pulse 1.8s ease-out infinite;
+}
+
+/* Dark mode: restyle Leaflet's default chrome (popups, zoom controls) to match the dark basemap */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #171717;
+  color: #e5e5e5;
+}
+
+.dark .leaflet-popup-content strong {
+  color: #f5f5f5;
+}
+
+.dark .leaflet-control-zoom a {
+  background: #171717;
+  color: #e5e5e5;
+  border-color: #404040;
+}
+
+.dark .leaflet-control-zoom a:hover {
+  background: #262626;
+}
+
+.dark .leaflet-control-attribution {
+  background: rgba(23, 23, 23, 0.8);
+  color: #a3a3a3;
+}
+
+.dark .leaflet-control-attribution a {
+  color: #d4d4d4;
 }

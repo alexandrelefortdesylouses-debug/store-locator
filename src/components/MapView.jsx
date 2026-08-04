@@ -1,7 +1,8 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
+import "leaflet.heat";
 import { isFeaturedStore } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 
@@ -10,6 +11,18 @@ const FRANCE_ZOOM = 6;
 
 const GOLD = "#b45309";
 const NEUTRAL = "#57534e";
+const ROUTE_COLOR = "#2563eb";
+
+const LIGHT_TILES = {
+  url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+};
+const DARK_TILES = {
+  url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+};
 
 function createPinIcon(color, selected) {
   const width = selected ? 34 : 26;
@@ -60,6 +73,23 @@ const userLocationIcon = L.divIcon({
   iconSize: [22, 22],
   iconAnchor: [11, 11],
 });
+
+function createRouteStopIcon(order) {
+  return L.divIcon({
+    className: "",
+    html: `
+      <div style="
+        display:flex;align-items:center;justify-content:center;
+        width:26px;height:26px;border-radius:9999px;
+        background:${ROUTE_COLOR};color:#ffffff;border:2px solid #ffffff;
+        box-shadow:0 2px 6px rgba(0,0,0,0.35);font-weight:600;font-size:12px;
+        font-family:ui-sans-serif,system-ui,sans-serif;
+      ">${order}</div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
+}
 
 function createClusterIcon(cluster) {
   const count = cluster.getChildCount();
@@ -134,6 +164,39 @@ function InvalidateOnResize({ trigger }) {
   return null;
 }
 
+function HeatmapLayer({ points }) {
+  const map = useMap();
+  const layerRef = useRef(null);
+
+  useEffect(() => {
+    const layer = L.heatLayer(points, {
+      radius: 22,
+      blur: 18,
+      maxZoom: 12,
+      gradient: { 0.3: "#fde68a", 0.6: "#f59e0b", 1: "#b45309" },
+    });
+    layer.addTo(map);
+    layerRef.current = layer;
+    return () => {
+      // leaflet.heat schedules redraws via requestAnimationFrame but never
+      // cancels them on removal, so a pending frame can fire after the map
+      // reference is gone and crash on `this._map.getSize()`. Cancel it first.
+      if (layer._frame) {
+        L.Util.cancelAnimFrame(layer._frame);
+        layer._frame = null;
+      }
+      map.removeLayer(layer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  useEffect(() => {
+    layerRef.current?.setLatLngs(points);
+  }, [points]);
+
+  return null;
+}
+
 export default function MapView({
   stores,
   selectedStoreId,
@@ -141,7 +204,23 @@ export default function MapView({
   onSelectStore,
   resizeTrigger,
   userLocation,
+  heatmapActive,
+  isDark,
+  routeStops = [],
+  routeOrder,
 }) {
+  const tiles = isDark ? DARK_TILES : LIGHT_TILES;
+  const routeStopSet = new Set(routeStops.map((s) => s.id));
+  const displayRouteStops = routeOrder || routeStops;
+
+  const routePositions =
+    routeOrder && routeOrder.length > 1
+      ? [
+          ...(userLocation ? [[userLocation.lat, userLocation.lng]] : []),
+          ...routeOrder.map((store) => [store.lat, store.lng]),
+        ]
+      : null;
+
   return (
     <MapContainer
       center={FRANCE_CENTER}
@@ -149,10 +228,7 @@ export default function MapView({
       scrollWheelZoom={true}
       className="z-0 h-full w-full"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution={tiles.attribution} url={tiles.url} />
       <FitBoundsToStores stores={stores} disabled={Boolean(userLocation)} />
       <FlyToSelected store={selectedStore} />
       <FlyToUserLocation location={userLocation} />
@@ -160,36 +236,60 @@ export default function MapView({
       {userLocation && (
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} />
       )}
-      <MarkerClusterGroup
-        key={stores.length}
-        chunkedLoading
-        iconCreateFunction={createClusterIcon}
-        maxClusterRadius={50}
-        spiderfyOnMaxZoom
-      >
-        {stores.map((store) => (
-          <Marker
-            key={store.id}
-            position={[store.lat, store.lng]}
-            icon={getIcon(store, store.id === selectedStoreId)}
-            eventHandlers={{
-              click: () => onSelectStore(store.id),
-            }}
-          >
-            <Popup>
-              <strong>{store.name}</strong>
-              <br />
-              {store.address}
-              {typeof store.distanceKm === "number" && (
-                <>
+
+      {routePositions && (
+        <Polyline
+          positions={routePositions}
+          pathOptions={{ color: ROUTE_COLOR, weight: 4, opacity: 0.8, dashArray: "8 8" }}
+        />
+      )}
+      {displayRouteStops.map((store, i) => (
+        <Marker
+          key={`route-${store.id}`}
+          position={[store.lat, store.lng]}
+          icon={createRouteStopIcon(i + 1)}
+          zIndexOffset={1000}
+          eventHandlers={{ click: () => onSelectStore(store.id) }}
+        />
+      ))}
+
+      {heatmapActive ? (
+        <HeatmapLayer points={stores.map((store) => [store.lat, store.lng, 0.6])} />
+      ) : (
+        <MarkerClusterGroup
+          key={stores.length}
+          chunkedLoading
+          iconCreateFunction={createClusterIcon}
+          maxClusterRadius={50}
+          spiderfyOnMaxZoom
+        >
+          {stores.map((store) => {
+            if (routeStopSet.has(store.id)) return null;
+            return (
+              <Marker
+                key={store.id}
+                position={[store.lat, store.lng]}
+                icon={getIcon(store, store.id === selectedStoreId)}
+                eventHandlers={{
+                  click: () => onSelectStore(store.id),
+                }}
+              >
+                <Popup>
+                  <strong>{store.name}</strong>
                   <br />
-                  <strong>{formatDistanceKm(store.distanceKm)}</strong>
-                </>
-              )}
-            </Popup>
-          </Marker>
-        ))}
-      </MarkerClusterGroup>
+                  {store.address}
+                  {typeof store.distanceKm === "number" && (
+                    <>
+                      <br />
+                      <strong>{formatDistanceKm(store.distanceKm)}</strong>
+                    </>
+                  )}
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MarkerClusterGroup>
+      )}
     </MapContainer>
   );
 }

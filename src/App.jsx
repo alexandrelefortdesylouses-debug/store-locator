@@ -4,14 +4,20 @@ import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import MapLegend from "./components/MapLegend";
 import LocateMeButton from "./components/LocateMeButton";
+import HeatmapToggle from "./components/HeatmapToggle";
+import RoutePlanner from "./components/RoutePlanner";
+import MobileTabs from "./components/MobileTabs";
 import Dashboard from "./components/Dashboard";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
+import { getStoreType } from "./utils/storeType";
 import { haversineDistanceKm } from "./utils/geo";
+import { MAX_ROUTE_STOPS } from "./utils/route";
 import { exportStoresToXlsx } from "./utils/xlsxExport";
 import { useLanguage } from "./i18n/LanguageContext";
+import { useTheme } from "./theme/ThemeContext";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 const NEAR_ME_LIMIT = 30;
@@ -22,21 +28,27 @@ function normalize(text) {
 
 function App() {
   const { t } = useLanguage();
+  const { isDark } = useTheme();
   const [stores, setStores] = useState([]);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileView, setMobileView] = useState("map");
   const [search, setSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedStoreTypes, setSelectedStoreTypes] = useState([]);
   const [browseAll, setBrowseAll] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [heatmapActive, setHeatmapActive] = useState(false);
+  const [routeStops, setRouteStops] = useState([]);
+  const [routeOrder, setRouteOrder] = useState(null);
 
   useEffect(() => {
     fetch("/stores.json")
@@ -68,7 +80,8 @@ function App() {
     search.trim() !== "" ||
     selectedCity !== "" ||
     selectedRegion !== "" ||
-    selectedBrands.length > 0;
+    selectedBrands.length > 0 ||
+    selectedStoreTypes.length > 0;
 
   const filteredStores = useMemo(() => {
     let base;
@@ -85,7 +98,12 @@ function App() {
         const matchesBrands =
           selectedBrands.length === 0 ||
           store.brands.some((brand) => selectedBrands.includes(brand));
-        return matchesSearch && matchesCity && matchesRegion && matchesBrands;
+        const matchesType =
+          selectedStoreTypes.length === 0 ||
+          selectedStoreTypes.includes(getStoreType(store));
+        return (
+          matchesSearch && matchesCity && matchesRegion && matchesBrands && matchesType
+        );
       });
     } else if (browseAll || userLocation) {
       base = stores;
@@ -120,6 +138,7 @@ function App() {
     selectedCity,
     selectedRegion,
     selectedBrands,
+    selectedStoreTypes,
     hasActiveFilter,
     browseAll,
     userLocation,
@@ -143,6 +162,7 @@ function App() {
   function handleSelectStore(id) {
     setSelectedStoreId(id);
     setDetailOpen(true);
+    setMobileView("map");
   }
 
   function toggleBrand(brand) {
@@ -151,11 +171,18 @@ function App() {
     );
   }
 
+  function toggleStoreType(type) {
+    setSelectedStoreTypes((prev) =>
+      prev.includes(type) ? prev.filter((t2) => t2 !== type) : [...prev, type],
+    );
+  }
+
   function handleResetFilters() {
     setSearch("");
     setSelectedCity("");
     setSelectedRegion("");
     setSelectedBrands([]);
+    setSelectedStoreTypes([]);
     setBrowseAll(false);
     setUserLocation(null);
     setGeoError(null);
@@ -182,6 +209,24 @@ function App() {
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
+  }
+
+  function toggleRouteStop(store) {
+    setRouteStops((prev) => {
+      const exists = prev.some((s) => s.id === store.id);
+      if (exists) return prev.filter((s) => s.id !== store.id);
+      if (prev.length >= MAX_ROUTE_STOPS) return prev;
+      return [...prev, store];
+    });
+  }
+
+  function removeRouteStop(id) {
+    setRouteStops((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function clearRoute() {
+    setRouteStops([]);
+    setRouteOrder(null);
   }
 
   async function handleExport() {
@@ -213,38 +258,54 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-neutral-100">
+    <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-950">
       <Header
         onOpenSettings={() => setShowSettings(true)}
         onOpenStats={() => setShowStats(true)}
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
-          search={search}
-          onSearchChange={setSearch}
-          cities={allCities}
-          selectedCity={selectedCity}
-          onCityChange={setSelectedCity}
-          regions={allRegions}
-          selectedRegion={selectedRegion}
-          onRegionChange={setSelectedRegion}
-          brands={allBrands}
-          selectedBrands={selectedBrands}
-          onToggleBrand={toggleBrand}
-          stores={filteredStores}
-          hasActiveFilter={showResults}
-          onResetFilters={handleResetFilters}
-          onExport={handleExport}
-          exporting={exporting}
-          selectedStoreId={selectedStoreId}
-          onSelectStore={handleSelectStore}
-        />
+      <MobileTabs
+        view={mobileView}
+        onChange={setMobileView}
+        resultCount={filteredStores.length}
+      />
 
-        <div className="relative flex-1 bg-neutral-100 p-3 md:p-6">
-          <div className="relative h-full w-full overflow-hidden rounded-2xl border border-neutral-200 shadow-lg">
+      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
+        <div
+          className={`${mobileView === "list" ? "flex" : "hidden"} h-full w-full md:flex md:w-auto`}
+        >
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+            search={search}
+            onSearchChange={setSearch}
+            cities={allCities}
+            selectedCity={selectedCity}
+            onCityChange={setSelectedCity}
+            regions={allRegions}
+            selectedRegion={selectedRegion}
+            onRegionChange={setSelectedRegion}
+            brands={allBrands}
+            selectedBrands={selectedBrands}
+            onToggleBrand={toggleBrand}
+            selectedStoreTypes={selectedStoreTypes}
+            onToggleStoreType={toggleStoreType}
+            stores={filteredStores}
+            hasActiveFilter={showResults}
+            onResetFilters={handleResetFilters}
+            onExport={handleExport}
+            exporting={exporting}
+            selectedStoreId={selectedStoreId}
+            onSelectStore={handleSelectStore}
+            routeStopIds={routeStops.map((s) => s.id)}
+            onToggleRouteStop={toggleRouteStop}
+          />
+        </div>
+
+        <div
+          className={`${mobileView === "map" ? "block" : "hidden"} relative h-full w-full flex-1 bg-neutral-100 p-0 dark:bg-neutral-950 md:block md:p-3 lg:p-6`}
+        >
+          <div className="relative h-full w-full overflow-hidden border border-neutral-200 shadow-lg dark:border-neutral-800 md:rounded-2xl">
             <MapView
               stores={filteredStores}
               selectedStoreId={selectedStoreId}
@@ -252,30 +313,42 @@ function App() {
               onSelectStore={handleSelectStore}
               resizeTrigger={sidebarCollapsed}
               userLocation={userLocation}
+              heatmapActive={heatmapActive}
+              isDark={isDark}
+              routeStops={routeStops}
+              routeOrder={routeOrder}
             />
 
-            <LocateMeButton
-              onLocate={handleLocateMe}
-              active={Boolean(userLocation)}
-              loading={geoLoading}
-              error={geoError}
-            />
+            <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
+              <HeatmapToggle
+                active={heatmapActive}
+                onToggle={() => setHeatmapActive((v) => !v)}
+              />
+              <LocateMeButton
+                onLocate={handleLocateMe}
+                active={Boolean(userLocation)}
+                loading={geoLoading}
+                error={geoError}
+              />
+            </div>
 
-            {showResults && filteredStores.length > 0 && <MapLegend />}
+            {showResults && filteredStores.length > 0 && !heatmapActive && (
+              <MapLegend />
+            )}
 
             {!showResults && (
               <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
-                <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur">
-                  <p className="font-serif text-lg text-neutral-900">
+                <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
+                  <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
                     {t("map.emptyTitle")}
                   </p>
-                  <p className="mt-1.5 text-sm text-neutral-500">
+                  <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
                     {t("map.emptyBody")}
                   </p>
                   <button
                     type="button"
                     onClick={() => setBrowseAll(true)}
-                    className="mt-4 cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
+                    className="mt-4 cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
                   >
                     {t("map.freeMode")}
                   </button>
@@ -283,10 +356,20 @@ function App() {
               </div>
             )}
 
+            <RoutePlanner
+              stops={routeStops}
+              onRemoveStop={removeRouteStop}
+              onClear={clearRoute}
+              userLocation={userLocation}
+              onOptimize={(result) => setRouteOrder(result?.order || null)}
+            />
+
             <StoreDetailPanel
               store={selectedStore}
               open={detailOpen && Boolean(selectedStore)}
               onClose={() => setDetailOpen(false)}
+              routeStopIds={routeStops.map((s) => s.id)}
+              onToggleRouteStop={toggleRouteStop}
             />
           </div>
         </div>

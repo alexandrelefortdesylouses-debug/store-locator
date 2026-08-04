@@ -43,25 +43,32 @@ export default function ReviewSection({ storeId }) {
   }
 
   return (
-    <div className="border-t border-neutral-200 pt-5 text-left">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+    <div className="border-t border-neutral-200 pt-5 text-left dark:border-neutral-700">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
         {t("reviews.title", { count: reviews.length })}
       </p>
 
       {reviews.length === 0 ? (
-        <p className="text-sm text-neutral-500">{t("reviews.none")}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          {t("reviews.none")}
+        </p>
       ) : (
         <ul className="thin-scrollbar mb-4 flex max-h-60 flex-col gap-3 overflow-y-auto pr-1">
           {reviews.map((review, i) => (
-            <li key={i} className="rounded-lg bg-neutral-50 p-3 text-sm">
+            <li
+              key={i}
+              className="rounded-lg bg-neutral-50 p-3 text-sm dark:bg-neutral-800"
+            >
               <div className="mb-1 flex items-center justify-between">
-                <span className="font-medium text-neutral-900">
+                <span className="font-medium text-neutral-900 dark:text-neutral-100">
                   {review.author}
                 </span>
                 <StarRating value={review.rating} readOnly />
               </div>
-              <p className="text-neutral-600">{review.comment}</p>
-              <p className="mt-1 text-xs text-neutral-400">
+              <p className="text-neutral-600 dark:text-neutral-300">
+                {review.comment}
+              </p>
+              <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
                 {new Date(review.date).toLocaleDateString(
                   lang === "en" ? "en-US" : "fr-FR",
                 )}
@@ -72,7 +79,7 @@ export default function ReviewSection({ storeId }) {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-neutral-700">
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
           {t("reviews.leaveReview")}
         </p>
         <input
@@ -80,10 +87,10 @@ export default function ReviewSection({ storeId }) {
           placeholder={t("reviews.namePlaceholder")}
           value={form.author}
           onChange={(e) => setForm({ ...form, author: e.target.value })}
-          className="rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+          className="rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
         />
         <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-600">
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
             {t("reviews.ratingLabel")}
           </span>
           <StarRating
@@ -96,19 +103,19 @@ export default function ReviewSection({ storeId }) {
           value={form.comment}
           onChange={(e) => setForm({ ...form, comment: e.target.value })}
           rows={3}
-          className="resize-none rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+          className="resize-none rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
         />
         <input
           type="password"
           placeholder={t("reviews.codePlaceholder")}
           value={form.secretCode}
           onChange={(e) => setForm({ ...form, secretCode: e.target.value })}
-          className="rounded-md border border-neutral-300 bg-transparent px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+          className="rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
         />
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
         <button
           type="submit"
-          className="cursor-pointer self-start rounded-full bg-neutral-900 px-5 py-1.5 text-sm font-medium text-white transition hover:bg-amber-700"
+          className="cursor-pointer self-start rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
         >
           {t("reviews.submit")}
         </button>

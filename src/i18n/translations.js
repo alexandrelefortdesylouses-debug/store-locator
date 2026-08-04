@@ -22,6 +22,11 @@ export const translations = {
     "sidebar.emptyPrompt":
       "Utilisez la recherche, une ville, une région ou une marque pour afficher les opticiens partenaires Thélios.",
     "sidebar.export": "Exporter la sélection",
+    "sidebar.storeTypeTitle": "Type de boutique",
+
+    "storeType.flagship": "Boutique Flagship",
+    "storeType.department_store": "Grand Magasin",
+    "storeType.independent": "Opticien Indépendant",
 
     "map.emptyTitle": "Trouvez un opticien Thélios",
     "map.emptyBody":
@@ -32,11 +37,33 @@ export const translations = {
     "map.locateMe": "Autour de moi",
     "map.locateMeAria": "Me géolocaliser",
     "map.locating": "Localisation en cours…",
+    "map.heatmap": "Mode densité",
+    "map.heatmapAria": "Basculer le mode densité",
 
     "geo.unsupported":
       "La géolocalisation n'est pas prise en charge par votre navigateur.",
     "geo.denied":
       "Impossible de récupérer votre position. Vérifiez les autorisations de localisation.",
+
+    "route.addToRoute": "Ajouter au trajet",
+    "route.removeFromRoute": "Retirer du trajet",
+    "route.maxReached": "4 opticiens maximum par trajet",
+    "route.selectedCount": "{count}/4 sélectionnés",
+    "route.optimize": "Optimiser mon trajet",
+    "route.clear": "Vider",
+    "route.openGoogleMaps": "Ouvrir dans Google Maps",
+    "route.openWaze": "Ouvrir dans Waze",
+    "route.wazeHint": "Waze : 1er arrêt uniquement",
+    "route.totalDistance": "≈ {km} au total (à vol d'oiseau)",
+    "route.needTwo": "Sélectionnez au moins 2 opticiens pour optimiser",
+    "route.close": "Fermer le planificateur de trajet",
+
+    "theme.toggleAria": "Basculer le mode sombre",
+
+    "mobile.viewMap": "Carte",
+    "mobile.viewList": "Liste",
+    "mobile.showList": "Voir la liste",
+    "mobile.showMap": "Voir la carte",
 
     "stats.title": "Statistiques réseau",
     "stats.close": "Fermer",
@@ -127,6 +154,11 @@ export const translations = {
     "sidebar.emptyPrompt":
       "Use the search, a city, a region or a brand to display Thélios partner opticians.",
     "sidebar.export": "Export selection",
+    "sidebar.storeTypeTitle": "Store type",
+
+    "storeType.flagship": "Flagship Boutique",
+    "storeType.department_store": "Department Store",
+    "storeType.independent": "Independent Optician",
 
     "map.emptyTitle": "Find a Thélios optician",
     "map.emptyBody":
@@ -137,10 +169,32 @@ export const translations = {
     "map.locateMe": "Near me",
     "map.locateMeAria": "Locate me",
     "map.locating": "Locating…",
+    "map.heatmap": "Density mode",
+    "map.heatmapAria": "Toggle density mode",
 
     "geo.unsupported": "Geolocation is not supported by your browser.",
     "geo.denied":
       "Unable to retrieve your location. Please check location permissions.",
+
+    "route.addToRoute": "Add to route",
+    "route.removeFromRoute": "Remove from route",
+    "route.maxReached": "4 opticians maximum per route",
+    "route.selectedCount": "{count}/4 selected",
+    "route.optimize": "Optimize my route",
+    "route.clear": "Clear",
+    "route.openGoogleMaps": "Open in Google Maps",
+    "route.openWaze": "Open in Waze",
+    "route.wazeHint": "Waze: 1st stop only",
+    "route.totalDistance": "≈ {km} total (as the crow flies)",
+    "route.needTwo": "Select at least 2 opticians to optimize",
+    "route.close": "Close route planner",
+
+    "theme.toggleAria": "Toggle dark mode",
+
+    "mobile.viewMap": "Map",
+    "mobile.viewList": "List",
+    "mobile.showList": "Show list",
+    "mobile.showMap": "Show map",
 
     "stats.title": "Network statistics",
     "stats.close": "Close",

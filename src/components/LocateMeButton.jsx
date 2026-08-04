@@ -23,7 +23,7 @@ export default function LocateMeButton({ onLocate, active, loading, error }) {
   const { t } = useLanguage();
 
   return (
-    <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
+    <>
       <button
         type="button"
         onClick={onLocate}
@@ -33,16 +33,16 @@ export default function LocateMeButton({ onLocate, active, loading, error }) {
         className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border shadow-lg transition disabled:cursor-wait ${
           active
             ? "border-blue-600 bg-blue-600 text-white"
-            : "border-neutral-200 bg-white text-neutral-700 hover:border-amber-400 hover:text-amber-700"
+            : "border-neutral-200 bg-white text-neutral-700 hover:border-amber-400 hover:text-amber-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-amber-400 dark:hover:text-amber-400"
         }`}
       >
         {loading ? <SpinnerIcon /> : <TargetIcon />}
       </button>
       {error && (
-        <p className="max-w-[220px] rounded-lg border border-red-200 bg-white/95 px-2.5 py-1.5 text-right text-[11px] text-red-600 shadow-md">
+        <p className="max-w-[220px] rounded-lg border border-red-200 bg-white/95 px-2.5 py-1.5 text-right text-[11px] text-red-600 shadow-md dark:border-red-900 dark:bg-neutral-900/95 dark:text-red-400">
           {error}
         </p>
       )}
-    </div>
+    </>
   );
 }

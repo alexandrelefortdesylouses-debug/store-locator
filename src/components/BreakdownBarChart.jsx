@@ -8,7 +8,7 @@ function BarRow({ label, thelios, competitor, total, maxTotal, theliosLabel, com
   return (
     <div className="flex items-center gap-3">
       <span
-        className="w-28 shrink-0 truncate text-xs text-neutral-600 sm:w-36"
+        className="w-28 shrink-0 truncate text-xs text-neutral-600 dark:text-neutral-400 sm:w-36"
         title={label}
       >
         {label}
@@ -29,7 +29,7 @@ function BarRow({ label, thelios, competitor, total, maxTotal, theliosLabel, com
           />
         )}
       </div>
-      <span className="w-10 shrink-0 text-right text-xs font-medium text-neutral-900">
+      <span className="w-10 shrink-0 text-right text-xs font-medium text-neutral-900 dark:text-neutral-100">
         {total}
       </span>
     </div>

@@ -5,16 +5,16 @@ import { useLanguage } from "../i18n/LanguageContext";
 
 function StatTile({ label, value, hint, accent }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+    <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800">
+      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
         {label}
       </p>
       <p
-        className={`mt-1.5 font-serif text-2xl ${accent ? "text-amber-700" : "text-neutral-900"}`}
+        className={`mt-1.5 font-serif text-2xl ${accent ? "text-amber-700 dark:text-amber-400" : "text-neutral-900 dark:text-neutral-100"}`}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-[11px] leading-snug text-neutral-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] leading-snug text-neutral-400 dark:text-neutral-500">{hint}</p>}
     </div>
   );
 }
@@ -27,14 +27,14 @@ export default function Dashboard({ stores, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-          <h2 className="font-serif text-xl text-neutral-900">{t("stats.title")}</h2>
+      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-900">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4 dark:border-neutral-700">
+          <h2 className="font-serif text-xl text-neutral-900 dark:text-neutral-100">{t("stats.title")}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label={t("stats.close")}
-            className="cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+            className="cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           >
             ✕
           </button>
@@ -62,7 +62,7 @@ export default function Dashboard({ stores, onClose }) {
             />
           </div>
 
-          <div className="mb-4 mt-8 flex items-center gap-4 text-xs text-neutral-600">
+          <div className="mb-4 mt-8 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#b45309]" />
               {t("stats.legendThelios")}
@@ -73,7 +73,7 @@ export default function Dashboard({ stores, onClose }) {
             </span>
           </div>
 
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             {t("stats.byRegion")}
           </h3>
           <div className="mb-8">
@@ -84,7 +84,7 @@ export default function Dashboard({ stores, onClose }) {
             />
           </div>
 
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             {t("stats.byCity")}
           </h3>
           <BreakdownBarChart

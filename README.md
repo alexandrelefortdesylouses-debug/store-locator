@@ -257,6 +257,75 @@ que l'intégralité du réseau en mode libre. Mise en forme appliquée :
   formaté explicitement en texte (`format: '@'`) : les zéros initiaux sont
   conservés (`06400`, pas `6400`), y compris pour la colonne téléphone.
 
+## Mobile & responsive
+
+L'interface s'adapte du smartphone au grand écran :
+
+- En dessous du seuil `md` (768px), un bandeau d'onglets **Carte / Liste**
+  (`src/components/MobileTabs.jsx`) remplace la mise en page côte-à-côte du
+  desktop : un seul des deux panneaux (sidebar/liste ou carte) est affiché à
+  la fois, l'autre restant monté mais masqué (`hidden`/`block`) pour
+  conserver son état (filtres, position de la carte…) au changement d'onglet.
+  Ce choix — bascule par onglets plutôt qu'un tiroir à glissement (bottom
+  sheet) — a été retenu pour rester simple et fiable au clavier/tactile.
+- Boutons, cartes d'opticiens, puces de filtre et champs de formulaire ont
+  une zone de clic élargie (`h-8`+ / `py-2`+) pour rester confortables au
+  doigt.
+- Au-delà de `md`, la mise en page desktop (sidebar + carte côte à côte)
+  reste inchangée.
+
+## Mode Heatmap et filtre par type de point de vente
+
+- **Heatmap** (`src/components/HeatmapToggle.jsx`, bascule en haut à droite
+  de la carte) : remplace les marqueurs par une carte de chaleur
+  (`leaflet.heat`) illustrant les zones de forte concentration d'opticiens
+  parmi les résultats actuellement filtrés.
+- **Type de point de vente** (`src/components/StoreTypeFilter.jsx`,
+  `src/utils/storeType.js`) : filtre les opticiens par "Boutique Flagship",
+  "Opticien Indépendant" ou "Grand Magasin".
+  > ⚠️ **Ce champ n'existe pas dans les données source.** Il s'agit d'une
+  > classification heuristique calculée côté client à partir du nom de
+  > l'enseigne (ex. présence de "flagship", ou noms d'enseignes de grands
+  > magasins comme Galeries Lafayette, Printemps, BHV, Fnac…) et du nombre de
+  > marques distribuées. À affiner ou remplacer dès qu'un champ de
+  > typologie réel sera fourni par le client.
+
+## Optimisation de trajet
+
+Sur chaque fiche opticien (liste ou panneau détaillé), une case à cocher
+permet de sélectionner jusqu'à 4 opticiens (`MAX_ROUTE_STOPS` dans
+`src/utils/route.js`). Le panneau flottant `src/components/RoutePlanner.jsx`
+(bas de la carte) permet ensuite de :
+
+1. **Optimiser mon trajet** : calcule par force brute (24 permutations max
+   pour 4 arrêts) l'ordre qui minimise la distance totale à vol d'oiseau
+   (`optimizeRouteOrder`), en partant de la position géolocalisée du
+   visiteur si elle est disponible.
+2. **Ouvrir dans Google Maps** : lien d'itinéraire multi-étapes
+   (`origin`/`waypoints`/`destination`).
+3. **Ouvrir dans Waze** : Waze ne supportant pas les itinéraires
+   multi-étapes via lien, ce bouton pointe uniquement vers le premier arrêt
+   de l'itinéraire optimisé.
+
+Les arrêts sélectionnés s'affichent sur la carte avec des marqueurs numérotés
+et un tracé en pointillés (numérotés par ordre de sélection avant
+optimisation, puis par ordre optimisé une fois calculé).
+
+## Mode sombre
+
+Bascule soleil/lune dans l'en-tête (`src/components/DarkModeToggle.jsx`),
+pilotée par `src/theme/ThemeContext.jsx` :
+
+- Préférence persistée dans le `localStorage` (`storeLocator_theme`), avec
+  repli sur `prefers-color-scheme` du système si rien n'est enregistré.
+- Un script inline dans `index.html` applique la classe `dark` sur `<html>`
+  avant le premier rendu React, pour éviter un flash de thème clair au
+  chargement.
+- Tous les composants (sidebar, fiches, formulaires, chatbot, dashboard,
+  export…) ont leurs variantes `dark:` Tailwind. Le fond de carte bascule
+  vers un fond sombre (tuiles CartoDB "dark_all") et les popups/contrôles de
+  zoom Leaflet sont restylés en sombre (`src/index.css`).
+
 ## Prochaine étape (non traitée dans cette itération)
 
 Le point "page d'accueil + système de compte (favoris, avis personnalisés,

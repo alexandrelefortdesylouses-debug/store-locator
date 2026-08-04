@@ -52,9 +52,9 @@ export default function ChatWidget({ stores }) {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-[1000] flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-4 z-[1000] flex flex-col items-end gap-3 sm:bottom-5 sm:right-5">
       {open && (
-        <div className="flex h-[480px] w-[340px] max-w-[90vw] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
+        <div className="flex h-[70vh] max-h-[480px] w-[340px] max-w-[90vw] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900">
           <div className="flex items-center justify-between bg-neutral-950 px-4 py-3">
             <div className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-200/40 font-serif text-sm text-amber-200">
@@ -70,7 +70,7 @@ export default function ChatWidget({ stores }) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="cursor-pointer rounded-full p-1 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+              className="cursor-pointer rounded-full p-1.5 text-neutral-400 hover:bg-neutral-800 hover:text-white"
               aria-label={t("chat.closeAria")}
             >
               ✕
@@ -79,7 +79,7 @@ export default function ChatWidget({ stores }) {
 
           <div
             ref={scrollRef}
-            className="thin-scrollbar flex-1 space-y-3 overflow-y-auto bg-neutral-50 p-4"
+            className="thin-scrollbar flex-1 space-y-3 overflow-y-auto bg-neutral-50 p-4 dark:bg-neutral-950"
           >
             {messages.map((msg, i) => (
               <div
@@ -89,8 +89,8 @@ export default function ChatWidget({ stores }) {
                 <p
                   className={`max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${
                     msg.role === "user"
-                      ? "bg-neutral-900 text-white"
-                      : "border border-neutral-200 bg-white text-neutral-700"
+                      ? "bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+                      : "border border-neutral-200 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
                   }`}
                 >
                   {msg.text}
@@ -101,18 +101,18 @@ export default function ChatWidget({ stores }) {
 
           <form
             onSubmit={handleSend}
-            className="flex items-center gap-2 border-t border-neutral-200 p-3"
+            className="flex items-center gap-2 border-t border-neutral-200 p-3 dark:border-neutral-700"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t("chat.inputPlaceholder")}
-              className="flex-1 rounded-full border border-neutral-300 px-3 py-1.5 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+              className="flex-1 rounded-full border border-neutral-300 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
             />
             <button
               type="submit"
-              className="cursor-pointer rounded-full bg-neutral-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-amber-700"
+              className="cursor-pointer rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
             >
               {t("chat.send")}
             </button>
@@ -123,7 +123,7 @@ export default function ChatWidget({ stores }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-neutral-950 text-amber-200 shadow-xl transition hover:bg-neutral-800"
+        className="flex h-13 w-13 cursor-pointer items-center justify-center rounded-full bg-neutral-950 text-amber-200 shadow-xl transition hover:bg-neutral-800 sm:h-14 sm:w-14"
         aria-label={open ? t("chat.closeAria") : t("chat.openAria")}
       >
         {open ? <span className="text-xl leading-none">✕</span> : <ChatBubbleIcon />}
