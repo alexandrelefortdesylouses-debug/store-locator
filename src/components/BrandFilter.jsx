@@ -29,10 +29,6 @@ export default function BrandFilter({ brands, selected, onToggle }) {
 
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-        {t("sidebar.brandsTitle")}
-      </p>
-
       {featuredBrands.length > 0 && (
         <div className="mb-2.5">
           <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">

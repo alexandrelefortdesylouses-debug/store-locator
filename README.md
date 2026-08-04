@@ -85,6 +85,9 @@ python3 scripts/build_stores_from_excel.py
 - Les horaires d'ouverture ne sont pas fournis par l'Excel : le champ `hours` est donc absent pour ces opticiens (la fiche détaillée masque simplement cette section).
 - La géolocalisation étant au niveau ville, plusieurs opticiens d'une même ville partagent exactement les mêmes coordonnées — la carte les regroupe visuellement via un système de clusters (voir plus bas).
 
+**Corrections manuelles ponctuelles** appliquées directement sur `stores.json` (en plus de la régénération par script) :
+- `door-0000710210` (Atol, 4 Centre Commercial de Toga, 20200) avait un champ `city` vide dans le fichier source Doors Master Data — le code postal 20200 correspondant à Bastia, la ville a été renseignée manuellement ("Bastia") et l'adresse complétée en conséquence.
+
 Structure d'une entrée :
 
 ```json
@@ -150,13 +153,15 @@ lorsqu'un filtre par marque affiche plus d'un millier de résultats.
   `Entrée`, `Échap` pour fermer) — ouvre directement la fiche de l'opticien.
 - **Filtres région / département / ville en sélection multiple**
   (`src/components/MultiSelect.jsx`, réutilisé par `RegionSelect.jsx`,
-  `DepartmentSelect.jsx` et `CitySelect.jsx`) : chacun s'ouvre en menu
-  déroulant à cases à cocher (avec recherche interne pour les départements et
-  villes, listes longues) et affiche les valeurs choisies sous forme de puces
-  cliquables (❌ pour retirer). Les trois filtres se combinent entre eux **et**
-  avec la recherche, les marques et le type de boutique — la carte et la
-  liste se mettent à jour à chaque changement (le filtrage est recalculé côté
-  client via `useMemo` dans `App.jsx`, aucun round-trip serveur).
+  `DepartmentSelect.jsx` et `CitySelect.jsx`) : chacun propose une liste à
+  cases à cocher (avec recherche interne pour les départements et villes,
+  listes longues) et affiche les valeurs choisies sous forme de puces
+  cliquables (❌ pour retirer) — voir la section "Panneau de filtres en
+  accordéon" ci-dessous pour la manière dont ces listes sont présentées dans
+  la sidebar. Les trois filtres se combinent entre eux **et** avec la
+  recherche, les marques et le type de boutique — la carte et la liste se
+  mettent à jour à chaque changement (le filtrage est recalculé côté client
+  via `useMemo` dans `App.jsx`, aucun round-trip serveur).
   - **Régions** : dérivées du code postal comme précédemment
     (`src/utils/regions.js`).
   - **Départements** : nouveau filtre (`src/utils/departments.js`), déduit du
@@ -168,6 +173,35 @@ lorsqu'un filtre par marque affiche plus d'un millier de résultats.
     premier les grandes villes françaises (Paris, Marseille, Lyon, Toulouse,
     Nice, Nantes, Bordeaux, Lille, etc.) dans un groupe "Grandes villes",
     suivies de toutes les autres villes triées alphabétiquement.
+
+## Panneau de filtres en accordéon
+
+La sidebar a été restructurée en accordéon compact façon Nike
+(`src/components/AccordionSection.jsx`) pour éviter un panneau interminable :
+
+- Chaque catégorie (Villes, Départements, Régions, Type de boutique, Marques)
+  n'affiche par défaut que son **titre**, avec un badge indiquant le nombre de
+  valeurs sélectionnées quand la section est repliée, et un chevron qui
+  pivote à l'ouverture. Cliquer le titre déroule/replie la section
+  (`aria-expanded` posé sur le bouton pour l'accessibilité) ; plusieurs
+  sections peuvent rester ouvertes en même temps. Seule la section **Villes**
+  est ouverte par défaut, les autres démarrent repliées.
+  L'animation d'ouverture/fermeture repose sur la technique CSS Grid
+  `grid-template-rows: 0fr → 1fr` (transition fluide sans mesurer la hauteur
+  en JS) ; le contenu replié reste dans le DOM pour l'animation mais est
+  rendu `inert` (non focusable, ignoré des lecteurs d'écran) tant que la
+  section est fermée.
+- **Correction du bug de défilement** signalé ("impossible d'atteindre le bas
+  des filtres") : l'ancienne mise en page imbriquait deux zones de défilement
+  (`overflow-y-auto` sur la sidebar entière **et** sur la liste de résultats
+  à l'intérieur d'un conteneur `flex-1`/`overflow-hidden`), ce qui pouvait
+  réduire la zone de résultats à une hauteur quasi nulle une fois tous les
+  filtres affichés. La sidebar n'a maintenant plus qu'**une seule zone de
+  défilement** (`min-h-0 flex-1 overflow-y-auto`, scrollbar fine via la
+  classe `.thin-scrollbar` déjà utilisée ailleurs dans l'app) qui contient à
+  la fois l'accordéon de filtres et la liste de résultats en dessous ; la
+  recherche et le bouton "Réinitialiser les filtres" restent fixes en haut,
+  hors de la zone de défilement.
 
 ## Langue (FR / EN)
 

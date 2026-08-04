@@ -12,13 +12,6 @@ export default function CitySelect({ cities, selected, onChange }) {
   ];
 
   return (
-    <MultiSelect
-      label={t("sidebar.citiesTitle")}
-      placeholder={t("sidebar.allCities")}
-      groups={groups}
-      selected={selected}
-      onChange={onChange}
-      searchable
-    />
+    <MultiSelect groups={groups} selected={selected} onChange={onChange} searchable />
   );
 }

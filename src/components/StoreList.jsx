@@ -48,7 +48,7 @@ export default function StoreList({
   const routeFull = routeStopIds.length >= MAX_ROUTE_STOPS;
 
   return (
-    <ul className="thin-scrollbar flex h-full flex-col gap-2 overflow-y-auto pr-1">
+    <ul className="flex flex-col gap-2">
       {stores.map((store) => {
         const isSelected = store.id === selectedStoreId;
         const inRoute = routeStopIds.includes(store.id);

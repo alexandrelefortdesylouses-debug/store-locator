@@ -1,11 +1,21 @@
+import { useState } from "react";
 import SearchBar from "./SearchBar";
 import CitySelect from "./CitySelect";
 import RegionSelect from "./RegionSelect";
 import DepartmentSelect from "./DepartmentSelect";
 import BrandFilter from "./BrandFilter";
 import StoreTypeFilter from "./StoreTypeFilter";
+import AccordionSection from "./AccordionSection";
 import StoreList from "./StoreList";
 import { useLanguage } from "../i18n/LanguageContext";
+
+const DEFAULT_OPEN_SECTIONS = {
+  cities: true,
+  departments: false,
+  regions: false,
+  storeType: false,
+  brands: false,
+};
 
 export default function Sidebar({
   collapsed,
@@ -38,6 +48,11 @@ export default function Sidebar({
   onToggleRouteStop,
 }) {
   const { t } = useLanguage();
+  const [openSections, setOpenSections] = useState(DEFAULT_OPEN_SECTIONS);
+
+  function toggleSection(key) {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   return (
     <aside
@@ -61,77 +76,118 @@ export default function Sidebar({
           </span>
         </div>
       ) : (
-        <div className="thin-scrollbar flex h-full flex-col gap-4 overflow-y-auto p-4">
-          <div className="flex items-center justify-between gap-2">
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className="flex shrink-0 flex-col gap-3 p-4 pb-3">
             <SearchBar
               value={search}
               onChange={onSearchChange}
               stores={allStores}
               onSelectStore={onSelectStore}
             />
+
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="cursor-pointer self-start rounded-full border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+              >
+                {t("sidebar.resetFilters")}
+              </button>
+            )}
           </div>
 
-          {hasActiveFilter && (
-            <button
-              type="button"
-              onClick={onResetFilters}
-              className="cursor-pointer self-start rounded-full border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
-            >
-              {t("sidebar.resetFilters")}
-            </button>
-          )}
-
-          <RegionSelect
-            regions={regions}
-            selected={selectedRegions}
-            onChange={onRegionsChange}
-          />
-          <DepartmentSelect
-            departments={departments}
-            selected={selectedDepartments}
-            onChange={onDepartmentsChange}
-          />
-          <CitySelect cities={cities} selected={selectedCities} onChange={onCitiesChange} />
-          <BrandFilter
-            brands={brands}
-            selected={selectedBrands}
-            onToggle={onToggleBrand}
-          />
-          <StoreTypeFilter
-            selected={selectedStoreTypes}
-            onToggle={onToggleStoreType}
-          />
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {hasActiveFilter ? (
-              <>
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    {t("sidebar.opticianCount", { count: stores.length })}
-                  </p>
-                  {stores.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={onExport}
-                      disabled={exporting}
-                      className="cursor-pointer rounded-full px-2 py-1 text-xs text-amber-700 hover:underline disabled:cursor-wait disabled:opacity-60 dark:text-amber-400"
-                    >
-                      {t("sidebar.export")}
-                    </button>
-                  )}
-                </div>
-                <StoreList
-                  stores={stores}
-                  selectedStoreId={selectedStoreId}
-                  onSelectStore={onSelectStore}
-                  routeStopIds={routeStopIds}
-                  onToggleRouteStop={onToggleRouteStop}
+          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-4">
+            <div>
+              <AccordionSection
+                title={t("sidebar.citiesTitle")}
+                count={selectedCities.length}
+                open={openSections.cities}
+                onToggle={() => toggleSection("cities")}
+              >
+                <CitySelect
+                  cities={cities}
+                  selected={selectedCities}
+                  onChange={onCitiesChange}
                 />
-              </>
-            ) : (
-              <p className="px-1 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
-                {t("sidebar.emptyPrompt")}
-              </p>
-            )}
+              </AccordionSection>
+
+              <AccordionSection
+                title={t("sidebar.departmentsTitle")}
+                count={selectedDepartments.length}
+                open={openSections.departments}
+                onToggle={() => toggleSection("departments")}
+              >
+                <DepartmentSelect
+                  departments={departments}
+                  selected={selectedDepartments}
+                  onChange={onDepartmentsChange}
+                />
+              </AccordionSection>
+
+              <AccordionSection
+                title={t("sidebar.regionsTitle")}
+                count={selectedRegions.length}
+                open={openSections.regions}
+                onToggle={() => toggleSection("regions")}
+              >
+                <RegionSelect
+                  regions={regions}
+                  selected={selectedRegions}
+                  onChange={onRegionsChange}
+                />
+              </AccordionSection>
+
+              <AccordionSection
+                title={t("sidebar.storeTypeTitle")}
+                count={selectedStoreTypes.length}
+                open={openSections.storeType}
+                onToggle={() => toggleSection("storeType")}
+              >
+                <StoreTypeFilter selected={selectedStoreTypes} onToggle={onToggleStoreType} />
+              </AccordionSection>
+
+              <AccordionSection
+                title={t("sidebar.brandsTitle")}
+                count={selectedBrands.length}
+                open={openSections.brands}
+                onToggle={() => toggleSection("brands")}
+              >
+                <BrandFilter brands={brands} selected={selectedBrands} onToggle={onToggleBrand} />
+              </AccordionSection>
+            </div>
+
+            <div className="py-4">
+              {hasActiveFilter ? (
+                <>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                      {t("sidebar.opticianCount", { count: stores.length })}
+                    </p>
+                    {stores.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={onExport}
+                        disabled={exporting}
+                        className="cursor-pointer rounded-full px-2 py-1 text-xs text-amber-700 hover:underline disabled:cursor-wait disabled:opacity-60 dark:text-amber-400"
+                      >
+                        {t("sidebar.export")}
+                      </button>
+                    )}
+                  </div>
+                  <StoreList
+                    stores={stores}
+                    selectedStoreId={selectedStoreId}
+                    onSelectStore={onSelectStore}
+                    routeStopIds={routeStopIds}
+                    onToggleRouteStop={onToggleRouteStop}
+                  />
+                </>
+              ) : (
+                <p className="px-1 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                  {t("sidebar.emptyPrompt")}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

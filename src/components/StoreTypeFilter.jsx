@@ -12,9 +12,6 @@ export default function StoreTypeFilter({ selected, onToggle }) {
 
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-        {t("sidebar.storeTypeTitle")}
-      </p>
       <div className="flex flex-wrap gap-1.5">
         {TYPE_ORDER.map((type) => {
           const active = selected.includes(type);
