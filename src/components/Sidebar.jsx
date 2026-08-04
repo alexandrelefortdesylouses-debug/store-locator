@@ -65,20 +65,21 @@ export default function Sidebar({
   }
 
   return (
-    <aside
-      className={`relative h-full shrink-0 border-b border-neutral-200 bg-white transition-all duration-300 dark:border-neutral-800 dark:bg-neutral-900 md:border-b-0 md:border-r ${
+    <div
+      className={`relative h-full shrink-0 transition-all duration-300 ${
         collapsed ? "md:w-16" : "md:w-[340px]"
-      } w-full overflow-hidden`}
+      } w-full`}
     >
       <button
         type="button"
         onClick={onToggleCollapse}
-        className="absolute -right-3 top-6 z-10 hidden h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-600 shadow-sm transition hover:border-amber-400 hover:text-amber-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 md:flex"
+        className="absolute -right-3.5 top-6 z-30 hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-600 shadow-md transition hover:border-amber-400 hover:text-amber-600 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400 md:flex"
         aria-label={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
       >
         {collapsed ? "›" : "‹"}
       </button>
 
+      <aside className="h-full w-full overflow-hidden border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:border-b-0 md:border-r">
       {collapsed ? (
         <div className="hidden h-full flex-col items-center gap-2 pt-6 text-neutral-400 dark:text-neutral-500 md:flex">
           <span className="text-[10px] font-semibold uppercase tracking-widest [writing-mode:vertical-rl]">
@@ -218,6 +219,7 @@ export default function Sidebar({
           </div>
         </div>
       )}
-    </aside>
+      </aside>
+    </div>
   );
 }

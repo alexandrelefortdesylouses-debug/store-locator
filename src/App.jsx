@@ -252,6 +252,10 @@ function App() {
     hasActiveFilter || browseAll || Boolean(userLocation) || viewMode === "mycard";
   const myCardIsEmpty =
     viewMode === "mycard" && portfolioIds.length === 0 && favoriteIds.length === 0;
+  // Statistics reflect whatever the user is currently looking at (search,
+  // geo/brand/type filters, "Ma Carte"); with nothing active, fall back to
+  // the whole network rather than an empty dashboard.
+  const statsScope = showResults ? filteredStores : stores;
 
   function handleSelectStore(id) {
     setSelectedStoreId(id);
@@ -539,7 +543,11 @@ function App() {
       )}
 
       {showStats && (
-        <Dashboard stores={stores} onClose={() => setShowStats(false)} />
+        <Dashboard
+          stores={statsScope}
+          isFiltered={showResults}
+          onClose={() => setShowStats(false)}
+        />
       )}
 
       <ImportSummaryModal result={importResult} onClose={() => setImportResult(null)} />

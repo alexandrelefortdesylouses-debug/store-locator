@@ -6,6 +6,7 @@ import "leaflet.heat";
 import { isFeaturedStore } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { GOLD_ACCENT, NEUTRAL_ACCENT, INK, PALE_GOLD, HEATMAP_GRADIENT } from "../utils/palette";
+import { getHeatmapCalibration } from "../utils/heatmapCalibration";
 
 const FRANCE_CENTER = [46.6, 2.4];
 const FRANCE_ZOOM = 6;
@@ -168,11 +169,14 @@ function InvalidateOnResize({ trigger }) {
 function HeatmapLayer({ points }) {
   const map = useMap();
   const layerRef = useRef(null);
+  const { radius, blur, minOpacity, intensity } = getHeatmapCalibration(points.length);
+  const weightedPoints = points.map(([lat, lng]) => [lat, lng, intensity]);
 
   useEffect(() => {
-    const layer = L.heatLayer(points, {
-      radius: 22,
-      blur: 18,
+    const layer = L.heatLayer(weightedPoints, {
+      radius,
+      blur,
+      minOpacity,
       maxZoom: 12,
       gradient: HEATMAP_GRADIENT,
     });
@@ -192,8 +196,12 @@ function HeatmapLayer({ points }) {
   }, [map]);
 
   useEffect(() => {
-    layerRef.current?.setLatLngs(points);
-  }, [points]);
+    const layer = layerRef.current;
+    if (!layer) return;
+    layer.setOptions({ radius, blur, minOpacity });
+    layer.setLatLngs(weightedPoints);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weightedPoints, radius, blur, minOpacity]);
 
   return null;
 }
@@ -227,7 +235,7 @@ export default function MapView({
       center={FRANCE_CENTER}
       zoom={FRANCE_ZOOM}
       scrollWheelZoom={true}
-      className="z-0 h-full w-full"
+      className={`z-0 h-full w-full ${heatmapActive ? "heatmap-active" : ""}`}
     >
       <TileLayer attribution={tiles.attribution} url={tiles.url} />
       <FitBoundsToStores stores={stores} disabled={Boolean(userLocation)} />
@@ -255,7 +263,7 @@ export default function MapView({
       ))}
 
       {heatmapActive ? (
-        <HeatmapLayer points={stores.map((store) => [store.lat, store.lng, 0.6])} />
+        <HeatmapLayer points={stores.map((store) => [store.lat, store.lng])} />
       ) : (
         <MarkerClusterGroup
           key={stores.length}

@@ -15,7 +15,7 @@ function BarRow({ label, thelios, competitor, total, maxTotal, theliosLabel, com
       >
         {label}
       </span>
-      <div className="flex h-3 flex-1 items-center gap-0.5">
+      <div className="flex h-3 flex-1 items-center gap-0.5 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
         {thelios > 0 && (
           <div
             className="h-full min-w-[3px] rounded-full"

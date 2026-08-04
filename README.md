@@ -222,6 +222,17 @@ La sidebar a été restructurée en accordéon compact façon Nike
   la fois l'accordéon de filtres et la liste de résultats en dessous ; la
   recherche et le bouton "Réinitialiser les filtres" restent fixes en haut,
   hors de la zone de défilement.
+- **Correction du bouton de repli/dépli** (`‹ / ›`) qui apparaissait à moitié
+  coupé sur le bord de la sidebar : la cause était que ce bouton, positionné
+  en négatif (`-right-3`) pour "flotter" à cheval sur la bordure, était un
+  enfant du `<aside>` — qui a lui-même besoin de `overflow-hidden` pour
+  masquer proprement son contenu pendant l'animation de largeur repliée/
+  dépliée. Son propre parent le rognait donc. Le bouton est maintenant un
+  frère du `<aside>` (dans un conteneur englobant sans `overflow-hidden`,
+  qui porte la largeur/transition), avec un `z-index` plus élevé (`z-30`) et
+  une taille de cible tactile augmentée (`h-8 w-8` contre `h-7 w-7`) — il
+  s'affiche donc désormais intégralement, quel que soit l'état replié/
+  déplié.
 
 ## Langue (FR / EN)
 
@@ -297,16 +308,38 @@ approximative pour ces opticiens.
 ## Statistiques réseau
 
 Le bouton **Statistiques** de l'en-tête ouvre `src/components/Dashboard.jsx`,
-qui calcule (`src/utils/stats.js`) et affiche :
+qui calcule (`src/utils/stats.js`) et affiche des chiffres clés (nombre total
+d'opticiens, taux de pénétration des marques Thélios, opticiens Thélios vs
+concurrents uniquement), toujours visibles en haut du tableau de bord.
 
-- des chiffres clés (nombre total d'opticiens, taux de pénétration des
-  marques Thélios, nombre d'opticiens Thélios vs concurrents uniquement) ;
-- deux graphiques en barres horizontales (`src/components/BreakdownBarChart.jsx`)
-  comparant opticiens Thélios / concurrents par région et pour le top 10 des
-  villes.
+- **Portée dynamique** : le tableau de bord ne recalcule plus systématiquement
+  sur l'ensemble du réseau — il reflète la sélection courante (recherche,
+  filtres région/département/ville/marque/type, ou le contenu de "Ma Carte")
+  exactement comme la carte et la liste au moment où on l'ouvre. Sans aucun
+  filtre actif, il retombe sur l'ensemble du réseau plutôt que d'afficher un
+  tableau vide. Un petit texte italique sous le titre indique laquelle des
+  deux portées est utilisée (ex. "Basé sur la sélection actuelle (247
+  opticiens)").
+- **Sélecteur d'indicateur** : un menu déroulant permet de choisir la vue
+  affichée, parmi :
+  - **Couverture par Région/Département** — deux graphiques en barres
+    (`src/components/BreakdownBarChart.jsx`) opposant opticiens Thélios /
+    concurrents, par région puis par département (top 15).
+  - **Répartition par Marque** — classement des marques par nombre
+    d'opticiens qui les distribuent (`src/components/RankedBarList.jsx`),
+    les deux marques Thélios (Barton Perreira, Vuarnet) mises en évidence en
+    doré.
+  - **Proportion Flagships vs Indépendants** — répartition par type de
+    boutique (`src/components/TypeProportionGauge.jsx`) : une jauge en barre
+    segmentée (or/argent/bronze) suivie de trois tuiles chiffrées avec
+    pourcentages. Repose sur la même classification heuristique que le
+    filtre "Type de boutique" (voir plus haut), avec les mêmes limites.
+  - **Top Villes les plus denses** — le classement des 10 villes existant
+    précédemment, désormais accessible via ce même sélecteur.
 
-Le code doré (`#b45309`) et gris anthracite (`#57534e`) reprend celui des
-marqueurs de la carte pour rester cohérent visuellement dans toute l'app.
+Le code doré (`#a67c34`), argenté (`#98a1ad`, réservé aux "Grands Magasins")
+et gris anthracite (`#57534e`) repris dans ces graphiques est centralisé dans
+`src/utils/palette.js` pour rester cohérent avec le reste de l'app.
 
 ## Export Excel
 
@@ -353,6 +386,19 @@ L'interface s'adapte du smartphone au grand écran :
   de la carte) : remplace les marqueurs par une carte de chaleur
   (`leaflet.heat`) illustrant les zones de forte concentration d'opticiens
   parmi les résultats actuellement filtrés.
+- **Calibration dynamique** (`src/utils/heatmapCalibration.js`) : le rayon,
+  le flou, l'opacité minimale et l'intensité par point ne sont plus des
+  valeurs fixes — ils sont recalculés à chaque changement de filtre en
+  fonction du nombre de points actuellement affichés. Peu de points (une
+  marque de niche, une ville isolée) reçoivent un rayon plus large et une
+  intensité plus forte pour rester bien visibles ; beaucoup de points (tout
+  le réseau) reçoivent un rayon plus resserré pour que les zones de forte
+  densité restent distinguables au lieu de fusionner en une seule tache. Le
+  fond de carte se désature et s'assombrit légèrement pendant que la
+  heatmap est active (classe `.heatmap-active` sur le conteneur Leaflet,
+  filtre CSS dans `src/index.css`), avec une variante encore plus sombre en
+  mode sombre — pour que le dégradé or de la heatmap ressorte sans être
+  écrasé par les tuiles de fond.
 - **Type de point de vente** (`src/components/StoreTypeFilter.jsx`,
   `src/utils/storeType.js`) : filtre les opticiens par "Boutique Flagship",
   "Opticien Indépendant" ou "Grand Magasin".
@@ -412,17 +458,28 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
   discret (`#FAF8F4`, `#F4EFE6`) ; le reste de l'échelle neutre (bordures,
   textes secondaires) reste un gris sobre inchangé pour ne pas sacrifier la
   lisibilité.
-- **Mode sombre** : `neutral-900`/`neutral-950` passent à un noir encre
-  profond conforme à la spécification (`#0B0C0E` / `#131417` pour les
-  surfaces légèrement surélevées comme les cartes et modales).
+- **Mode sombre** : `neutral-950`/`neutral-900` sont un anthracite mat
+  (`#0F1015` pour le fond principal, `#16171F` pour les surfaces légèrement
+  surélevées comme les cartes et modales) — volontairement pas un noir pur,
+  pour rester "doux" plutôt que dur.
 - **Accent doré** : la gamme `amber-*` (utilisée dans toute l'app pour les
   états actifs, bordures au survol, marques Thélios mises en avant…) est
   remplacée par un dégradé bronze/champagne plus feutré que l'orange-ambre
   par défaut de Tailwind, plus proche de l'univers de la haute lunetterie.
-  Les couleurs codées en dur en dehors des classes Tailwind (marqueurs de
-  carte, dégradé de la heatmap, barres du tableau de bord — non affectées par
-  la redéfinition CSS) sont centralisées dans `src/utils/palette.js` pour
-  rester alignées avec cette même teinte.
+  C'est le **seul accent chaud** du mode sombre : aucun orange/rouge/violet
+  n'est utilisé ailleurs dans l'interface, pour éviter tout effet
+  "Halloween" (un bouton Heatmap actif utilisait par erreur l'orange vif de
+  Tailwind par défaut — corrigé pour reprendre ce même accent doré/ambre que
+  le reste de l'app). Les couleurs codées en dur en dehors des classes
+  Tailwind (marqueurs de carte, dégradé de la heatmap, barres du tableau de
+  bord — non affectées par la redéfinition CSS) sont centralisées dans
+  `src/utils/palette.js` pour rester alignées avec cette même teinte.
+- **Tuiles de carte harmonisées** : en mode sombre, les tuiles CartoDB
+  "dark_all" (par défaut plutôt bleu-gris froid) reçoivent un filtre CSS
+  (`filter: brightness() saturate() sepia() hue-rotate()` sur
+  `.leaflet-tile-pane`, dans `src/index.css`) qui les réchauffe légèrement
+  pour rester dans la même famille anthracite/or que le reste de
+  l'interface, sans changer de fournisseur de tuiles.
 - **Ombres adoucies** : `shadow-md/lg/xl/2xl` sont redéfinies avec une
   diffusion plus large et une opacité plus faible pour un rendu "flottant"
   plus feutré que les ombres par défaut de Tailwind, sur toute l'app

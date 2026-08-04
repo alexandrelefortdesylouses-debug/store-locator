@@ -24,7 +24,7 @@ export default function HeatmapToggle({ active, onToggle }) {
       title={t("map.heatmap")}
       className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border shadow-lg transition ${
         active
-          ? "border-orange-600 bg-orange-600 text-white"
+          ? "border-neutral-900 bg-neutral-900 text-amber-200 dark:border-amber-600 dark:bg-amber-600 dark:text-neutral-950"
           : "border-neutral-200 bg-white text-neutral-700 hover:border-amber-400 hover:text-amber-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
       }`}
     >
