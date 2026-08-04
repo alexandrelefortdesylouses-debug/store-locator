@@ -1,4 +1,5 @@
 import { FEATURED_BRANDS } from "../utils/brands";
+import { formatDistanceKm } from "../utils/geo";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
@@ -25,9 +26,22 @@ export default function StoreList({ stores, selectedStoreId, onSelectStore }) {
                   : "border-neutral-200 bg-white text-neutral-900 hover:border-amber-300 hover:bg-amber-50/40"
               }`}
             >
-              <p className="font-serif text-[15px] leading-snug">
-                {store.name}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-serif text-[15px] leading-snug">
+                  {store.name}
+                </p>
+                {typeof store.distanceKm === "number" && (
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      isSelected
+                        ? "bg-white/15 text-white"
+                        : "bg-blue-50 text-blue-700"
+                    }`}
+                  >
+                    {formatDistanceKm(store.distanceKm)}
+                  </span>
+                )}
+              </div>
               <p
                 className={`mt-0.5 text-xs ${
                   isSelected ? "text-neutral-300" : "text-neutral-500"

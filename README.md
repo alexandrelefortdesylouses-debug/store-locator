@@ -41,6 +41,18 @@ npm run preview
   l'interface (filtres, fiches, chatbot, messages d'erreur) en anglais. Les
   données des opticiens (noms, adresses, marques) restent inchangées — seule
   l'interface est traduite. Voir la section dédiée plus bas.
+- **Logo officiel** en en-tête (`public/logo-thelios.jpg`), sur un socle clair
+  arrondi pour rester lisible malgré son fond crème opaque sur l'en-tête sombre.
+- **Géolocalisation "Autour de moi"** : bouton cible en haut à droite de la
+  carte qui centre la vue sur la position du visiteur et affiche les 30
+  opticiens les plus proches, triés par distance (badge "X km" sur chaque
+  fiche). Se combine avec les autres filtres (ville, marque…) si activés.
+- **Statistiques réseau** : bouton dans l'en-tête ouvrant un tableau de bord
+  (chiffres clés + graphiques de répartition Thélios vs concurrents par
+  région et par ville).
+- **Export CSV** : bouton "Exporter la sélection" dans la sidebar, qui
+  télécharge la liste des opticiens actuellement filtrés/affichés (adresse,
+  téléphone, email, marques, horaires si disponibles, coordonnées GPS).
 
 ## Données des opticiens
 
@@ -189,6 +201,47 @@ mentionnée dans la question) — utile vu le nombre d'enseignes en franchise
 brancher un vrai service d'IA générative à la place, il suffit de remplacer
 l'appel à `answerQuestion()` dans `src/components/ChatWidget.jsx` par un
 appel API.
+
+## Géolocalisation
+
+`src/utils/geo.js` calcule la distance à vol d'oiseau (formule de haversine)
+entre la position du visiteur (`navigator.geolocation`) et chaque opticien.
+Cliquer sur le bouton cible (`src/components/LocateMeButton.jsx`) :
+
+1. Demande la position au navigateur (gère les cas non supporté / refusé,
+   message d'erreur affiché à côté du bouton).
+2. Centre la carte sur cette position (zoom ~12) et affiche un marqueur bleu
+   pulsant "vous êtes ici".
+3. Sans autre filtre actif, limite la liste aux 30 opticiens les plus proches
+   triés par distance ; combiné à un filtre (ville, marque…), trie simplement
+   les résultats déjà filtrés par distance croissante.
+
+La distance étant calculée à partir des coordonnées de `stores.json` (précises
+au niveau ville pour le premier lot de marques, voir plus haut), elle reste
+approximative pour ces opticiens.
+
+## Statistiques réseau
+
+Le bouton **Statistiques** de l'en-tête ouvre `src/components/Dashboard.jsx`,
+qui calcule (`src/utils/stats.js`) et affiche :
+
+- des chiffres clés (nombre total d'opticiens, taux de pénétration des
+  marques Thélios, nombre d'opticiens Thélios vs concurrents uniquement) ;
+- deux graphiques en barres horizontales (`src/components/BreakdownBarChart.jsx`)
+  comparant opticiens Thélios / concurrents par région et pour le top 10 des
+  villes.
+
+Le code doré (`#b45309`) et gris anthracite (`#57534e`) reprend celui des
+marqueurs de la carte pour rester cohérent visuellement dans toute l'app.
+
+## Export CSV
+
+Le bouton **Exporter la sélection** (visible dans la sidebar dès qu'une liste
+d'opticiens est affichée) télécharge un fichier CSV (`src/utils/csvExport.js`)
+contenant exactement les opticiens actuellement filtrés/affichés — donc aussi
+bien un export ciblé (ex. "Julbo en Bretagne") que l'intégralité du réseau en
+mode libre. Le fichier inclut un BOM UTF-8 pour un affichage correct des
+accents dans Excel.
 
 ## Prochaine étape (non traitée dans cette itération)
 

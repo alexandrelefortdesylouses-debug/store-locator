@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import ReviewSection from "./ReviewSection";
 import { FEATURED_BRANDS } from "../utils/brands";
+import { formatDistanceKm } from "../utils/geo";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function StoreDetailPanel({ store, open, onClose }) {
@@ -28,6 +29,11 @@ export default function StoreDetailPanel({ store, open, onClose }) {
           <p className="mt-0.5 text-sm text-neutral-400">
             {store.city}, {store.country}
           </p>
+          {typeof store.distanceKm === "number" && (
+            <p className="mt-1 inline-block rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+              {formatDistanceKm(store.distanceKm)}
+            </p>
+          )}
         </div>
         <button
           type="button"

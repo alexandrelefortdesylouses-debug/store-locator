@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import { isFeaturedStore } from "../utils/brands";
+import { formatDistanceKm } from "../utils/geo";
 
 const FRANCE_CENTER = [46.6, 2.4];
 const FRANCE_ZOOM = 6;
@@ -48,6 +49,18 @@ function getIcon(store, selected) {
   return selected ? icons.neutralSelected : icons.neutralDefault;
 }
 
+const userLocationIcon = L.divIcon({
+  className: "",
+  html: `
+    <div style="position:relative;width:22px;height:22px;">
+      <div class="location-pulse-ring" style="position:absolute;inset:0;border-radius:9999px;background:#2563eb;"></div>
+      <div style="position:absolute;inset:6px;border-radius:9999px;background:#2563eb;border:2px solid #ffffff;box-shadow:0 0 0 1px rgba(0,0,0,0.15);"></div>
+    </div>
+  `,
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
+
 function createClusterIcon(cluster) {
   const count = cluster.getChildCount();
   const size = count < 10 ? 34 : count < 100 ? 40 : 48;
@@ -77,10 +90,23 @@ function FlyToSelected({ store }) {
   return null;
 }
 
-function FitBoundsToStores({ stores }) {
+function FlyToUserLocation({ location }) {
   const map = useMap();
 
   useEffect(() => {
+    if (location) {
+      map.flyTo([location.lat, location.lng], 12, { duration: 0.8 });
+    }
+  }, [location, map]);
+
+  return null;
+}
+
+function FitBoundsToStores({ stores, disabled }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (disabled) return;
     if (stores.length === 0) {
       map.flyTo(FRANCE_CENTER, FRANCE_ZOOM, { duration: 0.6 });
       return;
@@ -92,7 +118,7 @@ function FitBoundsToStores({ stores }) {
     const bounds = L.latLngBounds(stores.map((s) => [s.lat, s.lng]));
     map.flyToBounds(bounds, { padding: [60, 60], duration: 0.8 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stores, map]);
+  }, [stores, disabled, map]);
 
   return null;
 }
@@ -114,6 +140,7 @@ export default function MapView({
   selectedStore,
   onSelectStore,
   resizeTrigger,
+  userLocation,
 }) {
   return (
     <MapContainer
@@ -126,9 +153,13 @@ export default function MapView({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FitBoundsToStores stores={stores} />
+      <FitBoundsToStores stores={stores} disabled={Boolean(userLocation)} />
       <FlyToSelected store={selectedStore} />
+      <FlyToUserLocation location={userLocation} />
       <InvalidateOnResize trigger={resizeTrigger} />
+      {userLocation && (
+        <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} />
+      )}
       <MarkerClusterGroup
         key={stores.length}
         chunkedLoading
@@ -149,6 +180,12 @@ export default function MapView({
               <strong>{store.name}</strong>
               <br />
               {store.address}
+              {typeof store.distanceKm === "number" && (
+                <>
+                  <br />
+                  <strong>{formatDistanceKm(store.distanceKm)}</strong>
+                </>
+              )}
             </Popup>
           </Marker>
         ))}

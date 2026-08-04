@@ -3,13 +3,18 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import MapLegend from "./components/MapLegend";
+import LocateMeButton from "./components/LocateMeButton";
+import Dashboard from "./components/Dashboard";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
+import { haversineDistanceKm } from "./utils/geo";
+import { storesToCsv, downloadCsv } from "./utils/csvExport";
 import { useLanguage } from "./i18n/LanguageContext";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
+const NEAR_ME_LIMIT = 30;
 
 function normalize(text) {
   return text.normalize("NFD").replace(DIACRITICS_REGEX, "").toLowerCase();
@@ -21,12 +26,16 @@ function App() {
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showStats, setShowStats] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [browseAll, setBrowseAll] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState(null);
 
   useEffect(() => {
     fetch("/stores.json")
@@ -61,27 +70,74 @@ function App() {
     selectedBrands.length > 0;
 
   const filteredStores = useMemo(() => {
-    if (!hasActiveFilter) return browseAll ? stores : [];
+    let base;
+    if (hasActiveFilter) {
+      const query = normalize(search.trim());
+      base = stores.filter((store) => {
+        const haystack = normalize(
+          `${store.address} ${store.city} ${store.country}`,
+        );
+        const matchesSearch = query === "" || haystack.includes(query);
+        const matchesCity = selectedCity === "" || store.city === selectedCity;
+        const matchesRegion =
+          selectedRegion === "" || getStoreRegion(store) === selectedRegion;
+        const matchesBrands =
+          selectedBrands.length === 0 ||
+          store.brands.some((brand) => selectedBrands.includes(brand));
+        return matchesSearch && matchesCity && matchesRegion && matchesBrands;
+      });
+    } else if (browseAll || userLocation) {
+      base = stores;
+    } else {
+      base = [];
+    }
 
-    const query = normalize(search.trim());
-    return stores.filter((store) => {
-      const haystack = normalize(
-        `${store.address} ${store.city} ${store.country}`,
-      );
-      const matchesSearch = query === "" || haystack.includes(query);
-      const matchesCity = selectedCity === "" || store.city === selectedCity;
-      const matchesRegion =
-        selectedRegion === "" || getStoreRegion(store) === selectedRegion;
-      const matchesBrands =
-        selectedBrands.length === 0 ||
-        store.brands.some((brand) => selectedBrands.includes(brand));
-      return matchesSearch && matchesCity && matchesRegion && matchesBrands;
-    });
+    if (userLocation) {
+      const withDistance = base
+        .map((store) => ({
+          ...store,
+          distanceKm: haversineDistanceKm(
+            userLocation.lat,
+            userLocation.lng,
+            store.lat,
+            store.lng,
+          ),
+        }))
+        .sort((a, b) => a.distanceKm - b.distanceKm);
+
+      if (!hasActiveFilter && !browseAll) {
+        return withDistance.slice(0, NEAR_ME_LIMIT);
+      }
+      return withDistance;
+    }
+
+    return base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stores, search, selectedCity, selectedRegion, selectedBrands, hasActiveFilter, browseAll]);
+  }, [
+    stores,
+    search,
+    selectedCity,
+    selectedRegion,
+    selectedBrands,
+    hasActiveFilter,
+    browseAll,
+    userLocation,
+  ]);
 
-  const selectedStore = stores.find((s) => s.id === selectedStoreId);
-  const showResults = hasActiveFilter || browseAll;
+  const selectedStoreBase = stores.find((s) => s.id === selectedStoreId);
+  const selectedStore =
+    selectedStoreBase && userLocation
+      ? {
+          ...selectedStoreBase,
+          distanceKm: haversineDistanceKm(
+            userLocation.lat,
+            userLocation.lng,
+            selectedStoreBase.lat,
+            selectedStoreBase.lng,
+          ),
+        }
+      : selectedStoreBase;
+  const showResults = hasActiveFilter || browseAll || Boolean(userLocation);
 
   function handleSelectStore(id) {
     setSelectedStoreId(id);
@@ -100,11 +156,45 @@ function App() {
     setSelectedRegion("");
     setSelectedBrands([]);
     setBrowseAll(false);
+    setUserLocation(null);
+    setGeoError(null);
+  }
+
+  function handleLocateMe() {
+    if (!navigator.geolocation) {
+      setGeoError(t("geo.unsupported"));
+      return;
+    }
+    setGeoLoading(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoError(t("geo.denied"));
+        setGeoLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }
+
+  function handleExport() {
+    const headers = t("export.headers").split(",");
+    const csv = storesToCsv(filteredStores, headers);
+    downloadCsv(`thelios-opticiens-${filteredStores.length}.csv`, csv);
   }
 
   return (
     <div className="flex h-screen flex-col bg-neutral-100">
-      <Header onOpenSettings={() => setShowSettings(true)} />
+      <Header
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenStats={() => setShowStats(true)}
+      />
 
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
         <Sidebar
@@ -124,6 +214,7 @@ function App() {
           stores={filteredStores}
           hasActiveFilter={showResults}
           onResetFilters={handleResetFilters}
+          onExport={handleExport}
           selectedStoreId={selectedStoreId}
           onSelectStore={handleSelectStore}
         />
@@ -136,6 +227,14 @@ function App() {
               selectedStore={selectedStore}
               onSelectStore={handleSelectStore}
               resizeTrigger={sidebarCollapsed}
+              userLocation={userLocation}
+            />
+
+            <LocateMeButton
+              onLocate={handleLocateMe}
+              active={Boolean(userLocation)}
+              loading={geoLoading}
+              error={geoError}
             />
 
             {showResults && filteredStores.length > 0 && <MapLegend />}
@@ -171,6 +270,10 @@ function App() {
 
       {showSettings && (
         <SecretCodeSettings onClose={() => setShowSettings(false)} />
+      )}
+
+      {showStats && (
+        <Dashboard stores={stores} onClose={() => setShowStats(false)} />
       )}
 
       <ChatWidget stores={stores} />

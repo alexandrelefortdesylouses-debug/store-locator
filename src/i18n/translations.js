@@ -2,6 +2,7 @@ export const translations = {
   fr: {
     "header.settings": "Paramètres",
     "header.storeLocator": "Store Locator",
+    "header.stats": "Statistiques",
 
     "sidebar.collapsedLabel": "Opticiens Thélios",
     "sidebar.expand": "Afficher la liste",
@@ -20,6 +21,7 @@ export const translations = {
     "sidebar.noResults": "Aucun opticien ne correspond à votre recherche.",
     "sidebar.emptyPrompt":
       "Utilisez la recherche, une ville, une région ou une marque pour afficher les opticiens partenaires Thélios.",
+    "sidebar.export": "Exporter la sélection",
 
     "map.emptyTitle": "Trouvez un opticien Thélios",
     "map.emptyBody":
@@ -27,6 +29,30 @@ export const translations = {
     "map.freeMode": "Mode libre",
     "map.legendFeatured": "Barton Perreira / Vuarnet",
     "map.legendOther": "Autres marques",
+    "map.locateMe": "Autour de moi",
+    "map.locateMeAria": "Me géolocaliser",
+    "map.locating": "Localisation en cours…",
+
+    "geo.unsupported":
+      "La géolocalisation n'est pas prise en charge par votre navigateur.",
+    "geo.denied":
+      "Impossible de récupérer votre position. Vérifiez les autorisations de localisation.",
+
+    "stats.title": "Statistiques réseau",
+    "stats.close": "Fermer",
+    "stats.totalOpticians": "Opticiens partenaires",
+    "stats.penetrationRate": "Taux de pénétration Thélios",
+    "stats.penetrationHint":
+      "Part des opticiens du réseau qui distribuent au moins une marque Thélios (Barton Perreira ou Vuarnet).",
+    "stats.theliosOpticians": "Opticiens Thélios",
+    "stats.competitorOpticians": "Opticiens concurrents uniquement",
+    "stats.byRegion": "Répartition par région",
+    "stats.byCity": "Top 10 des villes",
+    "stats.legendThelios": "Marques Thélios",
+    "stats.legendCompetitor": "Marques concurrentes",
+    "stats.othersGrouped": "Autres régions",
+
+    "export.headers": "Nom,Adresse,Ville,Pays,Téléphone,Email,Marques,Horaires,Latitude,Longitude",
 
     "storeDetail.partner": "Opticien partenaire",
     "storeDetail.close": "Fermer la fiche",
@@ -70,6 +96,7 @@ export const translations = {
   en: {
     "header.settings": "Settings",
     "header.storeLocator": "Store Locator",
+    "header.stats": "Statistics",
 
     "sidebar.collapsedLabel": "Thélios Opticians",
     "sidebar.expand": "Show list",
@@ -88,6 +115,7 @@ export const translations = {
     "sidebar.noResults": "No opticians match your search.",
     "sidebar.emptyPrompt":
       "Use the search, a city, a region or a brand to display Thélios partner opticians.",
+    "sidebar.export": "Export selection",
 
     "map.emptyTitle": "Find a Thélios optician",
     "map.emptyBody":
@@ -95,6 +123,29 @@ export const translations = {
     "map.freeMode": "Free browse mode",
     "map.legendFeatured": "Barton Perreira / Vuarnet",
     "map.legendOther": "Other brands",
+    "map.locateMe": "Near me",
+    "map.locateMeAria": "Locate me",
+    "map.locating": "Locating…",
+
+    "geo.unsupported": "Geolocation is not supported by your browser.",
+    "geo.denied":
+      "Unable to retrieve your location. Please check location permissions.",
+
+    "stats.title": "Network statistics",
+    "stats.close": "Close",
+    "stats.totalOpticians": "Partner opticians",
+    "stats.penetrationRate": "Thélios penetration rate",
+    "stats.penetrationHint":
+      "Share of the network's opticians carrying at least one Thélios brand (Barton Perreira or Vuarnet).",
+    "stats.theliosOpticians": "Thélios opticians",
+    "stats.competitorOpticians": "Competitor-only opticians",
+    "stats.byRegion": "Breakdown by region",
+    "stats.byCity": "Top 10 cities",
+    "stats.legendThelios": "Thélios brands",
+    "stats.legendCompetitor": "Competitor brands",
+    "stats.othersGrouped": "Other regions",
+
+    "export.headers": "Name,Address,City,Country,Phone,Email,Brands,Hours,Latitude,Longitude",
 
     "storeDetail.partner": "Partner optician",
     "storeDetail.close": "Close details",

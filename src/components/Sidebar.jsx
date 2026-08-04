@@ -22,6 +22,7 @@ export default function Sidebar({
   stores,
   hasActiveFilter,
   onResetFilters,
+  onExport,
   selectedStoreId,
   onSelectStore,
 }) {
@@ -78,9 +79,20 @@ export default function Sidebar({
           <div className="flex flex-1 flex-col overflow-hidden">
             {hasActiveFilter ? (
               <>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  {t("sidebar.opticianCount", { count: stores.length })}
-                </p>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    {t("sidebar.opticianCount", { count: stores.length })}
+                  </p>
+                  {stores.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={onExport}
+                      className="cursor-pointer text-xs text-amber-700 hover:underline"
+                    >
+                      {t("sidebar.export")}
+                    </button>
+                  )}
+                </div>
                 <StoreList
                   stores={stores}
                   selectedStoreId={selectedStoreId}
