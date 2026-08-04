@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
   optimizeRouteOrder,
@@ -8,6 +8,9 @@ import {
 import { exportRoutePdf } from "../utils/pdfExport";
 import { formatDistanceKm } from "../utils/geo";
 import IcsExportModal from "./IcsExportModal";
+import Toast from "./Toast";
+
+const TOAST_DURATION_MS = 3500;
 
 function DownloadIcon() {
   return (
@@ -29,6 +32,16 @@ export default function RoutePlanner({
   const [optimized, setOptimized] = useState(null);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [icsModalOpen, setIcsModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  useEffect(() => () => window.clearTimeout(toastTimeoutRef.current), []);
+
+  function handleIcsExported() {
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage(t("ics.toastSuccess"));
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }
 
   useEffect(() => {
     setOptimized(null);
@@ -200,8 +213,11 @@ export default function RoutePlanner({
         <IcsExportModal
           stops={displayStops}
           onClose={() => setIcsModalOpen(false)}
+          onExported={handleIcsExported}
         />
       )}
+
+      <Toast message={toastMessage} />
     </div>
   );
 }

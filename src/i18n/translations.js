@@ -140,7 +140,7 @@ export const translations = {
     "ics.lunchHint":
       "Une pause déjeuner d'1h30 est insérée automatiquement si l'horaire calculé franchit 12:30 (reprise à 14:00).",
     "ics.generate": "Générer et télécharger",
-    "ics.generating": "Génération…",
+    "ics.toastSuccess": "Fichier agenda généré avec succès !",
 
     "theme.toggleAria": "Basculer le mode sombre",
 
@@ -362,7 +362,7 @@ export const translations = {
     "ics.lunchHint":
       "A 1h30 lunch break is inserted automatically if the computed time reaches 12:30 (resuming at 14:00).",
     "ics.generate": "Generate and download",
-    "ics.generating": "Generating…",
+    "ics.toastSuccess": "Calendar file generated successfully!",
 
     "theme.toggleAria": "Toggle dark mode",
 
