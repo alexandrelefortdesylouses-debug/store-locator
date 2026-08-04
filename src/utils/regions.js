@@ -1,3 +1,5 @@
+import { getStoreDeptCode } from "./postalCode";
+
 const DEPT_TO_REGION = {
   "01": "Auvergne-Rhône-Alpes",
   "02": "Hauts-de-France",
@@ -102,12 +104,8 @@ const DEPT_TO_REGION = {
   "976": "Mayotte",
 };
 
-const ZIP_REGEX = /\b(\d{5})\b/;
-
 export function getStoreRegion(store) {
-  const match = store.address.match(ZIP_REGEX);
-  if (!match) return null;
-  const zip = match[1];
-  const deptCode = zip.startsWith("97") ? zip.slice(0, 3) : zip.slice(0, 2);
+  const deptCode = getStoreDeptCode(store);
+  if (!deptCode) return null;
   return DEPT_TO_REGION[deptCode] || null;
 }

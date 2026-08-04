@@ -1,6 +1,7 @@
 import SearchBar from "./SearchBar";
 import CitySelect from "./CitySelect";
 import RegionSelect from "./RegionSelect";
+import DepartmentSelect from "./DepartmentSelect";
 import BrandFilter from "./BrandFilter";
 import StoreTypeFilter from "./StoreTypeFilter";
 import StoreList from "./StoreList";
@@ -11,12 +12,16 @@ export default function Sidebar({
   onToggleCollapse,
   search,
   onSearchChange,
+  allStores,
   cities,
-  selectedCity,
-  onCityChange,
+  selectedCities,
+  onCitiesChange,
   regions,
-  selectedRegion,
-  onRegionChange,
+  selectedRegions,
+  onRegionsChange,
+  departments,
+  selectedDepartments,
+  onDepartmentsChange,
   brands,
   selectedBrands,
   onToggleBrand,
@@ -58,7 +63,12 @@ export default function Sidebar({
       ) : (
         <div className="thin-scrollbar flex h-full flex-col gap-4 overflow-y-auto p-4">
           <div className="flex items-center justify-between gap-2">
-            <SearchBar value={search} onChange={onSearchChange} />
+            <SearchBar
+              value={search}
+              onChange={onSearchChange}
+              stores={allStores}
+              onSelectStore={onSelectStore}
+            />
           </div>
 
           {hasActiveFilter && (
@@ -73,10 +83,15 @@ export default function Sidebar({
 
           <RegionSelect
             regions={regions}
-            value={selectedRegion}
-            onChange={onRegionChange}
+            selected={selectedRegions}
+            onChange={onRegionsChange}
           />
-          <CitySelect cities={cities} value={selectedCity} onChange={onCityChange} />
+          <DepartmentSelect
+            departments={departments}
+            selected={selectedDepartments}
+            onChange={onDepartmentsChange}
+          />
+          <CitySelect cities={cities} selected={selectedCities} onChange={onCitiesChange} />
           <BrandFilter
             brands={brands}
             selected={selectedBrands}

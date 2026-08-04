@@ -1,4 +1,5 @@
 import { useLanguage } from "../i18n/LanguageContext";
+import { GOLD_ACCENT, NEUTRAL_ACCENT } from "../utils/palette";
 
 export default function MapLegend() {
   const { t } = useLanguage();
@@ -6,11 +7,17 @@ export default function MapLegend() {
   return (
     <div className="pointer-events-none absolute bottom-4 left-4 z-[400] rounded-xl border border-neutral-200 bg-white/95 px-3.5 py-2.5 text-xs shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
       <div className="flex items-center gap-2">
-        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#b45309]" />
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ background: GOLD_ACCENT }}
+        />
         <span className="text-neutral-700 dark:text-neutral-300">{t("map.legendFeatured")}</span>
       </div>
       <div className="mt-1.5 flex items-center gap-2">
-        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#57534e]" />
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ background: NEUTRAL_ACCENT }}
+        />
         <span className="text-neutral-700 dark:text-neutral-300">{t("map.legendOther")}</span>
       </div>
     </div>

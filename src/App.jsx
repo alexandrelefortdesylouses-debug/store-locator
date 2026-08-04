@@ -12,6 +12,7 @@ import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
+import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
 import { haversineDistanceKm } from "./utils/geo";
 import { MAX_ROUTE_STOPS } from "./utils/route";
@@ -37,8 +38,9 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
   const [search, setSearch] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedCities, setSelectedCities] = useState([]);
+  const [selectedRegions, setSelectedRegions] = useState([]);
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedStoreTypes, setSelectedStoreTypes] = useState([]);
   const [browseAll, setBrowseAll] = useState(false);
@@ -76,10 +78,20 @@ function App() {
     return [...set].sort();
   }, [stores]);
 
+  const allDepartments = useMemo(() => {
+    const map = new Map();
+    stores.forEach((store) => {
+      const dept = getStoreDepartment(store);
+      if (dept) map.set(dept.code, dept);
+    });
+    return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
+  }, [stores]);
+
   const hasActiveFilter =
     search.trim() !== "" ||
-    selectedCity !== "" ||
-    selectedRegion !== "" ||
+    selectedCities.length > 0 ||
+    selectedRegions.length > 0 ||
+    selectedDepartments.length > 0 ||
     selectedBrands.length > 0 ||
     selectedStoreTypes.length > 0;
 
@@ -89,12 +101,17 @@ function App() {
       const query = normalize(search.trim());
       base = stores.filter((store) => {
         const haystack = normalize(
-          `${store.address} ${store.city} ${store.country}`,
+          `${store.name} ${store.address} ${store.city} ${store.country}`,
         );
         const matchesSearch = query === "" || haystack.includes(query);
-        const matchesCity = selectedCity === "" || store.city === selectedCity;
+        const matchesCity =
+          selectedCities.length === 0 || selectedCities.includes(store.city);
         const matchesRegion =
-          selectedRegion === "" || getStoreRegion(store) === selectedRegion;
+          selectedRegions.length === 0 ||
+          selectedRegions.includes(getStoreRegion(store));
+        const matchesDepartment =
+          selectedDepartments.length === 0 ||
+          selectedDepartments.includes(getStoreDepartment(store)?.code);
         const matchesBrands =
           selectedBrands.length === 0 ||
           store.brands.some((brand) => selectedBrands.includes(brand));
@@ -102,7 +119,12 @@ function App() {
           selectedStoreTypes.length === 0 ||
           selectedStoreTypes.includes(getStoreType(store));
         return (
-          matchesSearch && matchesCity && matchesRegion && matchesBrands && matchesType
+          matchesSearch &&
+          matchesCity &&
+          matchesRegion &&
+          matchesDepartment &&
+          matchesBrands &&
+          matchesType
         );
       });
     } else if (browseAll || userLocation) {
@@ -135,8 +157,9 @@ function App() {
   }, [
     stores,
     search,
-    selectedCity,
-    selectedRegion,
+    selectedCities,
+    selectedRegions,
+    selectedDepartments,
     selectedBrands,
     selectedStoreTypes,
     hasActiveFilter,
@@ -179,8 +202,9 @@ function App() {
 
   function handleResetFilters() {
     setSearch("");
-    setSelectedCity("");
-    setSelectedRegion("");
+    setSelectedCities([]);
+    setSelectedRegions([]);
+    setSelectedDepartments([]);
     setSelectedBrands([]);
     setSelectedStoreTypes([]);
     setBrowseAll(false);
@@ -279,12 +303,16 @@ function App() {
             onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
             search={search}
             onSearchChange={setSearch}
+            allStores={stores}
             cities={allCities}
-            selectedCity={selectedCity}
-            onCityChange={setSelectedCity}
+            selectedCities={selectedCities}
+            onCitiesChange={setSelectedCities}
             regions={allRegions}
-            selectedRegion={selectedRegion}
-            onRegionChange={setSelectedRegion}
+            selectedRegions={selectedRegions}
+            onRegionsChange={setSelectedRegions}
+            departments={allDepartments}
+            selectedDepartments={selectedDepartments}
+            onDepartmentsChange={setSelectedDepartments}
             brands={allBrands}
             selectedBrands={selectedBrands}
             onToggleBrand={toggleBrand}

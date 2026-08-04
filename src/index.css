@@ -2,6 +2,39 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Thélios luxury reskin — re-tints Tailwind's built-in palette instead of
+ * inventing new utility names, so every existing `bg-neutral-*` /
+ * `text-amber-*` / `shadow-*` class across the app picks this up for free.
+ * - neutral-50/100: warm porcelain/champagne surfaces for light mode.
+ * - neutral-900/950: deep ink tones for dark mode (spec: #0B0C0E).
+ * - amber-*: re-tuned from stock orange-amber to a muted brass/champagne
+ *   gold, closer to the Thélios mark than Tailwind's default hue.
+ * - shadow-*: softened and lengthened for a quieter, more "floating" feel.
+ */
+@theme {
+  --color-neutral-50: #faf8f4;
+  --color-neutral-100: #f4efe6;
+  --color-neutral-900: #131417;
+  --color-neutral-950: #0b0c0e;
+
+  --color-amber-50: #fbf7ee;
+  --color-amber-100: #f5ead2;
+  --color-amber-200: #e6d2a4;
+  --color-amber-300: #d8bd86;
+  --color-amber-400: #c9a45e;
+  --color-amber-500: #b78f45;
+  --color-amber-600: #a67c34;
+  --color-amber-700: #8c6526;
+  --color-amber-800: #6b4e1e;
+  --color-amber-950: #241905;
+
+  --shadow-md: 0 6px 16px -8px rgb(0 0 0 / 0.10), 0 2px 6px -3px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 12px 32px -14px rgb(0 0 0 / 0.14), 0 4px 10px -6px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 48px -18px rgb(0 0 0 / 0.16), 0 6px 14px -8px rgb(0 0 0 / 0.08);
+  --shadow-2xl: 0 28px 64px -22px rgb(0 0 0 / 0.22), 0 10px 20px -10px rgb(0 0 0 / 0.10);
+}
+
 html,
 body,
 #root {

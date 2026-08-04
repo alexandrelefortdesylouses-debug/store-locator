@@ -5,12 +5,13 @@ import L from "leaflet";
 import "leaflet.heat";
 import { isFeaturedStore } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
+import { GOLD_ACCENT, NEUTRAL_ACCENT, INK, PALE_GOLD, HEATMAP_GRADIENT } from "../utils/palette";
 
 const FRANCE_CENTER = [46.6, 2.4];
 const FRANCE_ZOOM = 6;
 
-const GOLD = "#b45309";
-const NEUTRAL = "#57534e";
+const GOLD = GOLD_ACCENT;
+const NEUTRAL = NEUTRAL_ACCENT;
 const ROUTE_COLOR = "#2563eb";
 
 const LIGHT_TILES = {
@@ -99,7 +100,7 @@ function createClusterIcon(cluster) {
     html: `<div style="
       display:flex;align-items:center;justify-content:center;
       width:${size}px;height:${size}px;border-radius:9999px;
-      background:#1c1917;color:#fbbf6b;border:2px solid #ffffff;
+      background:${INK};color:${PALE_GOLD};border:2px solid #ffffff;
       box-shadow:0 2px 8px rgba(0,0,0,0.35);
       font-family:ui-serif,Georgia,serif;font-size:${size < 40 ? 12 : 14}px;
     ">${count}</div>`,
@@ -173,7 +174,7 @@ function HeatmapLayer({ points }) {
       radius: 22,
       blur: 18,
       maxZoom: 12,
-      gradient: { 0.3: "#fde68a", 0.6: "#f59e0b", 1: "#b45309" },
+      gradient: HEATMAP_GRADIENT,
     });
     layer.addTo(map);
     layerRef.current = layer;

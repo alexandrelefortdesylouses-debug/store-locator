@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { computeNetworkStats } from "../utils/stats";
 import BreakdownBarChart from "./BreakdownBarChart";
 import { useLanguage } from "../i18n/LanguageContext";
+import { GOLD_ACCENT, NEUTRAL_ACCENT } from "../utils/palette";
 
 function StatTile({ label, value, hint, accent }) {
   return (
@@ -64,11 +65,11 @@ export default function Dashboard({ stores, onClose }) {
 
           <div className="mb-4 mt-8 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#b45309]" />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: GOLD_ACCENT }} />
               {t("stats.legendThelios")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#57534e]" />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: NEUTRAL_ACCENT }} />
               {t("stats.legendCompetitor")}
             </span>
           </div>

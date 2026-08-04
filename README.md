@@ -21,10 +21,13 @@ npm run preview
 - **Carte interactive** intégrée dans un conteneur encadré (marges, coins
   arrondis, ombre légère) plutôt qu'en arrière-plan plein écran, centrée par
   défaut sur la France.
-- **Sidebar escamotable** (bouton `‹ / ›`) avec recherche libre (ville/code
-  postal), un sélecteur de région, un sélecteur de ville (grandes villes
-  françaises épinglées en haut de la liste) et des filtres par marque, plus un
-  bouton **Réinitialiser les filtres** qui remet tout à zéro en un clic.
+- **Sidebar escamotable** (bouton `‹ / ›`) avec une recherche globale à
+  autocomplétion (nom d'enseigne, ville ou code postal), des sélecteurs
+  multiples pour région / département / ville (grandes villes françaises
+  épinglées en haut de la liste) et des filtres par marque, plus un bouton
+  **Réinitialiser les filtres** qui remet tout à zéro en un clic. Voir la
+  section dédiée plus bas pour le détail de la recherche et des filtres
+  multi-sélection.
 - **Aucune liste par défaut** : les opticiens ne s'affichent (dans la sidebar
   et sur la carte) qu'une fois une recherche, une région, une ville ou une
   marque sélectionnée — ou en cliquant sur **Mode libre** pour afficher
@@ -136,19 +139,35 @@ pour regrouper les marqueurs proches en bulles numérotées, qui se dissocient
 au fur et à mesure du zoom. Cela garde la carte lisible et performante même
 lorsqu'un filtre par marque affiche plus d'un millier de résultats.
 
-## Filtre par région et tri des villes
+## Recherche globale et filtres géographiques multi-sélection
 
-Le champ `region` n'existe pas dans `stores.json` : il est déduit à la volée
-côté client (`src/utils/regions.js`) à partir du code postal contenu dans le
-champ `address` de chaque opticien, via la table officielle de correspondance
-département → région (13 régions métropolitaines + DOM). Les opticiens dont
-l'adresse ne contient pas de code postal exploitable (rares, cf. limites plus
-haut) n'apparaissent simplement dans aucun filtre région.
-
-La liste déroulante des villes (`src/utils/frenchCities.js`) épingle en premier
-les grandes villes françaises (Paris, Marseille, Lyon, Toulouse, Nice, Nantes,
-Bordeaux, Lille, etc.) dans un groupe "Grandes villes", suivies de toutes les
-autres villes triées alphabétiquement dans un second groupe.
+- **Recherche à autocomplétion** (`src/components/SearchBar.jsx`) : la saisie
+  filtre instantanément la liste/carte comme avant (ville, code postal,
+  adresse), et cherche en plus dans le **nom de l'enseigne**. Dès 2
+  caractères, un menu déroulant propose jusqu'à 7 suggestions (nom en gras +
+  ville), classées par pertinence (nom qui commence par la saisie d'abord,
+  puis ville) ; cliquer une suggestion — ou naviguer au clavier (`↑`/`↓`/
+  `Entrée`, `Échap` pour fermer) — ouvre directement la fiche de l'opticien.
+- **Filtres région / département / ville en sélection multiple**
+  (`src/components/MultiSelect.jsx`, réutilisé par `RegionSelect.jsx`,
+  `DepartmentSelect.jsx` et `CitySelect.jsx`) : chacun s'ouvre en menu
+  déroulant à cases à cocher (avec recherche interne pour les départements et
+  villes, listes longues) et affiche les valeurs choisies sous forme de puces
+  cliquables (❌ pour retirer). Les trois filtres se combinent entre eux **et**
+  avec la recherche, les marques et le type de boutique — la carte et la
+  liste se mettent à jour à chaque changement (le filtrage est recalculé côté
+  client via `useMemo` dans `App.jsx`, aucun round-trip serveur).
+  - **Régions** : dérivées du code postal comme précédemment
+    (`src/utils/regions.js`).
+  - **Départements** : nouveau filtre (`src/utils/departments.js`), déduit du
+    même code postal (préfixe à 2 chiffres, 3 pour l'outre-mer) et associé au
+    nom officiel du département (ex. "06 – Alpes-Maritimes"). Comme un code
+    postal ne permet pas de distinguer les deux départements corses, la Corse
+    reste une entrée unique "20 – Corse", cohérente avec le filtre région.
+  - **Villes** : la liste déroulante (`src/utils/frenchCities.js`) épingle en
+    premier les grandes villes françaises (Paris, Marseille, Lyon, Toulouse,
+    Nice, Nantes, Bordeaux, Lille, etc.) dans un groupe "Grandes villes",
+    suivies de toutes les autres villes triées alphabétiquement.
 
 ## Langue (FR / EN)
 
@@ -325,6 +344,39 @@ pilotée par `src/theme/ThemeContext.jsx` :
   export…) ont leurs variantes `dark:` Tailwind. Le fond de carte bascule
   vers un fond sombre (tuiles CartoDB "dark_all") et les popups/contrôles de
   zoom Leaflet sont restylés en sombre (`src/index.css`).
+
+## Habillage visuel "Thélios luxe"
+
+La refonte esthétique passe par une **re-teinte globale de la palette
+Tailwind** plutôt que par des retouches composant par composant : `src/index.css`
+redéfinit certaines variables du thème Tailwind v4 (`@theme { --color-... }`),
+ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
+`text-amber-*` déjà utilisées dans l'app, sans avoir à toucher chaque fichier.
+
+- **Mode clair** : `neutral-50`/`neutral-100` (fonds de page et de cartes)
+  passent d'un blanc/gris froid à un blanc cassé / beige champagne très
+  discret (`#FAF8F4`, `#F4EFE6`) ; le reste de l'échelle neutre (bordures,
+  textes secondaires) reste un gris sobre inchangé pour ne pas sacrifier la
+  lisibilité.
+- **Mode sombre** : `neutral-900`/`neutral-950` passent à un noir encre
+  profond conforme à la spécification (`#0B0C0E` / `#131417` pour les
+  surfaces légèrement surélevées comme les cartes et modales).
+- **Accent doré** : la gamme `amber-*` (utilisée dans toute l'app pour les
+  états actifs, bordures au survol, marques Thélios mises en avant…) est
+  remplacée par un dégradé bronze/champagne plus feutré que l'orange-ambre
+  par défaut de Tailwind, plus proche de l'univers de la haute lunetterie.
+  Les couleurs codées en dur en dehors des classes Tailwind (marqueurs de
+  carte, dégradé de la heatmap, barres du tableau de bord — non affectées par
+  la redéfinition CSS) sont centralisées dans `src/utils/palette.js` pour
+  rester alignées avec cette même teinte.
+- **Ombres adoucies** : `shadow-md/lg/xl/2xl` sont redéfinies avec une
+  diffusion plus large et une opacité plus faible pour un rendu "flottant"
+  plus feutré que les ombres par défaut de Tailwind, sur toute l'app
+  (panneaux, modales, cartes de résultats).
+- Aucune police externe n'a été ajoutée (pour éviter une dépendance réseau à
+  un CDN de polices) : l'effet "épuré et raffiné" s'appuie sur la police
+  serif système déjà utilisée pour les titres, combinée aux nouveaux
+  espacements/couleurs.
 
 ## Prochaine étape (non traitée dans cette itération)
 

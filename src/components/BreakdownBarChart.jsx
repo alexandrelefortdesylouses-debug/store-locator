@@ -1,5 +1,7 @@
-const THELIOS_COLOR = "#b45309";
-const COMPETITOR_COLOR = "#57534e";
+import { GOLD_ACCENT, NEUTRAL_ACCENT } from "../utils/palette";
+
+const THELIOS_COLOR = GOLD_ACCENT;
+const COMPETITOR_COLOR = NEUTRAL_ACCENT;
 
 function BarRow({ label, thelios, competitor, total, maxTotal, theliosLabel, competitorLabel }) {
   const theliosPct = maxTotal > 0 ? (thelios / maxTotal) * 100 : 0;
