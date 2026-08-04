@@ -18,7 +18,6 @@ import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
 import { haversineDistanceKm } from "./utils/geo";
-import { MAX_ROUTE_STOPS } from "./utils/route";
 import { exportStoresToXlsx } from "./utils/xlsxExport";
 import { parseSpreadsheetFile } from "./utils/fileParsing";
 import { detectColumns, matchPortfolioRows } from "./utils/portfolioMatching";
@@ -343,7 +342,6 @@ function App() {
     setRouteStops((prev) => {
       const exists = prev.some((s) => s.id === store.id);
       if (exists) return prev.filter((s) => s.id !== store.id);
-      if (prev.length >= MAX_ROUTE_STOPS) return prev;
       return [...prev, store];
     });
   }

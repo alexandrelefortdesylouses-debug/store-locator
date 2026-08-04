@@ -6,7 +6,6 @@ import StatusSelector from "./StatusSelector";
 import TagPicker from "./TagPicker";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
-import { MAX_ROUTE_STOPS } from "../utils/route";
 import { useLanguage } from "../i18n/LanguageContext";
 
 export default function StoreDetailPanel({
@@ -30,7 +29,6 @@ export default function StoreDetailPanel({
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
   const inRoute = routeStopIds.includes(store.id);
-  const routeFull = routeStopIds.length >= MAX_ROUTE_STOPS;
 
   return (
     <div
@@ -78,9 +76,8 @@ export default function StoreDetailPanel({
           <button
             type="button"
             onClick={() => onToggleRouteStop(store)}
-            disabled={!inRoute && routeFull}
             aria-pressed={inRoute}
-            className={`mb-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`mb-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition ${
               inRoute
                 ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
                 : "border-neutral-300 text-neutral-700 hover:border-blue-400 hover:text-blue-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-blue-500 dark:hover:text-blue-400"

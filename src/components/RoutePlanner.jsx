@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import {
   optimizeRouteOrder,
-  buildGoogleMapsUrl,
+  buildGoogleMapsUrls,
   buildWazeUrl,
 } from "../utils/route";
 import { exportRoutePdf } from "../utils/pdfExport";
 import { formatDistanceKm } from "../utils/geo";
+import IcsExportModal from "./IcsExportModal";
 
 function DownloadIcon() {
   return (
@@ -27,6 +28,7 @@ export default function RoutePlanner({
   const { t, lang } = useLanguage();
   const [optimized, setOptimized] = useState(null);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [icsModalOpen, setIcsModalOpen] = useState(false);
 
   useEffect(() => {
     setOptimized(null);
@@ -92,7 +94,7 @@ export default function RoutePlanner({
         </button>
       </div>
 
-      <ul className="mb-3 flex flex-wrap gap-1.5">
+      <ul className="thin-scrollbar mb-3 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
         {displayStops.map((store, i) => (
           <li
             key={store.id}
@@ -135,37 +137,71 @@ export default function RoutePlanner({
               km: formatDistanceKm(optimized.totalDistanceKm),
             })}
           </p>
-          <div className="flex gap-2">
-            <a
-              href={buildGoogleMapsUrl(optimized.order, userLocation)}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 rounded-full bg-neutral-900 px-3 py-2.5 text-center text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
-            >
-              {t("route.openGoogleMaps")}
-            </a>
-            <a
-              href={buildWazeUrl(optimized.order)}
-              target="_blank"
-              rel="noreferrer"
-              title={t("route.wazeHint")}
-              className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
-            >
-              {t("route.openWaze")}
-            </a>
-          </div>
+          {(() => {
+            const mapsUrls = buildGoogleMapsUrls(optimized.order, userLocation);
+            return (
+              <>
+                {mapsUrls.length > 1 && (
+                  <p className="text-[11px] italic text-neutral-400 dark:text-neutral-500">
+                    {t("route.splitHint", { count: mapsUrls.length })}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {mapsUrls.map((url, i) => (
+                    <a
+                      key={url}
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 rounded-full bg-neutral-900 px-3 py-2.5 text-center text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+                    >
+                      {mapsUrls.length > 1
+                        ? t("route.openGoogleMapsLeg", { n: i + 1, total: mapsUrls.length })
+                        : t("route.openGoogleMaps")}
+                    </a>
+                  ))}
+                  <a
+                    href={buildWazeUrl(optimized.order)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={t("route.wazeHint")}
+                    className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
+                  >
+                    {t("route.openWaze")}
+                  </a>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleExportPdf}
-        disabled={exportingPdf}
-        className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-wait disabled:opacity-60 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
-      >
-        <DownloadIcon />
-        {exportingPdf ? t("route.pdfExporting") : t("route.pdfExport")}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleExportPdf}
+          disabled={exportingPdf}
+          className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-wait disabled:opacity-60 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          <DownloadIcon />
+          {exportingPdf ? t("route.pdfExporting") : t("route.pdfExport")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setIcsModalOpen(true)}
+          className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          <DownloadIcon />
+          {t("route.icsExport")}
+        </button>
+      </div>
+
+      {icsModalOpen && (
+        <IcsExportModal
+          stops={displayStops}
+          onClose={() => setIcsModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

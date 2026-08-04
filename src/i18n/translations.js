@@ -104,11 +104,13 @@ export const translations = {
 
     "route.addToRoute": "Ajouter au trajet",
     "route.removeFromRoute": "Retirer du trajet",
-    "route.maxReached": "4 opticiens maximum par trajet",
-    "route.selectedCount": "{count}/4 sélectionnés",
+    "route.selectedCount": "{count} sélectionné(s)",
     "route.optimize": "Optimiser mon trajet",
     "route.clear": "Vider",
     "route.openGoogleMaps": "Ouvrir dans Google Maps",
+    "route.openGoogleMapsLeg": "Google Maps — tronçon {n}/{total}",
+    "route.splitHint":
+      "Trajet découpé en {count} tronçons (limite Google Maps par requête).",
     "route.openWaze": "Ouvrir dans Waze",
     "route.wazeHint": "Waze : 1er arrêt uniquement",
     "route.totalDistance": "≈ {km} au total (à vol d'oiseau)",
@@ -124,6 +126,21 @@ export const translations = {
     "route.pdfReportTitle": "Compte-rendu de la journée",
     "route.pdfReportHint": "Espace libre pour vos notes manuscrites ou votre compte-rendu.",
     "route.pdfFooter": "Généré depuis le Store Locator Thélios",
+    "route.icsExport": "Ajouter à mon agenda (.ics)",
+
+    "ics.modalTitle": "Export agenda (.ics)",
+    "ics.hint": "{count} rendez-vous seront ajoutés à votre agenda.",
+    "ics.modeAName": "Horaires précis",
+    "ics.modeADesc": "Heure de début fixe + durée moyenne par RDV.",
+    "ics.modeBName": "Fenêtres de passage",
+    "ics.modeBDesc": "Créneaux souples de 1h30 à 2h.",
+    "ics.startTimeLabel": "Heure de début",
+    "ics.durationLabel": "Durée moyenne par RDV (minutes)",
+    "ics.windowLabel": "Durée du créneau",
+    "ics.lunchHint":
+      "Une pause déjeuner d'1h30 est insérée automatiquement si l'horaire calculé franchit 12:30 (reprise à 14:00).",
+    "ics.generate": "Générer et télécharger",
+    "ics.generating": "Génération…",
 
     "theme.toggleAria": "Basculer le mode sombre",
 
@@ -310,11 +327,12 @@ export const translations = {
 
     "route.addToRoute": "Add to route",
     "route.removeFromRoute": "Remove from route",
-    "route.maxReached": "4 opticians maximum per route",
-    "route.selectedCount": "{count}/4 selected",
+    "route.selectedCount": "{count} selected",
     "route.optimize": "Optimize my route",
     "route.clear": "Clear",
     "route.openGoogleMaps": "Open in Google Maps",
+    "route.openGoogleMapsLeg": "Google Maps — leg {n}/{total}",
+    "route.splitHint": "Route split into {count} legs (Google Maps per-request limit).",
     "route.openWaze": "Open in Waze",
     "route.wazeHint": "Waze: 1st stop only",
     "route.totalDistance": "≈ {km} total (as the crow flies)",
@@ -330,6 +348,21 @@ export const translations = {
     "route.pdfReportTitle": "End-of-day report",
     "route.pdfReportHint": "Free space for handwritten notes or your report.",
     "route.pdfFooter": "Generated from the Thélios Store Locator",
+    "route.icsExport": "Add to my calendar (.ics)",
+
+    "ics.modalTitle": "Calendar export (.ics)",
+    "ics.hint": "{count} appointments will be added to your calendar.",
+    "ics.modeAName": "Precise timing",
+    "ics.modeADesc": "Fixed start time + average duration per appointment.",
+    "ics.modeBName": "Visit windows",
+    "ics.modeBDesc": "Flexible 1h30 to 2h time slots.",
+    "ics.startTimeLabel": "Start time",
+    "ics.durationLabel": "Average duration per appointment (minutes)",
+    "ics.windowLabel": "Slot duration",
+    "ics.lunchHint":
+      "A 1h30 lunch break is inserted automatically if the computed time reaches 12:30 (resuming at 14:00).",
+    "ics.generate": "Generate and download",
+    "ics.generating": "Generating…",
 
     "theme.toggleAria": "Toggle dark mode",
 

@@ -1,6 +1,5 @@
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
-import { MAX_ROUTE_STOPS } from "../utils/route";
 import FavoriteButton from "./FavoriteButton";
 import StatusDot from "./StatusDot";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -51,8 +50,6 @@ export default function StoreList({
     );
   }
 
-  const routeFull = routeStopIds.length >= MAX_ROUTE_STOPS;
-
   return (
     <ul className="flex flex-col gap-2">
       {stores.map((store) => {
@@ -78,7 +75,7 @@ export default function StoreList({
                   {onToggleRouteStop && (
                     <RouteCheckbox
                       inRoute={inRoute}
-                      disabled={!inRoute && routeFull}
+                      disabled={false}
                       onToggle={() => onToggleRouteStop(store)}
                       t={t}
                     />

@@ -431,23 +431,38 @@ filtré.
 ## Optimisation de trajet
 
 Sur chaque fiche opticien (liste ou panneau détaillé), une case à cocher
-permet de sélectionner jusqu'à 4 opticiens (`MAX_ROUTE_STOPS` dans
-`src/utils/route.js`). Le panneau flottant `src/components/RoutePlanner.jsx`
-(bas de la carte) permet ensuite de :
+permet d'ajouter un opticien au trajet — **sans limite de nombre d'arrêts**.
+Le panneau flottant `src/components/RoutePlanner.jsx` (bas de la carte)
+permet ensuite de :
 
-1. **Optimiser mon trajet** : calcule par force brute (24 permutations max
-   pour 4 arrêts) l'ordre qui minimise la distance totale à vol d'oiseau
-   (`optimizeRouteOrder`), en partant de la position géolocalisée du
-   visiteur si elle est disponible.
-2. **Ouvrir dans Google Maps** : lien d'itinéraire multi-étapes
-   (`origin`/`waypoints`/`destination`).
+1. **Optimiser mon trajet** (`optimizeRouteOrder` dans `src/utils/route.js`) :
+   calcule l'ordre qui minimise la distance totale à vol d'oiseau, en
+   partant de la position géolocalisée du visiteur si elle est disponible.
+   Pour rester rapide quel que soit le nombre d'arrêts, deux stratégies sont
+   utilisées selon la taille du trajet :
+   - **≤ 7 arrêts** : recherche exhaustive par force brute (jusqu'à 5 040
+     permutations), qui garantit l'ordre optimal.
+   - **> 7 arrêts** : construction par plus proche voisin, puis
+     raffinement par recherche locale 2-opt (25 passes maximum). Ce n'est
+     pas garanti optimal, mais c'est une heuristique standard pour ce type
+     de problème (voyageur de commerce) qui reste rapide même pour des
+     tournées de plusieurs dizaines d'arrêts.
+2. **Ouvrir dans Google Maps** : lien(s) d'itinéraire multi-étapes
+   (`origin`/`waypoints`/`destination`). Google Maps limite chaque lien à 25
+   points (origine + jusqu'à 23 étapes + destination) : au-delà,
+   `buildGoogleMapsUrls` découpe automatiquement le trajet en plusieurs
+   tronçons consécutifs (chaque tronçon repart du dernier point du
+   précédent), à ouvrir les uns après les autres — le nombre d'opticiens
+   dans la tournée reste donc illimité.
 3. **Ouvrir dans Waze** : Waze ne supportant pas les itinéraires
    multi-étapes via lien, ce bouton pointe uniquement vers le premier arrêt
    de l'itinéraire optimisé.
 
 Les arrêts sélectionnés s'affichent sur la carte avec des marqueurs numérotés
 et un tracé en pointillés (numérotés par ordre de sélection avant
-optimisation, puis par ordre optimisé une fois calculé).
+optimisation, puis par ordre optimisé une fois calculé). La liste des arrêts
+dans le panneau devient défilante au-delà d'une certaine hauteur, pour
+rester utilisable même avec de nombreux arrêts.
 
 ### Export PDF "Fiche de Tournée"
 
@@ -474,6 +489,46 @@ simplement une ligne à remplir à la main pour ça, plutôt que d'ajouter un
 faux profil utilisateur. La bibliothèque `jspdf` est chargée par un
 `import()` dynamique déclenché uniquement au clic sur le bouton, pour ne pas
 alourdir le chargement initial de l'app.
+
+### Export agenda (.ics)
+
+Le bouton **Ajouter à mon agenda (.ics)** du panneau de trajet ouvre une
+modale de configuration (`src/components/IcsExportModal.jsx`) offrant deux
+modes, puis génère un fichier `.ics` standard (RFC 5545) téléchargé sous le
+nom `tournee-AAAA-MM-JJ.ics` :
+
+- **Horaires précis** : une heure de début (09:00 par défaut) et une durée
+  moyenne par rendez-vous (45 min par défaut) — chaque étape a un créneau de
+  durée fixe.
+- **Fenêtres de passage** : une heure de début et une durée de créneau plus
+  large (90 à 120 min, 105 min par défaut), pour représenter une fenêtre de
+  passage souple plutôt qu'un horaire figé.
+
+Dans les deux cas, le calcul de l'emploi du temps (`src/utils/scheduling.js`)
+traite l'intégralité des étapes de la tournée optimisée, sans limite de
+nombre de rendez-vous : chaque créneau démarre à la fin du précédent, plus le
+temps de trajet estimé jusqu'à l'arrêt suivant. **Aucune API de routing
+réelle n'étant intégrée dans l'application** (voir plus haut, la distance
+utilisée partout est la distance à vol d'oiseau), ce temps de trajet est une
+estimation calculée à partir de la distance haversine entre deux arrêts et
+d'une vitesse moyenne théorique de 45 km/h — à considérer comme indicatif,
+pas comme un temps de trajet réel calculé par un service de navigation.
+
+Une pause déjeuner automatique d'1h30 est insérée dès que l'horaire calculé
+atteint ou dépasse 12:30 ; les rendez-vous suivants reprennent à 14:00.
+
+Chaque événement du fichier `.ics` suit un format fixe :
+
+- `SUMMARY` : `RDV : [Nom de l'opticien] (Étape [N°])`
+- `LOCATION` : l'adresse complète de l'opticien
+- `DESCRIPTION` : le temps de trajet estimé depuis l'arrêt précédent (ou une
+  mention "premier arrêt" pour la première étape, qui n'a pas de trajet
+  précédent)
+
+Ces libellés sont volontairement laissés en français dans le fichier `.ics`
+généré, quelle que soit la langue de l'interface, car ce sont des chaînes de
+données au format imposé (et non des libellés d'interface) destinées à être
+lues dans une application de calendrier tierce, pas dans l'app elle-même.
 
 ## Mode sombre
 

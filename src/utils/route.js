@@ -1,6 +1,21 @@
 import { haversineDistanceKm } from "./geo";
 
-export const MAX_ROUTE_STOPS = 4;
+// Below this size, brute-force every permutation (7! = 5,040, still fast
+// enough to run synchronously on click). Above it, permutations blow up
+// combinatorially, so a nearest-neighbor construction refined by 2-opt is
+// used instead — not guaranteed optimal, but a well-established heuristic
+// that gets close in practice and stays fast for tours of any realistic
+// size (a rep's day, even a very long one, is a few dozen stops at most).
+const EXACT_THRESHOLD = 7;
+const TWO_OPT_MAX_PASSES = 25;
+
+// Google's consumer directions URL only accepts a limited number of
+// waypoints per request (origin + up to 23 waypoints + destination = 25
+// points). Longer tours are split into consecutive legs that chain
+// together — each leg's destination is the next leg's origin — so an
+// unlimited number of stops still works, just as multiple links to open
+// one after another.
+const MAX_POINTS_PER_GOOGLE_MAPS_URL = 25;
 
 function permutations(items) {
   if (items.length <= 1) return [items];
@@ -12,34 +27,26 @@ function permutations(items) {
   return result;
 }
 
-// Brute-forces the shortest visiting order for up to MAX_ROUTE_STOPS stores
-// (at most 4! = 24 permutations, trivial to evaluate exhaustively), optionally
-// starting from a fixed origin (the visitor's geolocated position).
-export function optimizeRouteOrder(stores, origin) {
-  if (stores.length === 0) return { order: [], totalDistanceKm: 0 };
-  if (stores.length === 1) {
-    const totalDistanceKm = origin
-      ? haversineDistanceKm(origin.lat, origin.lng, stores[0].lat, stores[0].lng)
-      : 0;
-    return { order: stores, totalDistanceKm };
+function routeDistance(order, origin) {
+  let total = 0;
+  let prevLat = origin?.lat;
+  let prevLng = origin?.lng;
+  for (const store of order) {
+    if (prevLat !== undefined) {
+      total += haversineDistanceKm(prevLat, prevLng, store.lat, store.lng);
+    }
+    prevLat = store.lat;
+    prevLng = store.lng;
   }
+  return total;
+}
 
+function exactOptimize(stores, origin) {
   let bestOrder = stores;
   let bestDistance = Infinity;
 
   for (const perm of permutations(stores)) {
-    let distance = 0;
-    let prevLat = origin?.lat;
-    let prevLng = origin?.lng;
-
-    for (const store of perm) {
-      if (prevLat !== undefined) {
-        distance += haversineDistanceKm(prevLat, prevLng, store.lat, store.lng);
-      }
-      prevLat = store.lat;
-      prevLng = store.lng;
-    }
-
+    const distance = routeDistance(perm, origin);
     if (distance < bestDistance) {
       bestDistance = distance;
       bestOrder = perm;
@@ -49,16 +56,100 @@ export function optimizeRouteOrder(stores, origin) {
   return { order: bestOrder, totalDistanceKm: bestDistance };
 }
 
-export function buildGoogleMapsUrl(order, origin) {
-  const points = order.map((store) => `${store.lat},${store.lng}`);
-  const originPoint = origin ? `${origin.lat},${origin.lng}` : points[0];
-  const stops = origin ? points : points.slice(1);
-  const destination = stops[stops.length - 1] ?? originPoint;
-  const waypoints = stops.slice(0, -1);
+// Greedily visits whichever remaining store is closest to the current
+// position, starting from the origin if known (otherwise arbitrarily from
+// the first store).
+function nearestNeighborOrder(stores, origin) {
+  const remaining = [...stores];
+  const order = [];
+  let prevLat = origin?.lat;
+  let prevLng = origin?.lng;
+
+  while (remaining.length > 0) {
+    let bestIndex = 0;
+    let bestDistance = Infinity;
+    remaining.forEach((store, i) => {
+      const distance =
+        prevLat === undefined ? 0 : haversineDistanceKm(prevLat, prevLng, store.lat, store.lng);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = i;
+      }
+    });
+    const [chosen] = remaining.splice(bestIndex, 1);
+    order.push(chosen);
+    prevLat = chosen.lat;
+    prevLng = chosen.lng;
+  }
+
+  return order;
+}
+
+function reversedBetween(order, i, j) {
+  return [...order.slice(0, i), ...order.slice(i, j + 1).reverse(), ...order.slice(j + 1)];
+}
+
+// Repeatedly reverses segments of the tour whenever doing so shortens the
+// total distance, until no single reversal helps or the pass budget runs
+// out — the classic 2-opt local search.
+function twoOptImprove(initialOrder, origin) {
+  let order = initialOrder;
+  let bestDistance = routeDistance(order, origin);
+  const n = order.length;
+
+  for (let pass = 0; pass < TWO_OPT_MAX_PASSES; pass++) {
+    let improved = false;
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const candidate = reversedBetween(order, i, j);
+        const candidateDistance = routeDistance(candidate, origin);
+        if (candidateDistance < bestDistance - 1e-9) {
+          order = candidate;
+          bestDistance = candidateDistance;
+          improved = true;
+        }
+      }
+    }
+    if (!improved) break;
+  }
+
+  return { order, totalDistanceKm: bestDistance };
+}
+
+export function optimizeRouteOrder(stores, origin) {
+  if (stores.length === 0) return { order: [], totalDistanceKm: 0 };
+  if (stores.length === 1) {
+    const totalDistanceKm = origin
+      ? haversineDistanceKm(origin.lat, origin.lng, stores[0].lat, stores[0].lng)
+      : 0;
+    return { order: stores, totalDistanceKm };
+  }
+
+  if (stores.length <= EXACT_THRESHOLD) {
+    return exactOptimize(stores, origin);
+  }
+
+  const initialOrder = nearestNeighborOrder(stores, origin);
+  return twoOptImprove(initialOrder, origin);
+}
+
+function buildSingleGoogleMapsUrl(points) {
+  if (points.length === 1) {
+    const params = new URLSearchParams({
+      api: "1",
+      destination: points[0],
+      travelmode: "driving",
+    });
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+  }
+
+  const origin = points[0];
+  const destination = points[points.length - 1];
+  const waypoints = points.slice(1, -1);
 
   const params = new URLSearchParams({
     api: "1",
-    origin: originPoint,
+    origin,
     destination,
     travelmode: "driving",
   });
@@ -66,6 +157,27 @@ export function buildGoogleMapsUrl(order, origin) {
     params.set("waypoints", waypoints.join("|"));
   }
   return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+// Returns an array of URLs rather than one: a single link once the tour fits
+// within Google's waypoint limit, or several consecutive legs (each
+// starting where the previous one ends) once it doesn't.
+export function buildGoogleMapsUrls(order, origin) {
+  const storePoints = order.map((store) => `${store.lat},${store.lng}`);
+  const points = origin ? [`${origin.lat},${origin.lng}`, ...storePoints] : storePoints;
+
+  if (points.length <= MAX_POINTS_PER_GOOGLE_MAPS_URL) {
+    return [buildSingleGoogleMapsUrl(points)];
+  }
+
+  const urls = [];
+  let start = 0;
+  while (start < points.length - 1) {
+    const end = Math.min(start + MAX_POINTS_PER_GOOGLE_MAPS_URL - 1, points.length - 1);
+    urls.push(buildSingleGoogleMapsUrl(points.slice(start, end + 1)));
+    start = end;
+  }
+  return urls;
 }
 
 // Waze's URL scheme only supports a single destination, so this links to the
