@@ -1,5 +1,7 @@
 import { Fragment } from "react";
 import ReviewSection from "./ReviewSection";
+import FavoriteButton from "./FavoriteButton";
+import StoreNotes from "./StoreNotes";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { MAX_ROUTE_STOPS } from "../utils/route";
@@ -11,6 +13,10 @@ export default function StoreDetailPanel({
   onClose,
   routeStopIds = [],
   onToggleRouteStop,
+  isFavorite = false,
+  onToggleFavorite,
+  note = "",
+  onSetNote,
 }) {
   const { t } = useLanguage();
 
@@ -46,14 +52,19 @@ export default function StoreDetailPanel({
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="shrink-0 cursor-pointer rounded-full p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-          aria-label={t("storeDetail.close")}
-        >
-          ✕
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          {onToggleFavorite && (
+            <FavoriteButton active={isFavorite} onToggle={() => onToggleFavorite(store.id)} />
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer rounded-full p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            aria-label={t("storeDetail.close")}
+          >
+            ✕
+          </button>
+        </div>
       </div>
 
       <div className="p-5">
@@ -157,6 +168,10 @@ export default function StoreDetailPanel({
           {t("storeDetail.directions")}
           <span aria-hidden>→</span>
         </a>
+
+        {onSetNote && (
+          <StoreNotes value={note} onChange={(text) => onSetNote(store.id, text)} />
+        )}
 
         <ReviewSection storeId={store.id} />
       </div>

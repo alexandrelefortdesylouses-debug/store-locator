@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "./components/Header";
+import ViewModeToggle from "./components/ViewModeToggle";
 import Sidebar from "./components/Sidebar";
 import MapView from "./components/MapView";
 import MapLegend from "./components/MapLegend";
@@ -10,6 +11,7 @@ import MobileTabs from "./components/MobileTabs";
 import Dashboard from "./components/Dashboard";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
+import ImportSummaryModal from "./components/ImportSummaryModal";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
@@ -17,6 +19,17 @@ import { getStoreType } from "./utils/storeType";
 import { haversineDistanceKm } from "./utils/geo";
 import { MAX_ROUTE_STOPS } from "./utils/route";
 import { exportStoresToXlsx } from "./utils/xlsxExport";
+import { parseSpreadsheetFile } from "./utils/fileParsing";
+import { detectColumns, matchPortfolioRows } from "./utils/portfolioMatching";
+import {
+  getFavorites,
+  toggleFavorite,
+  getPortfolio,
+  addToPortfolio,
+  resetPortfolio,
+  getNotes,
+  setNote,
+} from "./utils/myCard";
 import { useLanguage } from "./i18n/LanguageContext";
 import { useTheme } from "./theme/ThemeContext";
 
@@ -51,6 +64,12 @@ function App() {
   const [heatmapActive, setHeatmapActive] = useState(false);
   const [routeStops, setRouteStops] = useState([]);
   const [routeOrder, setRouteOrder] = useState(null);
+  const [viewMode, setViewMode] = useState("global");
+  const [favoriteIds, setFavoriteIds] = useState(() => getFavorites());
+  const [portfolioIds, setPortfolioIds] = useState(() => getPortfolio());
+  const [notes, setNotes] = useState(() => getNotes());
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   useEffect(() => {
     fetch("/stores.json")
@@ -58,27 +77,38 @@ function App() {
       .then((data) => setStores(data));
   }, []);
 
+  const myCardStores = useMemo(
+    () => stores.filter((s) => portfolioIds.includes(s.id) || favoriteIds.includes(s.id)),
+    [stores, portfolioIds, favoriteIds],
+  );
+
+  // Every option list (brands, regions, departments, cities) and the search
+  // universe itself narrow to "Ma Carte" when that view is active, so the
+  // sidebar never offers a filter value that isn't actually in the personal
+  // set.
+  const baseUniverse = viewMode === "mycard" ? myCardStores : stores;
+
   const allBrands = useMemo(() => {
     const set = new Set();
-    stores.forEach((store) => store.brands.forEach((brand) => set.add(brand)));
+    baseUniverse.forEach((store) => store.brands.forEach((brand) => set.add(brand)));
     return [...set].sort();
-  }, [stores]);
+  }, [baseUniverse]);
 
   const allRegions = useMemo(() => {
     const set = new Set();
-    stores.forEach((store) => {
+    baseUniverse.forEach((store) => {
       const region = getStoreRegion(store);
       if (region) set.add(region);
     });
     return [...set].sort();
-  }, [stores]);
+  }, [baseUniverse]);
 
   // Cascading geo filters: department options narrow to the selected
   // region(s), and city options narrow to the selected region(s) AND
   // department(s) — independent of the other filters (search, brands, type).
   const availableDepartments = useMemo(() => {
     const map = new Map();
-    stores.forEach((store) => {
+    baseUniverse.forEach((store) => {
       if (selectedRegions.length > 0 && !selectedRegions.includes(getStoreRegion(store))) {
         return;
       }
@@ -86,11 +116,11 @@ function App() {
       if (dept) map.set(dept.code, dept);
     });
     return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
-  }, [stores, selectedRegions]);
+  }, [baseUniverse, selectedRegions]);
 
   const availableCities = useMemo(() => {
     const set = new Set();
-    stores.forEach((store) => {
+    baseUniverse.forEach((store) => {
       if (selectedRegions.length > 0 && !selectedRegions.includes(getStoreRegion(store))) {
         return;
       }
@@ -103,7 +133,7 @@ function App() {
       set.add(store.city);
     });
     return [...set].sort();
-  }, [stores, selectedRegions, selectedDepartments]);
+  }, [baseUniverse, selectedRegions, selectedDepartments]);
 
   // Prune selections that fall outside the now-narrower option list, so a
   // region/department change can never leave a "dead" selection behind that
@@ -136,7 +166,7 @@ function App() {
     let base;
     if (hasActiveFilter) {
       const query = normalize(search.trim());
-      base = stores.filter((store) => {
+      base = baseUniverse.filter((store) => {
         const haystack = normalize(
           `${store.name} ${store.address} ${store.city} ${store.country}`,
         );
@@ -164,8 +194,8 @@ function App() {
           matchesType
         );
       });
-    } else if (browseAll || userLocation) {
-      base = stores;
+    } else if (browseAll || userLocation || viewMode === "mycard") {
+      base = baseUniverse;
     } else {
       base = [];
     }
@@ -183,7 +213,7 @@ function App() {
         }))
         .sort((a, b) => a.distanceKm - b.distanceKm);
 
-      if (!hasActiveFilter && !browseAll) {
+      if (!hasActiveFilter && !browseAll && viewMode !== "mycard") {
         return withDistance.slice(0, NEAR_ME_LIMIT);
       }
       return withDistance;
@@ -192,7 +222,7 @@ function App() {
     return base;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    stores,
+    baseUniverse,
     search,
     selectedCities,
     selectedRegions,
@@ -202,6 +232,7 @@ function App() {
     hasActiveFilter,
     browseAll,
     userLocation,
+    viewMode,
   ]);
 
   const selectedStoreBase = stores.find((s) => s.id === selectedStoreId);
@@ -217,7 +248,10 @@ function App() {
           ),
         }
       : selectedStoreBase;
-  const showResults = hasActiveFilter || browseAll || Boolean(userLocation);
+  const showResults =
+    hasActiveFilter || browseAll || Boolean(userLocation) || viewMode === "mycard";
+  const myCardIsEmpty =
+    viewMode === "mycard" && portfolioIds.length === 0 && favoriteIds.length === 0;
 
   function handleSelectStore(id) {
     setSelectedStoreId(id);
@@ -281,6 +315,38 @@ function App() {
     });
   }
 
+  function handleToggleFavorite(storeId) {
+    setFavoriteIds(toggleFavorite(storeId));
+  }
+
+  function handleSetNote(storeId, text) {
+    setNotes(setNote(storeId, text));
+  }
+
+  function handleResetPortfolio() {
+    setPortfolioIds(resetPortfolio());
+  }
+
+  async function handleImportFile(file) {
+    setImporting(true);
+    try {
+      const rows = await parseSpreadsheetFile(file);
+      if (rows.length < 2) {
+        setImportResult({ matchedCount: 0, totalRows: 0, unmatched: [] });
+        return;
+      }
+      const [headerRow, ...dataRows] = rows;
+      const columnMap = detectColumns(headerRow);
+      const { matched, unmatched } = matchPortfolioRows(dataRows, columnMap, stores);
+      setPortfolioIds(addToPortfolio(matched.map((m) => m.store.id)));
+      setImportResult({ matchedCount: matched.length, totalRows: dataRows.length, unmatched });
+    } catch {
+      setImportResult({ matchedCount: 0, totalRows: 0, unmatched: [], error: true });
+    } finally {
+      setImporting(false);
+    }
+  }
+
   function removeRouteStop(id) {
     setRouteStops((prev) => prev.filter((s) => s.id !== id));
   }
@@ -325,6 +391,8 @@ function App() {
         onOpenStats={() => setShowStats(true)}
       />
 
+      <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+
       <MobileTabs
         view={mobileView}
         onChange={setMobileView}
@@ -338,9 +406,18 @@ function App() {
           <Sidebar
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+            viewMode={viewMode}
+            portfolioCount={portfolioIds.length}
+            favoritesCount={favoriteIds.length}
+            importing={importing}
+            onImportFile={handleImportFile}
+            onResetPortfolio={handleResetPortfolio}
+            myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
+            favoriteIds={favoriteIds}
+            onToggleFavorite={handleToggleFavorite}
             search={search}
             onSearchChange={setSearch}
-            allStores={stores}
+            allStores={baseUniverse}
             cities={availableCities}
             selectedCities={selectedCities}
             onCitiesChange={setSelectedCities}
@@ -421,6 +498,19 @@ function App() {
               </div>
             )}
 
+            {viewMode === "mycard" && myCardIsEmpty && (
+              <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
+                <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
+                  <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
+                    {t("myCard.emptyPortfolioTitle")}
+                  </p>
+                  <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                    {t("myCard.emptyPortfolio")}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <RoutePlanner
               stops={routeStops}
               onRemoveStop={removeRouteStop}
@@ -435,6 +525,10 @@ function App() {
               onClose={() => setDetailOpen(false)}
               routeStopIds={routeStops.map((s) => s.id)}
               onToggleRouteStop={toggleRouteStop}
+              isFavorite={selectedStore ? favoriteIds.includes(selectedStore.id) : false}
+              onToggleFavorite={handleToggleFavorite}
+              note={selectedStore ? notes[selectedStore.id] || "" : ""}
+              onSetNote={handleSetNote}
             />
           </div>
         </div>
@@ -447,6 +541,8 @@ function App() {
       {showStats && (
         <Dashboard stores={stores} onClose={() => setShowStats(false)} />
       )}
+
+      <ImportSummaryModal result={importResult} onClose={() => setImportResult(null)} />
 
       <ChatWidget stores={stores} />
     </div>

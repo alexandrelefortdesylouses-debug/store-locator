@@ -40,6 +40,38 @@ export const translations = {
     "storeType.department_store": "Grand Magasin",
     "storeType.independent": "Opticien Indépendant",
 
+    "viewMode.global": "Carte Globale",
+    "viewMode.mycard": "Ma Carte",
+
+    "myCard.title": "Ma Carte",
+    "myCard.description":
+      "Votre espace personnel, enregistré sur cet appareil. Importez votre portefeuille ou ajoutez des favoris depuis la Carte Globale pour les retrouver ici.",
+    "myCard.portfolioCount": "{count} importé",
+    "myCard.portfolioCount_plural": "{count} importés",
+    "myCard.favoritesCount": "{count} favori",
+    "myCard.favoritesCount_plural": "{count} favoris",
+    "myCard.importButton": "Importer mon portefeuille clients (.xlsx / .csv)",
+    "myCard.importing": "Import en cours…",
+    "myCard.resetPortfolio": "Réinitialiser le portefeuille importé",
+    "myCard.importSummaryTitle": "Résumé de l'import",
+    "myCard.importSummaryCount": "{matched}/{total} opticiens identifiés et ajoutés à votre carte",
+    "myCard.importSummaryHint":
+      "Le rapprochement se fait sur le nom, la ville et le code postal (les données SIRET ne sont pas disponibles dans la base Thélios).",
+    "myCard.unmatchedTitle": "{count} ligne non reconnue",
+    "myCard.unmatchedTitle_plural": "{count} lignes non reconnues",
+    "myCard.unnamedRow": "(nom manquant)",
+    "myCard.close": "Fermer",
+    "myCard.importErrorTitle": "Import impossible",
+    "myCard.importError":
+      "Le fichier n'a pas pu être lu. Vérifiez qu'il s'agit bien d'un fichier .xlsx ou .csv valide.",
+    "myCard.emptyPortfolioTitle": "Votre carte est vide",
+    "myCard.emptyPortfolio":
+      "Importez un portefeuille ou ajoutez des favoris depuis la Carte Globale pour les retrouver ici.",
+    "myCard.addFavorite": "Ajouter aux favoris",
+    "myCard.removeFavorite": "Retirer des favoris",
+    "myCard.notesTitle": "Notes privées",
+    "myCard.notesPlaceholder": "Ex. Prochain RDV le 12/10, relancer pour la collection Vuarnet…",
+
     "map.emptyTitle": "Trouvez un opticien Thélios",
     "map.emptyBody":
       "Veuillez lancer une recherche par ville, région ou marque, ou passer en mode libre pour afficher l'ensemble de la carte.",
@@ -183,6 +215,38 @@ export const translations = {
     "storeType.flagship": "Flagship Boutique",
     "storeType.department_store": "Department Store",
     "storeType.independent": "Independent Optician",
+
+    "viewMode.global": "Global Map",
+    "viewMode.mycard": "My Map",
+
+    "myCard.title": "My Map",
+    "myCard.description":
+      "Your personal space, saved on this device. Import your portfolio or add favorites from the Global Map to find them here.",
+    "myCard.portfolioCount": "{count} imported",
+    "myCard.portfolioCount_plural": "{count} imported",
+    "myCard.favoritesCount": "{count} favorite",
+    "myCard.favoritesCount_plural": "{count} favorites",
+    "myCard.importButton": "Import my client portfolio (.xlsx / .csv)",
+    "myCard.importing": "Importing…",
+    "myCard.resetPortfolio": "Reset imported portfolio",
+    "myCard.importSummaryTitle": "Import summary",
+    "myCard.importSummaryCount": "{matched}/{total} opticians identified and added to your map",
+    "myCard.importSummaryHint":
+      "Matching is based on name, city and postal code (SIRET data is not available in the Thélios database).",
+    "myCard.unmatchedTitle": "{count} unrecognized row",
+    "myCard.unmatchedTitle_plural": "{count} unrecognized rows",
+    "myCard.unnamedRow": "(missing name)",
+    "myCard.close": "Close",
+    "myCard.importErrorTitle": "Import failed",
+    "myCard.importError":
+      "The file could not be read. Please check that it is a valid .xlsx or .csv file.",
+    "myCard.emptyPortfolioTitle": "Your map is empty",
+    "myCard.emptyPortfolio":
+      "Import a portfolio or add favorites from the Global Map to find them here.",
+    "myCard.addFavorite": "Add to favorites",
+    "myCard.removeFavorite": "Remove from favorites",
+    "myCard.notesTitle": "Private notes",
+    "myCard.notesPlaceholder": "E.g. Next appointment on 10/12, follow up on the Vuarnet collection…",
 
     "map.emptyTitle": "Find a Thélios optician",
     "map.emptyBody":

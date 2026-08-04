@@ -6,6 +6,7 @@ import DepartmentSelect from "./DepartmentSelect";
 import BrandFilter from "./BrandFilter";
 import StoreTypeFilter from "./StoreTypeFilter";
 import AccordionSection from "./AccordionSection";
+import MyCardPanel from "./MyCardPanel";
 import StoreList from "./StoreList";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -20,6 +21,15 @@ const DEFAULT_OPEN_SECTIONS = {
 export default function Sidebar({
   collapsed,
   onToggleCollapse,
+  viewMode,
+  portfolioCount,
+  favoritesCount,
+  importing,
+  onImportFile,
+  onResetPortfolio,
+  myCardEmptyMessage,
+  favoriteIds,
+  onToggleFavorite,
   search,
   onSearchChange,
   allStores,
@@ -97,6 +107,16 @@ export default function Sidebar({
           </div>
 
           <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-4">
+            {viewMode === "mycard" && (
+              <MyCardPanel
+                portfolioCount={portfolioCount}
+                favoritesCount={favoritesCount}
+                importing={importing}
+                onImportFile={onImportFile}
+                onReset={onResetPortfolio}
+              />
+            )}
+
             <div>
               <AccordionSection
                 title={t("sidebar.regionsTitle")}
@@ -184,6 +204,9 @@ export default function Sidebar({
                     onSelectStore={onSelectStore}
                     routeStopIds={routeStopIds}
                     onToggleRouteStop={onToggleRouteStop}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={onToggleFavorite}
+                    emptyMessage={myCardEmptyMessage}
                   />
                 </>
               ) : (

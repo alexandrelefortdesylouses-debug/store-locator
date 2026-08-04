@@ -432,6 +432,86 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
   serif système déjà utilisée pour les titres, combinée aux nouveaux
   espacements/couleurs.
 
+## Carte Globale vs Ma Carte
+
+Un sélecteur en haut de l'interface (`src/components/ViewModeToggle.jsx`)
+bascule entre deux vues :
+
+- **Carte Globale** : le comportement historique de l'app, l'intégralité du
+  réseau d'opticiens partenaires.
+- **Ma Carte** : un espace personnel qui n'affiche que les opticiens du
+  portefeuille importé et/ou marqués en favori. Tous les filtres existants
+  (recherche, région/département/ville, marque, type de boutique) restent
+  utilisables pour affiner à l'intérieur de cet ensemble personnel — leurs
+  listes d'options se recalculent d'ailleurs automatiquement pour ne
+  proposer que les valeurs présentes dans "Ma Carte" (`baseUniverse` dans
+  `App.jsx`). L'optimisation de trajet fonctionne sans changement puisqu'elle
+  s'applique déjà à n'importe quelle sélection de magasins, quelle que soit
+  la vue active.
+
+> ⚠️ **"Ma Carte" n'est pas un vrai système de comptes multi-utilisateurs.**
+> L'app n'a pas de backend : comme le code secret des avis, tout est stocké
+> dans le `localStorage` de cet appareil/navigateur. "Ma Carte" désigne donc
+> l'utilisateur de CET appareil, pas un compte synchronisé entre plusieurs
+> postes. Un vrai système de comptes (avec authentification et données
+> partagées entre appareils) nécessiterait un backend — c'est le point déjà
+> noté plus bas comme non traité dans cette itération.
+
+### Favoris et notes privées
+
+- **Favoris** (`src/utils/myCard.js`, `src/components/FavoriteButton.jsx`) :
+  un bouton cœur sur chaque fiche opticien (liste et panneau détaillé),
+  disponible dans les deux vues — c'est en favorisant un opticien depuis la
+  Carte Globale qu'il rejoint "Ma Carte".
+- **Notes privées** (`src/components/StoreNotes.jsx`) : un champ de texte
+  libre dans la fiche détaillée de chaque opticien (ex. "Prochain RDV le
+  12/10, relancer pour la collection Vuarnet"), enregistré au fil de la
+  saisie dans le `localStorage`, par opticien.
+
+### Import de portefeuille (.xlsx / .csv)
+
+Dans "Ma Carte", le bouton **Importer mon portefeuille clients** accepte un
+fichier `.xlsx` ou `.csv` et tente de rapprocher chaque ligne avec la base
+`stores.json` :
+
+1. **Lecture du fichier** (`src/utils/fileParsing.js`) : les `.xlsx` sont lus
+   avec `read-excel-file` (bibliothèque du même auteur que `write-excel-file`,
+   déjà utilisée pour l'export) plutôt qu'avec le paquet `xlsx` de SheetJS —
+   ce dernier a une vulnérabilité connue (pollution de prototype / ReDoS)
+   sans correctif publié sur npm, inacceptable pour une bibliothèque qui
+   parse des fichiers déposés par l'utilisateur. Les `.csv` sont lus avec un
+   analyseur maison (gestion des champs entre guillemets, des guillemets
+   échappés, du BOM UTF-8, et détection automatique du séparateur `,` ou `;`
+   — les exports Excel français utilisent souvent `;` puisque `,` sert de
+   séparateur décimal).
+2. **Détection des colonnes** (`src/utils/portfolioMatching.js`) : repère les
+   colonnes Nom / Ville / Code Postal quel que soit l'intitulé exact (FR/EN,
+   variantes usuelles). Une colonne SIRET est détectée mais **jamais
+   utilisée pour le rapprochement** : ce champ n'existe pas dans
+   `stores.json`.
+3. **Rapprochement (matching)**, par ordre de précision décroissante : nom +
+   code postal exacts → nom + ville exacts → nom unique dans toute la base →
+   en dernier recours, un nom partiellement inclus dans le nom d'un magasin
+   de la même ville (utile pour les raisons sociales tronquées). C'est une
+   heuristique de bonne foi, pas un identifiant garanti — les enseignes en
+   franchise (Krys, Optic 2000…) qui apparaissent des centaines de fois dans
+   la base ne peuvent être désambiguïsées que par la ville ou le code
+   postal.
+4. Les lignes reconnues sont ajoutées au portefeuille (fusionnées avec
+   l'existant, pas de doublons) ; une fenêtre de résumé indique le nombre de
+   lignes identifiées (ex. "45/48 opticiens identifiés et ajoutés à votre
+   carte") et liste les lignes non reconnues pour vérification manuelle.
+
+Le bouton **Réinitialiser le portefeuille importé** vide uniquement les
+opticiens issus de l'import (les favoris ajoutés manuellement ne sont pas
+concernés) ; réimporter un fichier après reprend simplement le processus.
+
+La bibliothèque d'import est chargée par un `import()` dynamique déclenché
+uniquement au moment de l'import d'un `.xlsx`, pour ne pas alourdir le
+chargement initial de l'app pour les visiteurs qui n'utilisent jamais cette
+fonctionnalité (elle apparaît comme un fichier séparé dans le build, voir
+`npm run build`).
+
 ## Prochaine étape (non traitée dans cette itération)
 
 Le point "page d'accueil + système de compte (favoris, avis personnalisés,

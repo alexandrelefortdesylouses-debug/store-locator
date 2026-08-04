@@ -1,6 +1,7 @@
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { MAX_ROUTE_STOPS } from "../utils/route";
+import FavoriteButton from "./FavoriteButton";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function RouteCheckbox({ inRoute, disabled, onToggle, t }) {
@@ -34,13 +35,16 @@ export default function StoreList({
   onSelectStore,
   routeStopIds = [],
   onToggleRouteStop,
+  favoriteIds = [],
+  onToggleFavorite,
+  emptyMessage,
 }) {
   const { t } = useLanguage();
 
   if (stores.length === 0) {
     return (
       <p className="px-1 text-sm text-neutral-500 dark:text-neutral-400">
-        {t("sidebar.noResults")}
+        {emptyMessage || t("sidebar.noResults")}
       </p>
     );
   }
@@ -81,17 +85,25 @@ export default function StoreList({
                     {store.name}
                   </p>
                 </div>
-                {typeof store.distanceKm === "number" && (
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      isSelected
-                        ? "bg-white/15 text-white dark:bg-neutral-950/20 dark:text-neutral-950"
-                        : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                    }`}
-                  >
-                    {formatDistanceKm(store.distanceKm)}
-                  </span>
-                )}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {typeof store.distanceKm === "number" && (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        isSelected
+                          ? "bg-white/15 text-white dark:bg-neutral-950/20 dark:text-neutral-950"
+                          : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                      }`}
+                    >
+                      {formatDistanceKm(store.distanceKm)}
+                    </span>
+                  )}
+                  {onToggleFavorite && (
+                    <FavoriteButton
+                      active={favoriteIds.includes(store.id)}
+                      onToggle={() => onToggleFavorite(store.id)}
+                    />
+                  )}
+                </div>
               </div>
               <p
                 className={`mt-0.5 text-xs ${
