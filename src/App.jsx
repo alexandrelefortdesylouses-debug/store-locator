@@ -64,11 +64,6 @@ function App() {
     return [...set].sort();
   }, [stores]);
 
-  const allCities = useMemo(() => {
-    const set = new Set(stores.map((store) => store.city));
-    return [...set].sort();
-  }, [stores]);
-
   const allRegions = useMemo(() => {
     const set = new Set();
     stores.forEach((store) => {
@@ -78,14 +73,56 @@ function App() {
     return [...set].sort();
   }, [stores]);
 
-  const allDepartments = useMemo(() => {
+  // Cascading geo filters: department options narrow to the selected
+  // region(s), and city options narrow to the selected region(s) AND
+  // department(s) — independent of the other filters (search, brands, type).
+  const availableDepartments = useMemo(() => {
     const map = new Map();
     stores.forEach((store) => {
+      if (selectedRegions.length > 0 && !selectedRegions.includes(getStoreRegion(store))) {
+        return;
+      }
       const dept = getStoreDepartment(store);
       if (dept) map.set(dept.code, dept);
     });
     return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
-  }, [stores]);
+  }, [stores, selectedRegions]);
+
+  const availableCities = useMemo(() => {
+    const set = new Set();
+    stores.forEach((store) => {
+      if (selectedRegions.length > 0 && !selectedRegions.includes(getStoreRegion(store))) {
+        return;
+      }
+      if (
+        selectedDepartments.length > 0 &&
+        !selectedDepartments.includes(getStoreDepartment(store)?.code)
+      ) {
+        return;
+      }
+      set.add(store.city);
+    });
+    return [...set].sort();
+  }, [stores, selectedRegions, selectedDepartments]);
+
+  // Prune selections that fall outside the now-narrower option list, so a
+  // region/department change can never leave a "dead" selection behind that
+  // silently forces zero results.
+  useEffect(() => {
+    const allowedCodes = new Set(availableDepartments.map((d) => d.code));
+    setSelectedDepartments((prev) => {
+      const next = prev.filter((code) => allowedCodes.has(code));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [availableDepartments]);
+
+  useEffect(() => {
+    const allowedCities = new Set(availableCities);
+    setSelectedCities((prev) => {
+      const next = prev.filter((city) => allowedCities.has(city));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [availableCities]);
 
   const hasActiveFilter =
     search.trim() !== "" ||
@@ -304,13 +341,13 @@ function App() {
             search={search}
             onSearchChange={setSearch}
             allStores={stores}
-            cities={allCities}
+            cities={availableCities}
             selectedCities={selectedCities}
             onCitiesChange={setSelectedCities}
             regions={allRegions}
             selectedRegions={selectedRegions}
             onRegionsChange={setSelectedRegions}
-            departments={allDepartments}
+            departments={availableDepartments}
             selectedDepartments={selectedDepartments}
             onDepartmentsChange={setSelectedDepartments}
             brands={allBrands}

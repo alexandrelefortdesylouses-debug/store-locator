@@ -33,6 +33,8 @@ export const translations = {
       "Utilisez la recherche, une ville, une région ou une marque pour afficher les opticiens partenaires Thélios.",
     "sidebar.export": "Exporter la sélection",
     "sidebar.storeTypeTitle": "Type de boutique",
+    "sidebar.chatHint":
+      "Une question ? Notre assistant virtuel est disponible en bas à droite de votre écran.",
 
     "storeType.flagship": "Boutique Flagship",
     "storeType.department_store": "Grand Magasin",
@@ -175,6 +177,8 @@ export const translations = {
       "Use the search, a city, a region or a brand to display Thélios partner opticians.",
     "sidebar.export": "Export selection",
     "sidebar.storeTypeTitle": "Store type",
+    "sidebar.chatHint":
+      "Have a question? Our virtual assistant is available in the bottom-right corner of your screen.",
 
     "storeType.flagship": "Flagship Boutique",
     "storeType.department_store": "Department Store",

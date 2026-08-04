@@ -10,9 +10,9 @@ import StoreList from "./StoreList";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const DEFAULT_OPEN_SECTIONS = {
-  cities: true,
+  regions: true,
   departments: false,
-  regions: false,
+  cities: false,
   storeType: false,
   brands: false,
 };
@@ -99,15 +99,15 @@ export default function Sidebar({
           <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-4">
             <div>
               <AccordionSection
-                title={t("sidebar.citiesTitle")}
-                count={selectedCities.length}
-                open={openSections.cities}
-                onToggle={() => toggleSection("cities")}
+                title={t("sidebar.regionsTitle")}
+                count={selectedRegions.length}
+                open={openSections.regions}
+                onToggle={() => toggleSection("regions")}
               >
-                <CitySelect
-                  cities={cities}
-                  selected={selectedCities}
-                  onChange={onCitiesChange}
+                <RegionSelect
+                  regions={regions}
+                  selected={selectedRegions}
+                  onChange={onRegionsChange}
                 />
               </AccordionSection>
 
@@ -125,15 +125,15 @@ export default function Sidebar({
               </AccordionSection>
 
               <AccordionSection
-                title={t("sidebar.regionsTitle")}
-                count={selectedRegions.length}
-                open={openSections.regions}
-                onToggle={() => toggleSection("regions")}
+                title={t("sidebar.citiesTitle")}
+                count={selectedCities.length}
+                open={openSections.cities}
+                onToggle={() => toggleSection("cities")}
               >
-                <RegionSelect
-                  regions={regions}
-                  selected={selectedRegions}
-                  onChange={onRegionsChange}
+                <CitySelect
+                  cities={cities}
+                  selected={selectedCities}
+                  onChange={onCitiesChange}
                 />
               </AccordionSection>
 
@@ -154,6 +154,10 @@ export default function Sidebar({
               >
                 <BrandFilter brands={brands} selected={selectedBrands} onToggle={onToggleBrand} />
               </AccordionSection>
+
+              <p className="mt-4 border-t border-neutral-200 pt-4 text-center text-[11px] italic leading-relaxed text-neutral-400 dark:border-neutral-800 dark:text-neutral-500">
+                {t("sidebar.chatHint")}
+              </p>
             </div>
 
             <div className="py-4">

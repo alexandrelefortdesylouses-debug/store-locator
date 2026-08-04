@@ -164,33 +164,53 @@ lorsqu'un filtre par marque affiche plus d'un millier de résultats.
   via `useMemo` dans `App.jsx`, aucun round-trip serveur).
   - **Régions** : dérivées du code postal comme précédemment
     (`src/utils/regions.js`).
-  - **Départements** : nouveau filtre (`src/utils/departments.js`), déduit du
-    même code postal (préfixe à 2 chiffres, 3 pour l'outre-mer) et associé au
-    nom officiel du département (ex. "06 – Alpes-Maritimes"). Comme un code
+  - **Départements** : filtre (`src/utils/departments.js`), déduit du même
+    code postal (préfixe à 2 chiffres, 3 pour l'outre-mer) et associé au nom
+    officiel du département (ex. "06 – Alpes-Maritimes"). Comme un code
     postal ne permet pas de distinguer les deux départements corses, la Corse
     reste une entrée unique "20 – Corse", cohérente avec le filtre région.
-  - **Villes** : la liste déroulante (`src/utils/frenchCities.js`) épingle en
-    premier les grandes villes françaises (Paris, Marseille, Lyon, Toulouse,
-    Nice, Nantes, Bordeaux, Lille, etc.) dans un groupe "Grandes villes",
-    suivies de toutes les autres villes triées alphabétiquement.
+  - **Villes** : la liste (`src/utils/frenchCities.js`) épingle en premier
+    les grandes villes françaises (Paris, Marseille, Lyon, Toulouse, Nice,
+    Nantes, Bordeaux, Lille, etc.) dans un groupe "Grandes villes", suivies
+    de toutes les autres villes triées alphabétiquement.
+- **Filtres géographiques en cascade** : Régions, Départements et Villes sont
+  hiérarchiques — sélectionner une région limite la liste des départements
+  proposés (et celle des villes) à cette région, et sélectionner un
+  département limite en plus la liste des villes à ce département
+  (`availableDepartments`/`availableCities` dans `App.jsx`, recalculés via
+  `useMemo` à partir des régions/départements déjà sélectionnés — cette
+  cascade est indépendante des autres filtres comme la recherche ou les
+  marques). Si une région ou un département sélectionné exclut une valeur
+  déjà cochée plus bas dans la hiérarchie (ex. désélectionner une région
+  après avoir choisi une ville qui n'appartient plus à aucune région
+  sélectionnée), cette sélection devenue incohérente est automatiquement
+  retirée pour éviter un filtre "mort" qui ne pourrait plus jamais retourner
+  de résultat.
 
 ## Panneau de filtres en accordéon
 
 La sidebar a été restructurée en accordéon compact façon Nike
 (`src/components/AccordionSection.jsx`) pour éviter un panneau interminable :
 
-- Chaque catégorie (Villes, Départements, Régions, Type de boutique, Marques)
-  n'affiche par défaut que son **titre**, avec un badge indiquant le nombre de
-  valeurs sélectionnées quand la section est repliée, et un chevron qui
-  pivote à l'ouverture. Cliquer le titre déroule/replie la section
-  (`aria-expanded` posé sur le bouton pour l'accessibilité) ; plusieurs
-  sections peuvent rester ouvertes en même temps. Seule la section **Villes**
-  est ouverte par défaut, les autres démarrent repliées.
+- Chaque catégorie, dans l'ordre **Régions → Départements → Villes → Type de
+  boutique → Marques**, n'affiche par défaut que son **titre**, avec un badge
+  indiquant le nombre de valeurs sélectionnées quand la section est repliée,
+  et un chevron qui pivote à l'ouverture. Cliquer le titre déroule/replie la
+  section (`aria-expanded` posé sur le bouton pour l'accessibilité) ;
+  plusieurs sections peuvent rester ouvertes en même temps. Seule la section
+  **Régions** est ouverte par défaut, les autres démarrent repliées — cet
+  ordre correspond aussi à celui de la cascade ci-dessus (du plus large au
+  plus précis).
   L'animation d'ouverture/fermeture repose sur la technique CSS Grid
   `grid-template-rows: 0fr → 1fr` (transition fluide sans mesurer la hauteur
   en JS) ; le contenu replié reste dans le DOM pour l'animation mais est
   rendu `inert` (non focusable, ignoré des lecteurs d'écran) tant que la
   section est fermée.
+- Un petit texte d'aide discret ("Une question ? Notre assistant virtuel est
+  disponible en bas à droite de votre écran.") est affiché en italique, gris
+  clair, sous un filet séparateur, juste en dessous de la dernière catégorie
+  de filtres (Marques) et avant la liste de résultats — pour rester visible
+  sans attendre d'avoir fait défiler une éventuelle longue liste d'opticiens.
 - **Correction du bug de défilement** signalé ("impossible d'atteindre le bas
   des filtres") : l'ancienne mise en page imbriquait deux zones de défilement
   (`overflow-y-auto` sur la sidebar entière **et** sur la liste de résultats
