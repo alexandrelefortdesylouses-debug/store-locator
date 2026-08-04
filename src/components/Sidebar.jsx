@@ -23,6 +23,7 @@ export default function Sidebar({
   hasActiveFilter,
   onResetFilters,
   onExport,
+  exporting,
   selectedStoreId,
   onSelectStore,
 }) {
@@ -87,7 +88,8 @@ export default function Sidebar({
                     <button
                       type="button"
                       onClick={onExport}
-                      className="cursor-pointer text-xs text-amber-700 hover:underline"
+                      disabled={exporting}
+                      className="cursor-pointer text-xs text-amber-700 hover:underline disabled:cursor-wait disabled:opacity-60"
                     >
                       {t("sidebar.export")}
                     </button>

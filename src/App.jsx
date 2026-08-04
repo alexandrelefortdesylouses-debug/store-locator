@@ -10,7 +10,7 @@ import SecretCodeSettings from "./components/SecretCodeSettings";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
 import { haversineDistanceKm } from "./utils/geo";
-import { storesToCsv, downloadCsv } from "./utils/csvExport";
+import { exportStoresToXlsx } from "./utils/xlsxExport";
 import { useLanguage } from "./i18n/LanguageContext";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
@@ -36,6 +36,7 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetch("/stores.json")
@@ -183,10 +184,32 @@ function App() {
     );
   }
 
-  function handleExport() {
-    const headers = t("export.headers").split(",");
-    const csv = storesToCsv(filteredStores, headers);
-    downloadCsv(`thelios-opticiens-${filteredStores.length}.csv`, csv);
+  async function handleExport() {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const labels = {
+        sheetName: t("export.sheetName"),
+        name: t("export.columns.name"),
+        address: t("export.columns.address"),
+        city: t("export.columns.city"),
+        postalCode: t("export.columns.postalCode"),
+        country: t("export.columns.country"),
+        phone: t("export.columns.phone"),
+        email: t("export.columns.email"),
+        brands: t("export.columns.brands"),
+        hours: t("export.columns.hours"),
+        latitude: t("export.columns.latitude"),
+        longitude: t("export.columns.longitude"),
+      };
+      await exportStoresToXlsx(
+        filteredStores,
+        labels,
+        `thelios-opticiens-${filteredStores.length}.xlsx`,
+      );
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -215,6 +238,7 @@ function App() {
           hasActiveFilter={showResults}
           onResetFilters={handleResetFilters}
           onExport={handleExport}
+          exporting={exporting}
           selectedStoreId={selectedStoreId}
           onSelectStore={handleSelectStore}
         />

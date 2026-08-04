@@ -50,9 +50,10 @@ npm run preview
 - **Statistiques réseau** : bouton dans l'en-tête ouvrant un tableau de bord
   (chiffres clés + graphiques de répartition Thélios vs concurrents par
   région et par ville).
-- **Export CSV** : bouton "Exporter la sélection" dans la sidebar, qui
-  télécharge la liste des opticiens actuellement filtrés/affichés (adresse,
-  téléphone, email, marques, horaires si disponibles, coordonnées GPS).
+- **Export Excel** : bouton "Exporter la sélection" dans la sidebar, qui
+  télécharge un vrai fichier `.xlsx` mis en forme (voir plus bas) listant les
+  opticiens actuellement filtrés/affichés (adresse, code postal, téléphone,
+  email, marques, horaires si disponibles, coordonnées GPS).
 
 ## Données des opticiens
 
@@ -234,14 +235,27 @@ qui calcule (`src/utils/stats.js`) et affiche :
 Le code doré (`#b45309`) et gris anthracite (`#57534e`) reprend celui des
 marqueurs de la carte pour rester cohérent visuellement dans toute l'app.
 
-## Export CSV
+## Export Excel
 
 Le bouton **Exporter la sélection** (visible dans la sidebar dès qu'une liste
-d'opticiens est affichée) télécharge un fichier CSV (`src/utils/csvExport.js`)
-contenant exactement les opticiens actuellement filtrés/affichés — donc aussi
-bien un export ciblé (ex. "Julbo en Bretagne") que l'intégralité du réseau en
-mode libre. Le fichier inclut un BOM UTF-8 pour un affichage correct des
-accents dans Excel.
+d'opticiens est affichée) télécharge un fichier `.xlsx` (`src/utils/xlsxExport.js`,
+librairie `write-excel-file`) contenant exactement les opticiens actuellement
+filtrés/affichés — donc aussi bien un export ciblé (ex. "Julbo en Bretagne")
+que l'intégralité du réseau en mode libre. Mise en forme appliquée :
+
+- En-tête fond bleu marine (`#0F172A`), texte blanc gras, centré horizontalement
+  et verticalement, ligne de 22 points de haut (~28-29 px).
+- Largeur de chaque colonne calculée automatiquement à partir du contenu le
+  plus long (aucun texte tronqué).
+- Alignement à gauche pour les champs texte (nom, adresse, ville, pays, email,
+  marques, horaires), centré pour le code postal, le téléphone et les
+  coordonnées GPS.
+- Bordures fines gris clair (`#E2E8F0`) sur toutes les cellules, effet zébré
+  (`#F8FAFC` une ligne sur deux) pour la lisibilité, ligne d'en-tête figée
+  (`stickyRowsCount`).
+- **Code postal extrait dans sa propre colonne** (regex sur l'adresse) et
+  formaté explicitement en texte (`format: '@'`) : les zéros initiaux sont
+  conservés (`06400`, pas `6400`), y compris pour la colonne téléphone.
 
 ## Prochaine étape (non traitée dans cette itération)
 
