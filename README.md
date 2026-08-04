@@ -409,6 +409,25 @@ L'interface s'adapte du smartphone au grand écran :
   > marques distribuées. À affiner ou remplacer dès qu'un champ de
   > typologie réel sera fourni par le client.
 
+## Zones blanches (opportunités de prospection)
+
+Le bouton **Zones blanches** (`src/components/WhiteZonesToggle.jsx`) superpose
+sur la carte un calque de cercles pointillés teal (`src/utils/whiteZones.js`)
+signalant les villes où :
+
+- au moins 5 opticiens concurrents sont déjà implantés (un volume de marché
+  réel, pas juste une boutique isolée) ;
+- **aucun** d'entre eux ne distribue une marque Thélios (Barton Perreira ou
+  Vuarnet).
+
+Le rayon de chaque cercle est proportionnel au nombre d'opticiens
+concurrents dans la ville (survoler un cercle affiche le détail). Ce calque
+se superpose aux marqueurs normaux ou à la heatmap — il ne les remplace pas
+— et se calcule toujours à partir de l'ensemble du réseau (`stores.json`
+complet), indépendamment des filtres actifs, puisqu'une analyse de
+prospection perd son sens si elle est déjà restreinte à un sous-ensemble
+filtré.
+
 ## Optimisation de trajet
 
 Sur chaque fiche opticien (liste ou panneau détaillé), une case à cocher
@@ -429,6 +448,32 @@ permet de sélectionner jusqu'à 4 opticiens (`MAX_ROUTE_STOPS` dans
 Les arrêts sélectionnés s'affichent sur la carte avec des marqueurs numérotés
 et un tracé en pointillés (numérotés par ordre de sélection avant
 optimisation, puis par ordre optimisé une fois calculé).
+
+### Export PDF "Fiche de Tournée"
+
+Le bouton **Exporter en PDF** du panneau de trajet (`src/utils/pdfExport.js`,
+bibliothèque `jspdf`) génère un PDF téléchargeable contenant :
+
+- un **schéma d'itinéraire** : les arrêts (et la position de départ si la
+  géolocalisation est active) reliés dans l'ordre par un tracé en
+  pointillés doré, avec des repères numérotés identiques à ceux affichés
+  sur la carte. Ce n'est **pas une capture de la carte réelle** — il n'existe
+  pas de moyen fiable de rastériser des tuiles Leaflet hors-ligne sans
+  dépendre d'un service externe (problèmes de CORS avec les tuiles
+  OSM/CartoDB) — mais un schéma vectoriel recalculé à partir des
+  coordonnées GPS des arrêts, clairement légendé comme tel ;
+- la **liste ordonnée des opticiens** à visiter, avec adresse complète,
+  téléphone, marques distribuées, et la note privée déjà saisie pour cet
+  opticien (le cas échéant, voir "Ma Carte" plus bas) ;
+- un espace **compte-rendu de la journée** avec des lignes pour la prise de
+  notes manuscrites ou la frappe d'un compte-rendu une fois le PDF imprimé.
+
+Aucun champ "nom du commercial" n'est demandé dans l'application (l'app n'a
+pas de système de comptes, voir "Ma Carte" plus bas) : le PDF laisse
+simplement une ligne à remplir à la main pour ça, plutôt que d'ajouter un
+faux profil utilisateur. La bibliothèque `jspdf` est chargée par un
+`import()` dynamique déclenché uniquement au clic sur le bouton, pour ne pas
+alourdir le chargement initial de l'app.
 
 ## Mode sombre
 
@@ -524,6 +569,31 @@ bascule entre deux vues :
   libre dans la fiche détaillée de chaque opticien (ex. "Prochain RDV le
   12/10, relancer pour la collection Vuarnet"), enregistré au fil de la
   saisie dans le `localStorage`, par opticien.
+
+### Statuts et étiquettes (CRM léger)
+
+Dans la fiche détaillée de chaque opticien (`src/components/StatusSelector.jsx`,
+`src/components/TagPicker.jsx`) :
+
+- **Statut** : un seul statut à la fois parmi Client actif (vert), Prospect
+  à contacter (bleu), RDV à fixer (terracotta) ou Refus (rouge) — cliquer un
+  statut déjà actif le retire. Les couleurs (`STATUS_COLORS` dans
+  `src/utils/palette.js`) sont volontairement adoucies plutôt que vives,
+  pour rester dans le registre sobre du reste de l'app.
+- **Étiquettes** : trois étiquettes prédéfinies (Premium, Besoin de PLV,
+  Collection Solaire uniquement) à cocher/décocher, plus un champ pour
+  ajouter des étiquettes libres.
+
+Ces deux informations sont reflétées visuellement à trois endroits :
+
+1. Un point de couleur sur chaque fiche de la liste (`src/components/StatusDot.jsx`).
+2. Dans "Ma Carte" uniquement, la couleur des marqueurs sur la carte
+   elle-même passe du code or/gris habituel (marque Thélios vs concurrent)
+   au code couleur du statut — plus pertinent une fois qu'on suit ses propres
+   relations client que la distinction par marque à l'échelle du réseau.
+   La légende en bas à gauche de la carte s'adapte en conséquence.
+3. Un filtre "Filtrer par statut" dans le panneau "Ma Carte", pour n'afficher
+   que les opticiens d'un ou plusieurs statuts donnés.
 
 ### Import de portefeuille (.xlsx / .csv)
 

@@ -2,6 +2,7 @@ import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { MAX_ROUTE_STOPS } from "../utils/route";
 import FavoriteButton from "./FavoriteButton";
+import StatusDot from "./StatusDot";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function RouteCheckbox({ inRoute, disabled, onToggle, t }) {
@@ -37,6 +38,7 @@ export default function StoreList({
   onToggleRouteStop,
   favoriteIds = [],
   onToggleFavorite,
+  statuses = {},
   emptyMessage,
 }) {
   const { t } = useLanguage();
@@ -81,6 +83,9 @@ export default function StoreList({
                       t={t}
                     />
                   )}
+                  <span className="mt-1.5 shrink-0">
+                    <StatusDot status={statuses[store.id]} />
+                  </span>
                   <p className="truncate font-serif text-[15px] leading-snug">
                     {store.name}
                   </p>

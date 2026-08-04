@@ -71,6 +71,16 @@ export const translations = {
     "myCard.removeFavorite": "Retirer des favoris",
     "myCard.notesTitle": "Notes privées",
     "myCard.notesPlaceholder": "Ex. Prochain RDV le 12/10, relancer pour la collection Vuarnet…",
+    "myCard.statusTitle": "Statut",
+    "myCard.statusFilterTitle": "Filtrer par statut",
+    "myCard.status.active_client": "Client actif",
+    "myCard.status.prospect": "Prospect à contacter",
+    "myCard.status.appointment_pending": "RDV à fixer",
+    "myCard.status.refused": "Refus",
+    "myCard.status.none": "Sans statut",
+    "myCard.tagsTitle": "Étiquettes",
+    "myCard.addTagPlaceholder": "Ajouter une étiquette…",
+    "myCard.addTagButton": "Ajouter",
 
     "map.emptyTitle": "Trouvez un opticien Thélios",
     "map.emptyBody":
@@ -83,6 +93,9 @@ export const translations = {
     "map.locating": "Localisation en cours…",
     "map.heatmap": "Mode densité",
     "map.heatmapAria": "Basculer le mode densité",
+    "map.whiteZones": "Zones blanches",
+    "map.whiteZonesAria": "Basculer les zones blanches (opportunités de prospection)",
+    "map.whiteZoneTooltip": "{count} opticiens concurrents · 0 Thélios",
 
     "geo.unsupported":
       "La géolocalisation n'est pas prise en charge par votre navigateur.",
@@ -101,6 +114,16 @@ export const translations = {
     "route.totalDistance": "≈ {km} au total (à vol d'oiseau)",
     "route.needTwo": "Sélectionnez au moins 2 opticiens pour optimiser",
     "route.close": "Fermer le planificateur de trajet",
+    "route.pdfExport": "Exporter en PDF (fiche de tournée)",
+    "route.pdfExporting": "Génération du PDF…",
+    "route.pdfTitle": "Thélios — Fiche de Tournée",
+    "route.pdfDateLabel": "Date",
+    "route.pdfRepLabel": "Commercial",
+    "route.pdfStopsTitle": "Opticiens à visiter",
+    "route.pdfNoteLabel": "Note",
+    "route.pdfReportTitle": "Compte-rendu de la journée",
+    "route.pdfReportHint": "Espace libre pour vos notes manuscrites ou votre compte-rendu.",
+    "route.pdfFooter": "Généré depuis le Store Locator Thélios",
 
     "theme.toggleAria": "Basculer le mode sombre",
 
@@ -255,6 +278,16 @@ export const translations = {
     "myCard.removeFavorite": "Remove from favorites",
     "myCard.notesTitle": "Private notes",
     "myCard.notesPlaceholder": "E.g. Next appointment on 10/12, follow up on the Vuarnet collection…",
+    "myCard.statusTitle": "Status",
+    "myCard.statusFilterTitle": "Filter by status",
+    "myCard.status.active_client": "Active client",
+    "myCard.status.prospect": "Prospect to contact",
+    "myCard.status.appointment_pending": "Appointment to set",
+    "myCard.status.refused": "Declined",
+    "myCard.status.none": "No status",
+    "myCard.tagsTitle": "Tags",
+    "myCard.addTagPlaceholder": "Add a tag…",
+    "myCard.addTagButton": "Add",
 
     "map.emptyTitle": "Find a Thélios optician",
     "map.emptyBody":
@@ -267,6 +300,9 @@ export const translations = {
     "map.locating": "Locating…",
     "map.heatmap": "Density mode",
     "map.heatmapAria": "Toggle density mode",
+    "map.whiteZones": "White zones",
+    "map.whiteZonesAria": "Toggle white zones (prospecting opportunities)",
+    "map.whiteZoneTooltip": "{count} competitor opticians · 0 Thélios",
 
     "geo.unsupported": "Geolocation is not supported by your browser.",
     "geo.denied":
@@ -284,6 +320,16 @@ export const translations = {
     "route.totalDistance": "≈ {km} total (as the crow flies)",
     "route.needTwo": "Select at least 2 opticians to optimize",
     "route.close": "Close route planner",
+    "route.pdfExport": "Export as PDF (route sheet)",
+    "route.pdfExporting": "Generating PDF…",
+    "route.pdfTitle": "Thélios — Route Sheet",
+    "route.pdfDateLabel": "Date",
+    "route.pdfRepLabel": "Sales rep",
+    "route.pdfStopsTitle": "Opticians to visit",
+    "route.pdfNoteLabel": "Note",
+    "route.pdfReportTitle": "End-of-day report",
+    "route.pdfReportHint": "Free space for handwritten notes or your report.",
+    "route.pdfFooter": "Generated from the Thélios Store Locator",
 
     "theme.toggleAria": "Toggle dark mode",
 

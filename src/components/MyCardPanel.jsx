@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import StatusFilter from "./StatusFilter";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function ImportIcon() {
@@ -9,7 +10,15 @@ function ImportIcon() {
   );
 }
 
-export default function MyCardPanel({ portfolioCount, favoritesCount, importing, onImportFile, onReset }) {
+export default function MyCardPanel({
+  portfolioCount,
+  favoritesCount,
+  importing,
+  onImportFile,
+  onReset,
+  selectedStatuses,
+  onToggleStatus,
+}) {
   const { t } = useLanguage();
   const inputRef = useRef(null);
 
@@ -57,6 +66,8 @@ export default function MyCardPanel({ portfolioCount, favoritesCount, importing,
           {t("myCard.resetPortfolio")}
         </button>
       )}
+
+      {onToggleStatus && <StatusFilter selected={selectedStatuses} onToggle={onToggleStatus} />}
     </div>
   );
 }

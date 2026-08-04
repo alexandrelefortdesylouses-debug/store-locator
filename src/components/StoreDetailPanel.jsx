@@ -2,6 +2,8 @@ import { Fragment } from "react";
 import ReviewSection from "./ReviewSection";
 import FavoriteButton from "./FavoriteButton";
 import StoreNotes from "./StoreNotes";
+import StatusSelector from "./StatusSelector";
+import TagPicker from "./TagPicker";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { MAX_ROUTE_STOPS } from "../utils/route";
@@ -17,6 +19,10 @@ export default function StoreDetailPanel({
   onToggleFavorite,
   note = "",
   onSetNote,
+  status = null,
+  onSetStatus,
+  tags = [],
+  onSetTags,
 }) {
   const { t } = useLanguage();
 
@@ -92,6 +98,9 @@ export default function StoreDetailPanel({
             )}
           </button>
         )}
+
+        {onSetStatus && <StatusSelector value={status} onChange={(s) => onSetStatus(store.id, s)} />}
+        {onSetTags && <TagPicker tags={tags} onChange={(t2) => onSetTags(store.id, t2)} />}
 
         <div className="mb-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">

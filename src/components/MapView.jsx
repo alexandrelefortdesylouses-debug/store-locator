@@ -1,12 +1,22 @@
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import "leaflet.heat";
 import { isFeaturedStore } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
-import { GOLD_ACCENT, NEUTRAL_ACCENT, INK, PALE_GOLD, HEATMAP_GRADIENT } from "../utils/palette";
+import {
+  GOLD_ACCENT,
+  NEUTRAL_ACCENT,
+  INK,
+  PALE_GOLD,
+  HEATMAP_GRADIENT,
+  STATUS_COLORS,
+  STATUS_NONE_COLOR,
+  WHITE_ZONE_COLOR,
+} from "../utils/palette";
 import { getHeatmapCalibration } from "../utils/heatmapCalibration";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const FRANCE_CENTER = [46.6, 2.4];
 const FRANCE_ZOOM = 6;
@@ -56,7 +66,22 @@ const icons = {
   neutralSelected: createPinIcon(NEUTRAL, true),
 };
 
-function getIcon(store, selected) {
+// "Ma Carte" recolors every marker by CRM status instead of the Thélios/
+// competitor brand split, which is more useful once you're tracking your
+// own client relationships than the network-wide brand distinction.
+const statusIcons = Object.fromEntries(
+  [...Object.entries(STATUS_COLORS), ["none", STATUS_NONE_COLOR]].map(([status, color]) => [
+    status,
+    { default: createPinIcon(color, false), selected: createPinIcon(color, true) },
+  ]),
+);
+
+function getIcon(store, selected, { viewMode, statuses } = {}) {
+  if (viewMode === "mycard") {
+    const status = statuses?.[store.id] || "none";
+    const iconSet = statusIcons[status] || statusIcons.none;
+    return selected ? iconSet.selected : iconSet.default;
+  }
   const featured = isFeaturedStore(store);
   if (featured) {
     return selected ? icons.featuredSelected : icons.featuredDefault;
@@ -217,7 +242,12 @@ export default function MapView({
   isDark,
   routeStops = [],
   routeOrder,
+  viewMode,
+  statuses,
+  whiteZonesActive,
+  whiteZones = [],
 }) {
+  const { t } = useLanguage();
   const tiles = isDark ? DARK_TILES : LIGHT_TILES;
   const routeStopSet = new Set(routeStops.map((s) => s.id));
   const displayRouteStops = routeOrder || routeStops;
@@ -278,7 +308,7 @@ export default function MapView({
               <Marker
                 key={store.id}
                 position={[store.lat, store.lng]}
-                icon={getIcon(store, store.id === selectedStoreId)}
+                icon={getIcon(store, store.id === selectedStoreId, { viewMode, statuses })}
                 eventHandlers={{
                   click: () => onSelectStore(store.id),
                 }}
@@ -299,6 +329,28 @@ export default function MapView({
           })}
         </MarkerClusterGroup>
       )}
+
+      {whiteZonesActive &&
+        whiteZones.map((zone) => (
+          <CircleMarker
+            key={zone.city}
+            center={[zone.lat, zone.lng]}
+            radius={Math.min(10 + Math.sqrt(zone.total) * 2, 32)}
+            pathOptions={{
+              color: WHITE_ZONE_COLOR,
+              weight: 2,
+              dashArray: "4 3",
+              fillColor: WHITE_ZONE_COLOR,
+              fillOpacity: 0.18,
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -4]}>
+              <strong>{zone.city}</strong>
+              <br />
+              {t("map.whiteZoneTooltip", { count: zone.total })}
+            </Tooltip>
+          </CircleMarker>
+        ))}
     </MapContainer>
   );
 }

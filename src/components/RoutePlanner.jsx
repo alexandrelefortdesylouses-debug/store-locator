@@ -5,7 +5,16 @@ import {
   buildGoogleMapsUrl,
   buildWazeUrl,
 } from "../utils/route";
+import { exportRoutePdf } from "../utils/pdfExport";
 import { formatDistanceKm } from "../utils/geo";
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+    </svg>
+  );
+}
 
 export default function RoutePlanner({
   stops,
@@ -13,9 +22,11 @@ export default function RoutePlanner({
   onClear,
   userLocation,
   onOptimize,
+  notes = {},
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [optimized, setOptimized] = useState(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   useEffect(() => {
     setOptimized(null);
@@ -27,6 +38,39 @@ export default function RoutePlanner({
     const result = optimizeRouteOrder(stops, userLocation);
     setOptimized(result);
     onOptimize?.(result);
+  }
+
+  async function handleExportPdf() {
+    if (exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      const dateValue = new Date().toLocaleDateString(lang === "en" ? "en-US" : "fr-FR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      await exportRoutePdf({
+        stops,
+        order: optimized?.order,
+        userLocation,
+        notes,
+        labels: {
+          title: t("route.pdfTitle"),
+          dateLabel: t("route.pdfDateLabel"),
+          dateValue,
+          repLabel: t("route.pdfRepLabel"),
+          stopsTitle: t("route.pdfStopsTitle"),
+          noteLabel: t("route.pdfNoteLabel"),
+          reportTitle: t("route.pdfReportTitle"),
+          reportHint: t("route.pdfReportHint"),
+          footer: t("route.pdfFooter"),
+          filename: `thelios-tournee-${new Date().toISOString().slice(0, 10)}.pdf`,
+        },
+      });
+    } finally {
+      setExportingPdf(false);
+    }
   }
 
   if (stops.length === 0) return null;
@@ -73,19 +117,19 @@ export default function RoutePlanner({
       </ul>
 
       {stops.length < 2 ? (
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">
+        <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
           {t("route.needTwo")}
         </p>
       ) : !optimized ? (
         <button
           type="button"
           onClick={handleOptimize}
-          className="w-full cursor-pointer rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-neutral-950"
+          className="mb-3 w-full cursor-pointer rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-neutral-950"
         >
           {t("route.optimize")}
         </button>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="mb-3 flex flex-col gap-2">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
             {t("route.totalDistance", {
               km: formatDistanceKm(optimized.totalDistanceKm),
@@ -112,6 +156,16 @@ export default function RoutePlanner({
           </div>
         </div>
       )}
+
+      <button
+        type="button"
+        onClick={handleExportPdf}
+        disabled={exportingPdf}
+        className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-wait disabled:opacity-60 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+      >
+        <DownloadIcon />
+        {exportingPdf ? t("route.pdfExporting") : t("route.pdfExport")}
+      </button>
     </div>
   );
 }

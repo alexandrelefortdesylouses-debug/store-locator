@@ -30,6 +30,9 @@ export default function Sidebar({
   myCardEmptyMessage,
   favoriteIds,
   onToggleFavorite,
+  statuses,
+  selectedStatuses,
+  onToggleStatus,
   search,
   onSearchChange,
   allStores,
@@ -115,6 +118,8 @@ export default function Sidebar({
                 importing={importing}
                 onImportFile={onImportFile}
                 onReset={onResetPortfolio}
+                selectedStatuses={selectedStatuses}
+                onToggleStatus={onToggleStatus}
               />
             )}
 
@@ -207,6 +212,7 @@ export default function Sidebar({
                     onToggleRouteStop={onToggleRouteStop}
                     favoriteIds={favoriteIds}
                     onToggleFavorite={onToggleFavorite}
+                    statuses={statuses}
                     emptyMessage={myCardEmptyMessage}
                   />
                 </>

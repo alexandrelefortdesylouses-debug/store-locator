@@ -12,6 +12,7 @@ import Dashboard from "./components/Dashboard";
 import StoreDetailPanel from "./components/StoreDetailPanel";
 import SecretCodeSettings from "./components/SecretCodeSettings";
 import ImportSummaryModal from "./components/ImportSummaryModal";
+import WhiteZonesToggle from "./components/WhiteZonesToggle";
 import ChatWidget from "./components/ChatWidget";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
@@ -21,6 +22,7 @@ import { MAX_ROUTE_STOPS } from "./utils/route";
 import { exportStoresToXlsx } from "./utils/xlsxExport";
 import { parseSpreadsheetFile } from "./utils/fileParsing";
 import { detectColumns, matchPortfolioRows } from "./utils/portfolioMatching";
+import { computeWhiteZones } from "./utils/whiteZones";
 import {
   getFavorites,
   toggleFavorite,
@@ -29,6 +31,10 @@ import {
   resetPortfolio,
   getNotes,
   setNote,
+  getStatuses,
+  setStatus,
+  getTags,
+  setTags,
 } from "./utils/myCard";
 import { useLanguage } from "./i18n/LanguageContext";
 import { useTheme } from "./theme/ThemeContext";
@@ -68,6 +74,10 @@ function App() {
   const [favoriteIds, setFavoriteIds] = useState(() => getFavorites());
   const [portfolioIds, setPortfolioIds] = useState(() => getPortfolio());
   const [notes, setNotes] = useState(() => getNotes());
+  const [statuses, setStatuses] = useState(() => getStatuses());
+  const [tags, setTagsState] = useState(() => getTags());
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [whiteZonesActive, setWhiteZonesActive] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
 
@@ -81,6 +91,12 @@ function App() {
     () => stores.filter((s) => portfolioIds.includes(s.id) || favoriteIds.includes(s.id)),
     [stores, portfolioIds, favoriteIds],
   );
+
+  // "Zones blanches" (prospecting opportunities) are always computed from
+  // the whole, unfiltered network — narrowing this to whatever's currently
+  // filtered would defeat the point of a "where am I completely absent"
+  // analysis.
+  const whiteZones = useMemo(() => computeWhiteZones(stores), [stores]);
 
   // Every option list (brands, regions, departments, cities) and the search
   // universe itself narrow to "Ma Carte" when that view is active, so the
@@ -200,6 +216,10 @@ function App() {
       base = [];
     }
 
+    if (viewMode === "mycard" && selectedStatuses.length > 0) {
+      base = base.filter((store) => selectedStatuses.includes(statuses[store.id]));
+    }
+
     if (userLocation) {
       const withDistance = base
         .map((store) => ({
@@ -233,6 +253,8 @@ function App() {
     browseAll,
     userLocation,
     viewMode,
+    statuses,
+    selectedStatuses,
   ]);
 
   const selectedStoreBase = stores.find((s) => s.id === selectedStoreId);
@@ -275,6 +297,12 @@ function App() {
     );
   }
 
+  function toggleStatusFilter(status) {
+    setSelectedStatuses((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
+    );
+  }
+
   function handleResetFilters() {
     setSearch("");
     setSelectedCities([]);
@@ -282,6 +310,7 @@ function App() {
     setSelectedDepartments([]);
     setSelectedBrands([]);
     setSelectedStoreTypes([]);
+    setSelectedStatuses([]);
     setBrowseAll(false);
     setUserLocation(null);
     setGeoError(null);
@@ -325,6 +354,14 @@ function App() {
 
   function handleSetNote(storeId, text) {
     setNotes(setNote(storeId, text));
+  }
+
+  function handleSetStatus(storeId, status) {
+    setStatuses(setStatus(storeId, status));
+  }
+
+  function handleSetTags(storeId, tagList) {
+    setTagsState(setTags(storeId, tagList));
   }
 
   function handleResetPortfolio() {
@@ -419,6 +456,9 @@ function App() {
             myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
+            statuses={statuses}
+            selectedStatuses={selectedStatuses}
+            onToggleStatus={toggleStatusFilter}
             search={search}
             onSearchChange={setSearch}
             allStores={baseUniverse}
@@ -463,12 +503,20 @@ function App() {
               isDark={isDark}
               routeStops={routeStops}
               routeOrder={routeOrder}
+              viewMode={viewMode}
+              statuses={statuses}
+              whiteZonesActive={whiteZonesActive}
+              whiteZones={whiteZones}
             />
 
             <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
               <HeatmapToggle
                 active={heatmapActive}
                 onToggle={() => setHeatmapActive((v) => !v)}
+              />
+              <WhiteZonesToggle
+                active={whiteZonesActive}
+                onToggle={() => setWhiteZonesActive((v) => !v)}
               />
               <LocateMeButton
                 onLocate={handleLocateMe}
@@ -479,7 +527,7 @@ function App() {
             </div>
 
             {showResults && filteredStores.length > 0 && !heatmapActive && (
-              <MapLegend />
+              <MapLegend viewMode={viewMode} />
             )}
 
             {!showResults && (
@@ -521,6 +569,7 @@ function App() {
               onClear={clearRoute}
               userLocation={userLocation}
               onOptimize={(result) => setRouteOrder(result?.order || null)}
+              notes={notes}
             />
 
             <StoreDetailPanel
@@ -533,6 +582,10 @@ function App() {
               onToggleFavorite={handleToggleFavorite}
               note={selectedStore ? notes[selectedStore.id] || "" : ""}
               onSetNote={handleSetNote}
+              status={selectedStore ? statuses[selectedStore.id] || null : null}
+              onSetStatus={handleSetStatus}
+              tags={selectedStore ? tags[selectedStore.id] || [] : []}
+              onSetTags={handleSetTags}
             />
           </div>
         </div>
