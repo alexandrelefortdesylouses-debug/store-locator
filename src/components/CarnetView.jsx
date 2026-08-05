@@ -51,6 +51,9 @@ const TAB_ICONS = { table: TableIcon, agenda: CalendarIcon, notes: NoteIcon, per
 export default function CarnetView({
   stores,
   statuses,
+  onSetStatus,
+  priorities,
+  onSetPriority,
   visitNotes,
   onAddVisitNote,
   prospectFirstSeen,
@@ -60,6 +63,7 @@ export default function CarnetView({
   onRemoveRouteStop,
   onClearRoute,
   onOptimizeRoute,
+  onViewOnMap,
   userLocation,
 }) {
   const { t } = useLanguage();
@@ -106,9 +110,13 @@ export default function CarnetView({
           <CarnetTableTab
             stores={stores}
             statuses={statuses}
+            onSetStatus={onSetStatus}
+            priorities={priorities}
+            onSetPriority={onSetPriority}
             visitNotes={visitNotes}
             onOpenNote={handleOpenNote}
             onScheduleStore={handleScheduleStore}
+            onViewOnMap={onViewOnMap}
           />
         )}
 

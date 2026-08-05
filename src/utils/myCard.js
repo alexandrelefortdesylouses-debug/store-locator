@@ -6,12 +6,21 @@ const PORTFOLIO_KEY = "storeLocator_mycard_portfolio";
 const NOTES_KEY = "storeLocator_mycard_notes";
 const STATUSES_KEY = "storeLocator_mycard_statuses";
 const TAGS_KEY = "storeLocator_mycard_tags";
+const PRIORITIES_KEY = "storeLocator_mycard_priorities";
 
 export const STORE_STATUSES = {
   ACTIVE_CLIENT: "active_client",
   PROSPECT: "prospect",
   APPOINTMENT_PENDING: "appointment_pending",
   REFUSED: "refused",
+};
+
+// Optional, freeform sales-priority flag on a portfolio store — unlike
+// STORE_STATUSES this is never required or shown outside "Mon Carnet".
+export const PRIORITY_LEVELS = {
+  HIGH: "high",
+  MEDIUM: "medium",
+  LOW: "low",
 };
 
 export const PRESET_TAGS = ["Premium", "Besoin de PLV", "Collection Solaire uniquement"];
@@ -110,5 +119,21 @@ export function setTags(storeId, tags) {
     delete updated[storeId];
   }
   localStorage.setItem(TAGS_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export function getPriorities() {
+  return readObject(PRIORITIES_KEY);
+}
+
+export function setPriority(storeId, priority) {
+  const priorities = getPriorities();
+  const updated = { ...priorities };
+  if (priority) {
+    updated[storeId] = priority;
+  } else {
+    delete updated[storeId];
+  }
+  localStorage.setItem(PRIORITIES_KEY, JSON.stringify(updated));
   return updated;
 }

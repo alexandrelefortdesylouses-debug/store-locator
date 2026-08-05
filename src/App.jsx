@@ -36,6 +36,8 @@ import {
   setStatus,
   getTags,
   setTags,
+  getPriorities,
+  setPriority,
 } from "./utils/myCard";
 import {
   getAllVisitNotes,
@@ -83,6 +85,7 @@ function App() {
   const [notes, setNotes] = useState(() => getNotes());
   const [statuses, setStatuses] = useState(() => getStatuses());
   const [tags, setTagsState] = useState(() => getTags());
+  const [priorities, setPrioritiesState] = useState(() => getPriorities());
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [whiteZonesActive, setWhiteZonesActive] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -294,6 +297,14 @@ function App() {
     setMobileView("map");
   }
 
+  // "Voir sur la carte" action from Mon Carnet's table: leaves the Carnet
+  // workspace and drops the user back on Carte Globale with that optician's
+  // detail panel already open.
+  function handleViewOnMap(id) {
+    setViewMode("global");
+    handleSelectStore(id);
+  }
+
   function toggleBrand(brand) {
     setSelectedBrands((prev) =>
       prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
@@ -373,6 +384,10 @@ function App() {
 
   function handleSetTags(storeId, tagList) {
     setTagsState(setTags(storeId, tagList));
+  }
+
+  function handleSetPriority(storeId, priority) {
+    setPrioritiesState(setPriority(storeId, priority));
   }
 
   function handleAddVisitNote(storeId, text) {
@@ -466,6 +481,9 @@ function App() {
           <CarnetView
             stores={myCardStores}
             statuses={statuses}
+            onSetStatus={handleSetStatus}
+            priorities={priorities}
+            onSetPriority={handleSetPriority}
             visitNotes={visitNotes}
             onAddVisitNote={handleAddVisitNote}
             prospectFirstSeen={prospectFirstSeen}
@@ -475,6 +493,7 @@ function App() {
             onRemoveRouteStop={removeRouteStop}
             onClearRoute={clearRoute}
             onOptimizeRoute={handleRouteOptimized}
+            onViewOnMap={handleViewOnMap}
             userLocation={userLocation}
           />
         ) : (

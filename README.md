@@ -709,13 +709,37 @@ favoris).
 ### 📋 Tableau
 
 `src/components/CarnetTableTab.jsx` liste l'intégralité du portefeuille sous
-forme de tableau : nom, ville, statut, date de dernier contact et actions.
-Une recherche (nom/ville/marque) et des badges de statut cliquables
-(🟢 Client actif, 🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus — réutilisant les
-mêmes `STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes.
-Chaque ligne propose deux actions : **Ouvrir Note** (bascule sur l'onglet
-Bloc-Notes avec cet opticien pré-sélectionné) et **Programmer RDV** (ajoute
-l'opticien au trajet en cours et bascule sur l'onglet Agenda).
+forme de tableau : nom, ville, code postal/département, marques distribuées,
+statut, priorité, date de dernier contact et actions. Une recherche
+(nom/ville/marque) et des badges de statut cliquables (🟢 Client actif,
+🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus — réutilisant les mêmes
+`STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes.
+
+- **Marques Thélios** : badges discrets par opticien (mêmes styles que
+  partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en
+  plein, les autres restent en ton pastel).
+- **Potentiel / Priorité** : un niveau facultatif (⭐ Élevée / Moyenne /
+  Faible, ou non renseigné) propre à "Mon Carnet", stocké séparément du
+  statut CRM (`PRIORITY_LEVELS`/`getPriorities`/`setPriority` dans
+  `src/utils/myCard.js`) — jamais montré ailleurs dans l'app.
+- **Code Postal / Dép.** : extrait de l'adresse (`getStoreZip`/
+  `getStoreDeptCode` dans `src/utils/postalCode.js`, déjà utilisés pour les
+  filtres géographiques), pour trier ou repérer un secteur d'un coup d'œil.
+- **Statut** et **Priorité** sont modifiables directement dans la ligne via
+  un menu déroulant ("saisie rapide") — pas besoin d'ouvrir la fiche
+  détaillée de l'opticien.
+- **En-têtes de colonnes cliquables** (Nom, Ville, Code Postal, Statut,
+  Priorité, Dernier Contact) trient le tableau, croissant puis décroissant
+  au clic suivant sur la même colonne (un chevron indique la colonne et le
+  sens actifs).
+- **Actions rapides**, en icônes compactes : 📝 ouvrir/ajouter une note
+  (bascule sur l'onglet Bloc-Notes avec cet opticien pré-sélectionné),
+  📅 programmer un RDV (ajoute l'opticien au trajet en cours et bascule sur
+  l'onglet Agenda), 📞 appeler (lien `tel:`, désactivé si l'opticien n'a pas
+  de numéro renseigné — les numéros de `stores.json` ne sont pas tous au
+  même format, ils sont normalisés à la volée avant de construire le lien),
+  🗺️ voir sur la carte (quitte Mon Carnet, revient sur Carte Globale et
+  ouvre directement la fiche détaillée de cet opticien).
 
 ### 📅 Agenda & RDV
 
