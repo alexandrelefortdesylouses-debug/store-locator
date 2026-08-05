@@ -163,7 +163,26 @@ lorsqu'un filtre par marque affiche plus d'un millier de résultats.
   mettent à jour à chaque changement (le filtrage est recalculé côté client
   via `useMemo` dans `App.jsx`, aucun round-trip serveur).
   - **Régions** : dérivées du code postal comme précédemment
-    (`src/utils/regions.js`).
+    (`src/utils/regions.js`) — une appartenance stricte code postal → département
+    → région (table de correspondance figée, pas une recherche par mot-clé
+    dans l'adresse). Les codes postaux `971`–`976` sont associés
+    exclusivement à leur région DOM-TOM respective (Guadeloupe, Martinique,
+    Guyane, La Réunion, Saint-Pierre-et-Miquelon, Mayotte), jamais mélangés à
+    une région métropolitaine.
+  - **Anomalies de géolocalisation** : une poignée d'opticiens de
+    `stores.json` partagent un nom de commune avec un lieu d'outre-mer (ex.
+    "Saint Louis" dans le Haut-Rhin vs à La Réunion, "La Trinité" dans les
+    Alpes-Maritimes vs en Martinique, "Saint Claude" dans le Jura vs en
+    Guadeloupe) et ont été géocodés par erreur sur les coordonnées du mauvais
+    homonyme — leur code postal est correct (donc le filtre région/
+    département n'est pas affecté), mais leurs coordonnées GPS les placent à
+    des milliers de km de leur adresse réelle, ce qui donnait l'impression
+    qu'un opticien "de Guadeloupe" apparaissait sous la sélection
+    "Bourgogne-Franche-Comté". `src/utils/geoSanity.js` détecte ces
+    incohérences (coordonnées incompatibles avec le territoire impliqué par
+    le code postal de l'opticien) et exclut uniquement le **marqueur sur la
+    carte** de ces opticiens (liste, filtres, exports restent inchangés
+    puisque leurs données textuelles sont fiables) — voir `MapView.jsx`.
   - **Départements** : filtre (`src/utils/departments.js`), déduit du même
     code postal (préfixe à 2 chiffres, 3 pour l'outre-mer) et associé au nom
     officiel du département (ex. "06 – Alpes-Maritimes"). Comme un code
@@ -273,6 +292,13 @@ répond en interrogeant directement les données de `stores.json` (aucun appel
 - **Ville / code postal** : "Quels opticiens à Lyon ?", "Opticiens au 75011 ?"
 - **Marques** : "Où trouver Julbo ?"
 - **Horaires** : "Horaires du magasin de Nice ?" (répond que l'information n'est pas disponible si absente des données)
+
+Ce périmètre est volontairement rendu visible dans l'interface plutôt que
+laissé implicite : le message d'accueil du chat détaille les 3 sujets pris
+en charge avec un exemple de question pour chacun, et un bandeau permanent
+sous l'en-tête du widget ("Je réponds aux questions sur : ville/code postal
+· marques · horaires") le rappelle même une fois la conversation entamée
+(`src/components/ChatWidget.jsx`).
 
 La logique de correspondance se trouve dans `src/utils/chatbot.js` : elle
 reconnaît les villes (champ `city`), codes postaux, marques et noms
@@ -506,16 +532,33 @@ nom `tournee-AAAA-MM-JJ.ics` :
 
 Dans les deux cas, le calcul de l'emploi du temps (`src/utils/scheduling.js`)
 traite l'intégralité des étapes de la tournée optimisée, sans limite de
-nombre de rendez-vous : chaque créneau démarre à la fin du précédent, plus le
-temps de trajet estimé jusqu'à l'arrêt suivant. **Aucune API de routing
-réelle n'étant intégrée dans l'application** (voir plus haut, la distance
-utilisée partout est la distance à vol d'oiseau), ce temps de trajet est une
-estimation calculée à partir de la distance haversine entre deux arrêts et
-d'une vitesse moyenne théorique de 45 km/h — à considérer comme indicatif,
-pas comme un temps de trajet réel calculé par un service de navigation.
+nombre de rendez-vous, pour produire un **premier horaire par défaut** :
+chaque créneau démarre à la fin du précédent, plus le temps de trajet estimé
+jusqu'à l'arrêt suivant. **Aucune API de routing réelle n'étant intégrée
+dans l'application** (voir plus haut, la distance utilisée partout est la
+distance à vol d'oiseau), ce temps de trajet est une estimation calculée à
+partir de la distance haversine entre deux arrêts et d'une vitesse moyenne
+théorique de 45 km/h — à considérer comme indicatif, pas comme un temps de
+trajet réel calculé par un service de navigation.
 
 Une pause déjeuner automatique d'1h30 est insérée dès que l'horaire calculé
 atteint ou dépasse 12:30 ; les rendez-vous suivants reprennent à 14:00.
+
+Cet horaire par défaut n'est qu'un point de départ : la modale affiche
+ensuite la liste des rendez-vous avec, pour chacun, un champ heure
+librement modifiable indépendamment des autres — aucune grille de créneaux
+rigide n'est imposée (on peut par exemple mettre le 1er RDV à 09:15 et le
+2ᵉ à 11:00 sans que les étapes suivantes ne se recalculent en cascade).
+Modifier l'heure de début, le mode ou la durée régénère cet horaire par
+défaut (et donc écrase les ajustements déjà faits sur chaque ligne) — un
+changement de réglage global est traité comme une nouvelle proposition de
+base, pas comme une contrainte permanente.
+
+La modale inclut aussi un **sélecteur de date** (par défaut la date du jour,
+mais librement modifiable vers n'importe quelle date passée ou future) pour
+planifier une tournée à l'avance plutôt que de systématiquement l'imposer au
+jour même ; le nom du fichier téléchargé (`tournee-AAAA-MM-JJ.ics`) reflète
+la date choisie.
 
 Chaque événement du fichier `.ics` suit un format fixe :
 

@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
-import { buildDailySchedule } from "../utils/scheduling";
+import { buildDailySchedule, estimateTravelMinutes } from "../utils/scheduling";
 import { buildIcsCalendar, downloadIcsFile } from "../utils/icsExport";
+import { haversineDistanceKm } from "../utils/geo";
 
 const WINDOW_OPTIONS_MINUTES = [90, 105, 120];
 const DEFAULT_START_TIME = "09:00";
 const DEFAULT_DURATION_MINUTES = 45;
 const TIME_PATTERN = /^\d{1,2}:\d{2}$/;
+
+function todayDateString() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 function parseTimeToMinutes(value) {
   const safeValue = TIME_PATTERN.test(value) ? value : DEFAULT_START_TIME;
@@ -15,52 +24,101 @@ function parseTimeToMinutes(value) {
   return h * 60 + (m || 0);
 }
 
+function minutesToHHMM(minutes) {
+  const h = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 function safeDurationMinutes(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_DURATION_MINUTES;
 }
 
+function parseDateString(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+// The auto-chained default (start time + duration/window, one flowing into
+// the next) is only a starting point: every row's time below stays freely
+// editable afterward, with no rigid slot grid or forced sequencing.
+function buildDefaultRows({ stops, startTime, slotMinutes }) {
+  const schedule = buildDailySchedule({
+    stops,
+    date: new Date(),
+    startMinutes: parseTimeToMinutes(startTime),
+    slotMinutes,
+  });
+  return schedule.map(({ store, start }) => ({
+    store,
+    time: minutesToHHMM(start.getHours() * 60 + start.getMinutes()),
+  }));
+}
+
 export default function IcsExportModal({ stops, onClose, onExported }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState("precise");
+  const [date, setDate] = useState(todayDateString());
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
   const [durationMinutes, setDurationMinutes] = useState(DEFAULT_DURATION_MINUTES);
   const [windowMinutes, setWindowMinutes] = useState(105);
+  const [rows, setRows] = useState(() =>
+    buildDefaultRows({ stops, startTime: DEFAULT_START_TIME, slotMinutes: DEFAULT_DURATION_MINUTES }),
+  );
 
-  // Empty/unmodified fields fall back to valid defaults (09:00 / 45 min)
-  // rather than blocking the click, so the button is never gated behind
-  // strict validation of these two optional-looking inputs.
+  // Regenerates the default chained times whenever the auto-chain settings
+  // change. Any time a user has hand-adjusted on an individual row is reset
+  // by this — expected, since changing the base settings is a deliberate
+  // "start over from a fresh default" action, same as switching mode.
+  useEffect(() => {
+    const slotMinutes = mode === "precise" ? safeDurationMinutes(durationMinutes) : windowMinutes;
+    setRows(buildDefaultRows({ stops, startTime, slotMinutes }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, startTime, durationMinutes, windowMinutes]);
+
+  function handleRowTimeChange(index, value) {
+    setRows((prev) => prev.map((row, i) => (i === index ? { ...row, time: value } : row)));
+  }
+
   function handleGenerate() {
     const slotMinutes = mode === "precise" ? safeDurationMinutes(durationMinutes) : windowMinutes;
-    const startMinutes = parseTimeToMinutes(startTime);
+    const baseDate = parseDateString(date);
 
     // Close the modal immediately: the export itself runs synchronously
     // right after, so there's no need to keep the modal open while it does.
     onClose();
 
-    const today = new Date();
-    const schedule = buildDailySchedule({
-      stops,
-      date: today,
-      startMinutes,
-      slotMinutes,
+    const events = rows.map(({ store, time }, index) => {
+      const minutes = parseTimeToMinutes(time);
+      const start = new Date(baseDate);
+      start.setHours(0, 0, 0, 0);
+      start.setMinutes(minutes);
+      const end = new Date(start);
+      end.setMinutes(end.getMinutes() + slotMinutes);
+
+      let travelMinutes = null;
+      if (index > 0) {
+        const prevStore = rows[index - 1].store;
+        const distanceKm = haversineDistanceKm(prevStore.lat, prevStore.lng, store.lat, store.lng);
+        travelMinutes = estimateTravelMinutes(distanceKm);
+      }
+
+      return {
+        uid: `${store.id}-${date}-${index}@thelios-store-locator`,
+        summary: `RDV : ${store.name} (Étape ${index + 1})`,
+        location: store.address,
+        description:
+          travelMinutes === null
+            ? "Premier arrêt de la tournée."
+            : `Visite programmée via l'application. Temps de trajet estimé : ${travelMinutes} min.`,
+        start,
+        end,
+      };
     });
 
-    const dateStr = today.toISOString().slice(0, 10);
-    const events = schedule.map(({ store, index, start, end, travelMinutes }) => ({
-      uid: `${store.id}-${dateStr}@thelios-store-locator`,
-      summary: `RDV : ${store.name} (Étape ${index + 1})`,
-      location: store.address,
-      description:
-        travelMinutes === null
-          ? "Premier arrêt de la tournée."
-          : `Visite programmée via l'application. Temps de trajet estimé : ${travelMinutes} min.`,
-      start,
-      end,
-    }));
-
     const ics = buildIcsCalendar(events);
-    downloadIcsFile(ics, `tournee-${dateStr}.ics`);
+    downloadIcsFile(ics, `tournee-${date}.ics`);
     onExported?.();
   }
 
@@ -91,6 +149,18 @@ export default function IcsExportModal({ stops, onClose, onExported }) {
           <p className="mb-4 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
             {t("ics.hint", { count: stops.length })}
           </p>
+
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+              {t("ics.dateLabel")}
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value || todayDateString())}
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-amber-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            />
+          </div>
 
           <div className="mb-4 flex gap-2">
             <button
@@ -164,9 +234,39 @@ export default function IcsExportModal({ stops, onClose, onExported }) {
             </div>
           )}
 
-          <p className="mt-3 text-[11px] italic leading-relaxed text-neutral-400 dark:text-neutral-500">
+          <p className="mb-4 mt-3 text-[11px] italic leading-relaxed text-neutral-400 dark:text-neutral-500">
             {t("ics.lunchHint")}
           </p>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+              {t("ics.rowsTitle")}
+            </label>
+            <p className="mb-2 text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-500">
+              {t("ics.rowsHint")}
+            </p>
+            <ul className="flex flex-col gap-1.5">
+              {rows.map((row, i) => (
+                <li
+                  key={row.store.id}
+                  className="flex items-center gap-2 rounded-lg border border-neutral-200 px-2.5 py-1.5 dark:border-neutral-700"
+                >
+                  <span className="w-5 shrink-0 text-right text-xs font-semibold text-amber-700 dark:text-amber-400">
+                    {i + 1}.
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs text-neutral-700 dark:text-neutral-200">
+                    {row.store.name}
+                  </span>
+                  <input
+                    type="time"
+                    value={row.time}
+                    onChange={(e) => handleRowTimeChange(i, e.target.value)}
+                    className="w-[6.5rem] shrink-0 rounded-md border border-neutral-300 bg-white px-1.5 py-1 text-xs text-neutral-900 focus:border-amber-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className="shrink-0 border-t border-neutral-200 p-4 dark:border-neutral-700">

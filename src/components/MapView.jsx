@@ -5,6 +5,7 @@ import L from "leaflet";
 import "leaflet.heat";
 import { isFeaturedStore } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
+import { hasPlausibleCoordinates } from "../utils/geoSanity";
 import {
   GOLD_ACCENT,
   NEUTRAL_ACCENT,
@@ -251,6 +252,13 @@ export default function MapView({
   const tiles = isDark ? DARK_TILES : LIGHT_TILES;
   const routeStopSet = new Set(routeStops.map((s) => s.id));
   const displayRouteStops = routeOrder || routeStops;
+  // A handful of stores have a geocoding mistake that puts their marker
+  // thousands of km from where their own postal code says they are (see
+  // utils/geoSanity.js) — e.g. a mainland Jura store pinned in Guadeloupe.
+  // Their data (name, address, region/department) is otherwise fine, so
+  // they still appear in lists/filters/exports; they're just excluded here
+  // so a wrong pin never renders on the map itself.
+  const mappableStores = stores.filter(hasPlausibleCoordinates);
 
   const routePositions =
     routeOrder && routeOrder.length > 1
@@ -268,7 +276,7 @@ export default function MapView({
       className={`z-0 h-full w-full ${heatmapActive ? "heatmap-active" : ""}`}
     >
       <TileLayer attribution={tiles.attribution} url={tiles.url} />
-      <FitBoundsToStores stores={stores} disabled={Boolean(userLocation)} />
+      <FitBoundsToStores stores={mappableStores} disabled={Boolean(userLocation)} />
       <FlyToSelected store={selectedStore} />
       <FlyToUserLocation location={userLocation} />
       <InvalidateOnResize trigger={resizeTrigger} />
@@ -293,16 +301,16 @@ export default function MapView({
       ))}
 
       {heatmapActive ? (
-        <HeatmapLayer points={stores.map((store) => [store.lat, store.lng])} />
+        <HeatmapLayer points={mappableStores.map((store) => [store.lat, store.lng])} />
       ) : (
         <MarkerClusterGroup
-          key={stores.length}
+          key={mappableStores.length}
           chunkedLoading
           iconCreateFunction={createClusterIcon}
           maxClusterRadius={50}
           spiderfyOnMaxZoom
         >
-          {stores.map((store) => {
+          {mappableStores.map((store) => {
             if (routeStopSet.has(store.id)) return null;
             return (
               <Marker

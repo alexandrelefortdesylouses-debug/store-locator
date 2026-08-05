@@ -77,6 +77,10 @@ export default function ChatWidget({ stores }) {
             </button>
           </div>
 
+          <p className="shrink-0 border-b border-neutral-200 bg-neutral-50 px-4 py-1.5 text-center text-[10px] uppercase tracking-wide text-neutral-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-500">
+            {t("chat.scopeHint")}
+          </p>
+
           <div
             ref={scrollRef}
             className="thin-scrollbar flex-1 space-y-3 overflow-y-auto bg-neutral-50 p-4 dark:bg-neutral-950"

@@ -179,6 +179,7 @@ export const translations = {
 
     "ics.modalTitle": "Export agenda (.ics)",
     "ics.hint": "{count} rendez-vous seront ajoutés à votre agenda.",
+    "ics.dateLabel": "Date de la tournée",
     "ics.modeAName": "Horaires précis",
     "ics.modeADesc": "Heure de début fixe + durée moyenne par RDV.",
     "ics.modeBName": "Fenêtres de passage",
@@ -187,7 +188,9 @@ export const translations = {
     "ics.durationLabel": "Durée moyenne par RDV (minutes)",
     "ics.windowLabel": "Durée du créneau",
     "ics.lunchHint":
-      "Une pause déjeuner d'1h30 est insérée automatiquement si l'horaire calculé franchit 12:30 (reprise à 14:00).",
+      "Ces réglages ne servent qu'à générer un premier horaire par défaut (avec une pause déjeuner d'1h30 automatique si l'horaire calculé franchit 12:30, reprise à 14:00) : chaque heure de rendez-vous reste ensuite librement modifiable ci-dessous.",
+    "ics.rowsTitle": "Heure de chaque rendez-vous",
+    "ics.rowsHint": "Modifiez librement l'heure de n'importe quel rendez-vous, indépendamment des autres.",
     "ics.generate": "Générer et télécharger",
     "ics.toastSuccess": "Fichier agenda généré avec succès !",
 
@@ -269,8 +272,9 @@ export const translations = {
     "chat.closeAria": "Fermer l'assistant Thélios",
     "chat.inputPlaceholder": "Posez votre question…",
     "chat.send": "Envoyer",
+    "chat.scopeHint": "Je réponds aux questions sur : ville/code postal · marques · horaires",
     "chat.welcome":
-      "Bonjour, je suis l'Assistant Thélios. Demandez-moi une ville, un code postal ou une marque pour trouver un opticien partenaire.",
+      "Bonjour, je suis l'Assistant Thélios. Je peux vous renseigner sur 3 sujets : la ville ou le code postal (\"Quels opticiens à Lyon ?\", \"Opticiens au 75011 ?\"), les marques distribuées (\"Où trouver Julbo ?\") et les horaires d'un magasin (\"Horaires du magasin de Nice ?\"). Si une information ne m'a pas été renseignée, je vous le dis plutôt que d'inventer une réponse.",
   },
   en: {
     "header.settings": "Settings",
@@ -450,6 +454,7 @@ export const translations = {
 
     "ics.modalTitle": "Calendar export (.ics)",
     "ics.hint": "{count} appointments will be added to your calendar.",
+    "ics.dateLabel": "Route date",
     "ics.modeAName": "Precise timing",
     "ics.modeADesc": "Fixed start time + average duration per appointment.",
     "ics.modeBName": "Visit windows",
@@ -458,7 +463,9 @@ export const translations = {
     "ics.durationLabel": "Average duration per appointment (minutes)",
     "ics.windowLabel": "Slot duration",
     "ics.lunchHint":
-      "A 1h30 lunch break is inserted automatically if the computed time reaches 12:30 (resuming at 14:00).",
+      "These settings only generate a first default schedule (with an automatic 1h30 lunch break if the computed time reaches 12:30, resuming at 14:00): every appointment time below stays freely editable afterward.",
+    "ics.rowsTitle": "Time of each appointment",
+    "ics.rowsHint": "Freely adjust the time of any appointment, independently of the others.",
     "ics.generate": "Generate and download",
     "ics.toastSuccess": "Calendar file generated successfully!",
 
@@ -539,7 +546,8 @@ export const translations = {
     "chat.closeAria": "Close Thélios assistant",
     "chat.inputPlaceholder": "Ask your question…",
     "chat.send": "Send",
+    "chat.scopeHint": "I can help with: city/postal code · brands · opening hours",
     "chat.welcome":
-      "Hello, I'm the Thélios Assistant. Ask me about a city, postal code or brand to find a partner optician.",
+      "Hello, I'm the Thélios Assistant. I can help with 3 topics: city or postal code (\"Which opticians in Lyon?\", \"Opticians at 75011?\"), brands carried (\"Where to find Julbo?\"), and a shop's opening hours (\"Opening hours for the Nice shop?\"). If I don't have a piece of information, I'll tell you rather than make something up.",
   },
 };
