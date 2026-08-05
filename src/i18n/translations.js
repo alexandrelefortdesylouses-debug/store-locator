@@ -42,6 +42,44 @@ export const translations = {
 
     "viewMode.global": "Carte Globale",
     "viewMode.mycard": "Ma Carte",
+    "viewMode.carnet": "Mon Carnet",
+
+    "carnet.tab.table": "Tableau",
+    "carnet.tab.agenda": "Agenda & RDV",
+    "carnet.tab.notes": "Bloc-Notes",
+    "carnet.tab.performance": "Performance",
+
+    "carnet.table.searchPlaceholder": "Rechercher par nom, ville ou marque…",
+    "carnet.table.emptyPortfolio":
+      "Aucun opticien dans Mon Carnet. Ajoutez des favoris ou importez votre portefeuille depuis Ma Carte pour les retrouver ici.",
+    "carnet.table.noMatch": "Aucun opticien ne correspond à cette recherche.",
+    "carnet.table.colName": "Nom Opticien",
+    "carnet.table.colCity": "Ville",
+    "carnet.table.colStatus": "Statut",
+    "carnet.table.colLastContact": "Dernier Contact",
+    "carnet.table.colActions": "Actions",
+    "carnet.table.actionOpenNote": "Ouvrir Note",
+    "carnet.table.actionScheduleRdv": "Programmer RDV",
+
+    "carnet.agenda.empty":
+      "Aucun rendez-vous programmé. Ajoutez des opticiens à votre tournée depuis le Tableau ou la Carte Globale.",
+
+    "carnet.notes.emptyPortfolio": "Aucun opticien dans Mon Carnet pour l'instant.",
+    "carnet.notes.selectLabel": "Sélectionner un opticien",
+    "carnet.notes.addPlaceholder": "Ex. Visite du 12/10 : présentation de la collection Vuarnet, très intéressés…",
+    "carnet.notes.addButton": "Ajouter la note de visite",
+    "carnet.notes.historyTitle": "{count} note de visite",
+    "carnet.notes.historyTitle_plural": "{count} notes de visite",
+    "carnet.notes.noHistory": "Aucune note de visite pour cet opticien.",
+
+    "carnet.perf.weekTitle": "Semaine en cours vs semaine dernière",
+    "carnet.perf.monthTitle": "Mois en cours vs mois dernier",
+    "carnet.perf.visits": "Visites réalisées",
+    "carnet.perf.newProspects": "Nouveaux prospects contactés",
+    "carnet.perf.coverage": "Taux de couverture du secteur",
+    "carnet.perf.vsPrevious": "vs {value} sur la période précédente",
+    "carnet.perf.methodologyHint":
+      "Visites réalisées et taux de couverture sont calculés à partir des notes de visite datées ajoutées dans l'onglet Bloc-Notes (le taux de couverture est la part de votre portefeuille ayant reçu au moins une visite sur la période). Nouveaux prospects contactés compte les opticiens passés au statut Prospect pour la première fois sur la période. Ces indicateurs ne reflètent que l'activité enregistrée dans cette application, sur cet appareil.",
 
     "myCard.title": "Ma Carte",
     "myCard.description":
@@ -266,6 +304,44 @@ export const translations = {
 
     "viewMode.global": "Global Map",
     "viewMode.mycard": "My Map",
+    "viewMode.carnet": "My Notebook",
+
+    "carnet.tab.table": "Table",
+    "carnet.tab.agenda": "Agenda & Appointments",
+    "carnet.tab.notes": "Notebook",
+    "carnet.tab.performance": "Performance",
+
+    "carnet.table.searchPlaceholder": "Search by name, city or brand…",
+    "carnet.table.emptyPortfolio":
+      "No opticians in My Notebook yet. Add favorites or import your portfolio from My Map to find them here.",
+    "carnet.table.noMatch": "No opticians match this search.",
+    "carnet.table.colName": "Optician Name",
+    "carnet.table.colCity": "City",
+    "carnet.table.colStatus": "Status",
+    "carnet.table.colLastContact": "Last Contact",
+    "carnet.table.colActions": "Actions",
+    "carnet.table.actionOpenNote": "Open Note",
+    "carnet.table.actionScheduleRdv": "Schedule Appointment",
+
+    "carnet.agenda.empty":
+      "No appointments scheduled yet. Add opticians to your route from the Table or the Global Map.",
+
+    "carnet.notes.emptyPortfolio": "No opticians in My Notebook yet.",
+    "carnet.notes.selectLabel": "Select an optician",
+    "carnet.notes.addPlaceholder": "E.g. Visit on 10/12: presented the Vuarnet collection, very interested…",
+    "carnet.notes.addButton": "Add visit note",
+    "carnet.notes.historyTitle": "{count} visit note",
+    "carnet.notes.historyTitle_plural": "{count} visit notes",
+    "carnet.notes.noHistory": "No visit notes for this optician yet.",
+
+    "carnet.perf.weekTitle": "Current week vs last week",
+    "carnet.perf.monthTitle": "Current month vs last month",
+    "carnet.perf.visits": "Visits completed",
+    "carnet.perf.newProspects": "New prospects contacted",
+    "carnet.perf.coverage": "Sector coverage rate",
+    "carnet.perf.vsPrevious": "vs {value} in the previous period",
+    "carnet.perf.methodologyHint":
+      "Visits completed and coverage rate are computed from the dated visit notes added in the Notebook tab (coverage rate is the share of your portfolio that received at least one visit in the period). New prospects contacted counts opticians that were first set to Prospect status during the period. These figures only reflect activity logged in this application, on this device.",
 
     "myCard.title": "My Map",
     "myCard.description":

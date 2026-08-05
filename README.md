@@ -694,6 +694,78 @@ chargement initial de l'app pour les visiteurs qui n'utilisent jamais cette
 fonctionnalité (elle apparaît comme un fichier séparé dans le build, voir
 `npm run build`).
 
+## Mon Carnet
+
+Un troisième mode dans le même sélecteur (`src/components/ViewModeToggle.jsx`)
+bascule vers **Mon Carnet** — un espace de travail CRM en plein écran qui
+**masque entièrement la carte interactive** (elle est démontée du DOM tant
+que ce mode est actif, pas juste masquée en CSS ; elle se remonte normalement
+en revenant sur Carte Globale ou Ma Carte). Contrairement à "Ma Carte", ce
+n'est pas une vue cartographique alternative mais un tableau de bord organisé
+en quatre onglets internes (`src/components/CarnetView.jsx`), qui opèrent
+tous sur le même ensemble "personnel" que "Ma Carte" (portefeuille importé +
+favoris).
+
+### 📋 Tableau
+
+`src/components/CarnetTableTab.jsx` liste l'intégralité du portefeuille sous
+forme de tableau : nom, ville, statut, date de dernier contact et actions.
+Une recherche (nom/ville/marque) et des badges de statut cliquables
+(🟢 Client actif, 🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus — réutilisant les
+mêmes `STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes.
+Chaque ligne propose deux actions : **Ouvrir Note** (bascule sur l'onglet
+Bloc-Notes avec cet opticien pré-sélectionné) et **Programmer RDV** (ajoute
+l'opticien au trajet en cours et bascule sur l'onglet Agenda).
+
+### 📅 Agenda & RDV
+
+`src/components/CarnetAgendaTab.jsx` réutilise le même état de trajet
+(`routeStops`/`routeOrder`) que le planificateur flottant de la carte : un
+arrêt ajouté depuis le Tableau, ou depuis la Carte Globale, apparaît des deux
+côtés. Cet onglet affiche la liste des étapes programmées, un bouton
+**Optimiser mon trajet** (même moteur que sur la carte, voir "Optimisation
+de trajet" plus haut) et un accès direct au réglage de l'export agenda
+(`.ics`, voir plus haut) — sans avoir besoin de rouvrir la carte.
+
+### 📝 Bloc-Notes Client
+
+`src/components/CarnetNotesTab.jsx` permet de sélectionner un opticien du
+portefeuille et de consulter/ajouter des **notes de visite datées** —
+horodatées automatiquement à l'ajout. C'est un système distinct de la
+"Note privée" (texte libre unique) déjà présente dans le panneau détaillé de
+la carte : celui-ci reste un pense-bête simple, alors que le Bloc-Notes de
+Mon Carnet tient un historique chronologique de visites
+(`src/utils/activity.js`, clé `localStorage` séparée), qui sert aussi de
+source pour la colonne "Dernier Contact" du Tableau et pour l'onglet
+Performance ci-dessous.
+
+### 📊 Performance & Historique
+
+`src/components/CarnetPerformanceTab.jsx` compare, pour la semaine en cours
+vs la semaine dernière et le mois en cours vs le mois dernier
+(`src/utils/dateRanges.js`, semaines ISO du lundi au dimanche), trois
+indicateurs (`src/utils/performance.js`) :
+
+- **Visites réalisées** : nombre de notes de visite datées ajoutées sur la
+  période.
+- **Nouveaux prospects contactés** : nombre d'opticiens passés au statut
+  Prospect **pour la première fois** sur la période (un opticien qui reste
+  simplement Prospect d'une période à l'autre n'est pas recompté — la date
+  de premier passage au statut Prospect est mémorisée séparément dans
+  `src/utils/activity.js`).
+- **Taux de couverture du secteur** : part du portefeuille ayant reçu au
+  moins une visite datée sur la période.
+
+> ⚠️ **Ces indicateurs sont calculés uniquement à partir de l'activité
+> enregistrée dans cette application, sur cet appareil** (comme tout "Ma
+> Carte"/"Mon Carnet", il n'y a pas de backend). L'app n'a pas de notion
+> réelle de secteur commercial ni d'historique d'appels/visites externe à
+> l'outil : "taux de couverture du secteur" est une approximation
+> raisonnable construite à partir de l'activité réellement journalisée
+> (notes de visite), pas une donnée de territoire commercial officielle.
+> Le détail de la méthodologie est rappelé directement sous les indicateurs
+> dans l'interface.
+
 ## Prochaine étape (non traitée dans cette itération)
 
 Le point "page d'accueil + système de compte (favoris, avis personnalisés,

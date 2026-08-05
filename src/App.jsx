@@ -14,6 +14,7 @@ import SecretCodeSettings from "./components/SecretCodeSettings";
 import ImportSummaryModal from "./components/ImportSummaryModal";
 import WhiteZonesToggle from "./components/WhiteZonesToggle";
 import ChatWidget from "./components/ChatWidget";
+import CarnetView from "./components/CarnetView";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
@@ -23,6 +24,7 @@ import { parseSpreadsheetFile } from "./utils/fileParsing";
 import { detectColumns, matchPortfolioRows } from "./utils/portfolioMatching";
 import { computeWhiteZones } from "./utils/whiteZones";
 import {
+  STORE_STATUSES,
   getFavorites,
   toggleFavorite,
   getPortfolio,
@@ -35,6 +37,12 @@ import {
   getTags,
   setTags,
 } from "./utils/myCard";
+import {
+  getAllVisitNotes,
+  addVisitNote,
+  getProspectFirstSeen,
+  recordProspectContact,
+} from "./utils/activity";
 import { useLanguage } from "./i18n/LanguageContext";
 import { useTheme } from "./theme/ThemeContext";
 
@@ -79,6 +87,8 @@ function App() {
   const [whiteZonesActive, setWhiteZonesActive] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [visitNotes, setVisitNotesState] = useState(() => getAllVisitNotes());
+  const [prospectFirstSeen, setProspectFirstSeen] = useState(() => getProspectFirstSeen());
 
   useEffect(() => {
     fetch("/stores.json")
@@ -356,10 +366,21 @@ function App() {
 
   function handleSetStatus(storeId, status) {
     setStatuses(setStatus(storeId, status));
+    if (status === STORE_STATUSES.PROSPECT) {
+      setProspectFirstSeen(recordProspectContact(storeId));
+    }
   }
 
   function handleSetTags(storeId, tagList) {
     setTagsState(setTags(storeId, tagList));
+  }
+
+  function handleAddVisitNote(storeId, text) {
+    setVisitNotesState(addVisitNote(storeId, text));
+  }
+
+  function handleRouteOptimized(result) {
+    setRouteOrder(result?.order || null);
   }
 
   function handleResetPortfolio() {
@@ -432,161 +453,182 @@ function App() {
 
       <ViewModeToggle mode={viewMode} onChange={setViewMode} />
 
-      <MobileTabs
-        view={mobileView}
-        onChange={setMobileView}
-        resultCount={filteredStores.length}
-      />
+      {viewMode !== "carnet" && (
+        <MobileTabs
+          view={mobileView}
+          onChange={setMobileView}
+          resultCount={filteredStores.length}
+        />
+      )}
 
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-        <div
-          className={`${mobileView === "list" ? "flex" : "hidden"} h-full w-full md:flex md:w-auto`}
-        >
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
-            viewMode={viewMode}
-            portfolioCount={portfolioIds.length}
-            favoritesCount={favoriteIds.length}
-            importing={importing}
-            onImportFile={handleImportFile}
-            onResetPortfolio={handleResetPortfolio}
-            myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
-            favoriteIds={favoriteIds}
-            onToggleFavorite={handleToggleFavorite}
+        {viewMode === "carnet" ? (
+          <CarnetView
+            stores={myCardStores}
             statuses={statuses}
-            selectedStatuses={selectedStatuses}
-            onToggleStatus={toggleStatusFilter}
-            search={search}
-            onSearchChange={setSearch}
-            allStores={baseUniverse}
-            cities={availableCities}
-            selectedCities={selectedCities}
-            onCitiesChange={setSelectedCities}
-            regions={allRegions}
-            selectedRegions={selectedRegions}
-            onRegionsChange={setSelectedRegions}
-            departments={availableDepartments}
-            selectedDepartments={selectedDepartments}
-            onDepartmentsChange={setSelectedDepartments}
-            brands={allBrands}
-            selectedBrands={selectedBrands}
-            onToggleBrand={toggleBrand}
-            selectedStoreTypes={selectedStoreTypes}
-            onToggleStoreType={toggleStoreType}
-            stores={filteredStores}
-            hasActiveFilter={showResults}
-            onResetFilters={handleResetFilters}
-            onExport={handleExport}
-            exporting={exporting}
-            selectedStoreId={selectedStoreId}
-            onSelectStore={handleSelectStore}
-            routeStopIds={routeStops.map((s) => s.id)}
+            visitNotes={visitNotes}
+            onAddVisitNote={handleAddVisitNote}
+            prospectFirstSeen={prospectFirstSeen}
+            routeStops={routeStops}
+            routeOrder={routeOrder}
             onToggleRouteStop={toggleRouteStop}
+            onRemoveRouteStop={removeRouteStop}
+            onClearRoute={clearRoute}
+            onOptimizeRoute={handleRouteOptimized}
+            userLocation={userLocation}
           />
-        </div>
-
-        <div
-          className={`${mobileView === "map" ? "block" : "hidden"} relative h-full w-full flex-1 bg-neutral-100 p-0 dark:bg-neutral-950 md:block md:p-3 lg:p-6`}
-        >
-          <div className="relative h-full w-full overflow-hidden border border-neutral-200 shadow-lg dark:border-neutral-800 md:rounded-2xl">
-            <MapView
-              stores={filteredStores}
-              selectedStoreId={selectedStoreId}
-              selectedStore={selectedStore}
-              onSelectStore={handleSelectStore}
-              resizeTrigger={sidebarCollapsed}
-              userLocation={userLocation}
-              heatmapActive={heatmapActive}
-              isDark={isDark}
-              routeStops={routeStops}
-              routeOrder={routeOrder}
-              viewMode={viewMode}
-              statuses={statuses}
-              whiteZonesActive={whiteZonesActive}
-              whiteZones={whiteZones}
-            />
-
-            <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
-              <HeatmapToggle
-                active={heatmapActive}
-                onToggle={() => setHeatmapActive((v) => !v)}
-              />
-              <WhiteZonesToggle
-                active={whiteZonesActive}
-                onToggle={() => setWhiteZonesActive((v) => !v)}
-              />
-              <LocateMeButton
-                onLocate={handleLocateMe}
-                active={Boolean(userLocation)}
-                loading={geoLoading}
-                error={geoError}
+        ) : (
+          <>
+            <div
+              className={`${mobileView === "list" ? "flex" : "hidden"} h-full w-full md:flex md:w-auto`}
+            >
+              <Sidebar
+                collapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+                viewMode={viewMode}
+                portfolioCount={portfolioIds.length}
+                favoritesCount={favoriteIds.length}
+                importing={importing}
+                onImportFile={handleImportFile}
+                onResetPortfolio={handleResetPortfolio}
+                myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                statuses={statuses}
+                selectedStatuses={selectedStatuses}
+                onToggleStatus={toggleStatusFilter}
+                search={search}
+                onSearchChange={setSearch}
+                allStores={baseUniverse}
+                cities={availableCities}
+                selectedCities={selectedCities}
+                onCitiesChange={setSelectedCities}
+                regions={allRegions}
+                selectedRegions={selectedRegions}
+                onRegionsChange={setSelectedRegions}
+                departments={availableDepartments}
+                selectedDepartments={selectedDepartments}
+                onDepartmentsChange={setSelectedDepartments}
+                brands={allBrands}
+                selectedBrands={selectedBrands}
+                onToggleBrand={toggleBrand}
+                selectedStoreTypes={selectedStoreTypes}
+                onToggleStoreType={toggleStoreType}
+                stores={filteredStores}
+                hasActiveFilter={showResults}
+                onResetFilters={handleResetFilters}
+                onExport={handleExport}
+                exporting={exporting}
+                selectedStoreId={selectedStoreId}
+                onSelectStore={handleSelectStore}
+                routeStopIds={routeStops.map((s) => s.id)}
+                onToggleRouteStop={toggleRouteStop}
               />
             </div>
 
-            {showResults && filteredStores.length > 0 && !heatmapActive && (
-              <MapLegend viewMode={viewMode} />
-            )}
+            <div
+              className={`${mobileView === "map" ? "block" : "hidden"} relative h-full w-full flex-1 bg-neutral-100 p-0 dark:bg-neutral-950 md:block md:p-3 lg:p-6`}
+            >
+              <div className="relative h-full w-full overflow-hidden border border-neutral-200 shadow-lg dark:border-neutral-800 md:rounded-2xl">
+                <MapView
+                  stores={filteredStores}
+                  selectedStoreId={selectedStoreId}
+                  selectedStore={selectedStore}
+                  onSelectStore={handleSelectStore}
+                  resizeTrigger={sidebarCollapsed}
+                  userLocation={userLocation}
+                  heatmapActive={heatmapActive}
+                  isDark={isDark}
+                  routeStops={routeStops}
+                  routeOrder={routeOrder}
+                  viewMode={viewMode}
+                  statuses={statuses}
+                  whiteZonesActive={whiteZonesActive}
+                  whiteZones={whiteZones}
+                />
 
-            {!showResults && (
-              <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
-                <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
-                  <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
-                    {t("map.emptyTitle")}
-                  </p>
-                  <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
-                    {t("map.emptyBody")}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setBrowseAll(true)}
-                    className="mt-4 cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
-                  >
-                    {t("map.freeMode")}
-                  </button>
+                <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
+                  <HeatmapToggle
+                    active={heatmapActive}
+                    onToggle={() => setHeatmapActive((v) => !v)}
+                  />
+                  <WhiteZonesToggle
+                    active={whiteZonesActive}
+                    onToggle={() => setWhiteZonesActive((v) => !v)}
+                  />
+                  <LocateMeButton
+                    onLocate={handleLocateMe}
+                    active={Boolean(userLocation)}
+                    loading={geoLoading}
+                    error={geoError}
+                  />
                 </div>
+
+                {showResults && filteredStores.length > 0 && !heatmapActive && (
+                  <MapLegend viewMode={viewMode} />
+                )}
+
+                {!showResults && (
+                  <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
+                    <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
+                      <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
+                        {t("map.emptyTitle")}
+                      </p>
+                      <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                        {t("map.emptyBody")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setBrowseAll(true)}
+                        className="mt-4 cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+                      >
+                        {t("map.freeMode")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {viewMode === "mycard" && myCardIsEmpty && (
+                  <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
+                    <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
+                      <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
+                        {t("myCard.emptyPortfolioTitle")}
+                      </p>
+                      <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                        {t("myCard.emptyPortfolio")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <RoutePlanner
+                  stops={routeStops}
+                  onRemoveStop={removeRouteStop}
+                  onClear={clearRoute}
+                  userLocation={userLocation}
+                  onOptimize={handleRouteOptimized}
+                  notes={notes}
+                />
+
+                <StoreDetailPanel
+                  store={selectedStore}
+                  open={detailOpen && Boolean(selectedStore)}
+                  onClose={() => setDetailOpen(false)}
+                  routeStopIds={routeStops.map((s) => s.id)}
+                  onToggleRouteStop={toggleRouteStop}
+                  isFavorite={selectedStore ? favoriteIds.includes(selectedStore.id) : false}
+                  onToggleFavorite={handleToggleFavorite}
+                  note={selectedStore ? notes[selectedStore.id] || "" : ""}
+                  onSetNote={handleSetNote}
+                  status={selectedStore ? statuses[selectedStore.id] || null : null}
+                  onSetStatus={handleSetStatus}
+                  tags={selectedStore ? tags[selectedStore.id] || [] : []}
+                  onSetTags={handleSetTags}
+                />
               </div>
-            )}
-
-            {viewMode === "mycard" && myCardIsEmpty && (
-              <div className="pointer-events-none absolute inset-0 z-[400] flex items-center justify-center p-6">
-                <div className="pointer-events-auto max-w-sm rounded-xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
-                  <p className="font-serif text-lg text-neutral-900 dark:text-neutral-100">
-                    {t("myCard.emptyPortfolioTitle")}
-                  </p>
-                  <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
-                    {t("myCard.emptyPortfolio")}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <RoutePlanner
-              stops={routeStops}
-              onRemoveStop={removeRouteStop}
-              onClear={clearRoute}
-              userLocation={userLocation}
-              onOptimize={(result) => setRouteOrder(result?.order || null)}
-              notes={notes}
-            />
-
-            <StoreDetailPanel
-              store={selectedStore}
-              open={detailOpen && Boolean(selectedStore)}
-              onClose={() => setDetailOpen(false)}
-              routeStopIds={routeStops.map((s) => s.id)}
-              onToggleRouteStop={toggleRouteStop}
-              isFavorite={selectedStore ? favoriteIds.includes(selectedStore.id) : false}
-              onToggleFavorite={handleToggleFavorite}
-              note={selectedStore ? notes[selectedStore.id] || "" : ""}
-              onSetNote={handleSetNote}
-              status={selectedStore ? statuses[selectedStore.id] || null : null}
-              onSetStatus={handleSetStatus}
-              tags={selectedStore ? tags[selectedStore.id] || [] : []}
-              onSetTags={handleSetTags}
-            />
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {showSettings && (
