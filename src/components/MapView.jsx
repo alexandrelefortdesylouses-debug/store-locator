@@ -269,13 +269,21 @@ export default function MapView({
       : null;
 
   return (
+    // attributionControl is disabled per product request (no visible
+    // "Leaflet | © OpenStreetMap" control on the map). Note that OSM's and
+    // CARTO's tile usage policies require crediting them somewhere on any
+    // page using their tiles (see LIGHT_TILES/DARK_TILES.attribution above)
+    // — removing the on-map control doesn't remove that obligation, it just
+    // needs to be satisfied another way (e.g. a footer credit) to stay
+    // compliant with their terms of use.
     <MapContainer
       center={FRANCE_CENTER}
       zoom={FRANCE_ZOOM}
       scrollWheelZoom={true}
+      attributionControl={false}
       className={`z-0 h-full w-full ${heatmapActive ? "heatmap-active" : ""}`}
     >
-      <TileLayer attribution={tiles.attribution} url={tiles.url} />
+      <TileLayer url={tiles.url} />
       <FitBoundsToStores stores={mappableStores} disabled={Boolean(userLocation)} />
       <FlyToSelected store={selectedStore} />
       <FlyToUserLocation location={userLocation} />

@@ -46,6 +46,11 @@ npm run preview
   l'interface est traduite. Voir la section dédiée plus bas.
 - **Logo officiel** en en-tête (`public/logo-thelios.jpg`), sur un socle clair
   arrondi pour rester lisible malgré son fond crème opaque sur l'en-tête sombre.
+  Le fichier est recadré au plus près du bloc-marque (wordmark + signature
+  "LVMH Eyewear Excellence") — la version fournie par le client avait une
+  large marge crème inutilisée autour du texte, ce qui produisait un socle
+  démesuré et mal proportionné dans l'en-tête ; le recadrage ne change rien
+  au design du logo lui-même.
 - **Géolocalisation "Autour de moi"** : bouton cible en haut à droite de la
   carte qui centre la vue sur la position du visiteur et affiche les 30
   opticiens les plus proches, triés par distance (badge "X km" sur chaque
@@ -178,6 +183,17 @@ Avec plusieurs milliers d'opticiens, la carte utilise `react-leaflet-cluster`
 pour regrouper les marqueurs proches en bulles numérotées, qui se dissocient
 au fur et à mesure du zoom. Cela garde la carte lisible et performante même
 lorsqu'un filtre par marque affiche plus d'un millier de résultats.
+
+Le contrôle d'attribution Leaflet ("Leaflet | © OpenStreetMap…" en bas à
+droite) est désactivé (`attributionControl={false}` sur `MapContainer`,
+`src/components/MapView.jsx`) à la demande du produit.
+
+> ⚠️ Les conditions d'utilisation des fonds de carte OpenStreetMap et CARTO
+> (utilisés respectivement en mode clair et sombre) exigent normalement de
+> créditer leur source quelque part sur toute page qui les affiche —
+> désactiver le contrôle sur la carte elle-même ne supprime pas cette
+> obligation, il faudrait la satisfaire autrement (ex. un crédit en pied de
+> page) pour rester en conformité avec leurs licences.
 
 ## Recherche globale et filtres géographiques multi-sélection
 
@@ -674,6 +690,18 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
   un CDN de polices) : l'effet "épuré et raffiné" s'appuie sur la police
   serif système déjà utilisée pour les titres, combinée aux nouveaux
   espacements/couleurs.
+- **Favicon** : `public/favicon.ico` (16/32/48 px) et
+  `public/apple-touch-icon.png` (180 px) remplacent l'ancien favicon
+  générique (une forme abstraite violette sans rapport avec la marque,
+  héritée du gabarit de départ du projet). Le nouveau favicon est un
+  monogramme "T" recadré directement depuis le vrai logo Thélios
+  (`public/logo-thelios.jpg`, même graisse/police que le mot-symbole
+  "THĒLIOS"), sur le même fond crème que le logo — pas une création
+  arbitraire, juste un recadrage fidèle à l'identité existante. Régénérable
+  avec Pillow (`pip install pillow`) si le logo change ; le script utilisé
+  n'est pas versionné (traitement ponctuel), mais la logique (recadrage du
+  "T" par détection de pixels non-fond, mise à l'échelle sur un canevas
+  carré) est documentée ici pour pouvoir être reproduite.
 
 ## Carte Globale vs Ma Carte
 
