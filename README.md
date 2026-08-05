@@ -60,7 +60,7 @@ npm run preview
 
 ## Données des opticiens
 
-Les opticiens affichés sont définis dans `public/stores.json` — **5 542
+Les opticiens affichés sont définis dans `public/stores.json` — **5 583
 opticiens partenaires en France au total**, tous issus des données réelles du
 client (aucune donnée fictive), répartis sur 15 marques : les 13 marques du
 premier lot (Julbo, Maui Jim, Serengeti, Chanel, Cartier, Moscot, Mykita,
@@ -71,7 +71,34 @@ Le script `scripts/build_stores_from_excel.py` effectue ce traitement :
 
 1. Lecture des 14 onglets du fichier Excel et filtrage des lignes `Country = France`.
 2. Fusion des opticiens présents sur plusieurs onglets (même enseigne, marques différentes) en une seule fiche avec un tableau `brands` combiné.
-3. Géocodage de chaque ville via l'API officielle Adresse du gouvernement français (`api-adresse.data.gouv.fr`, gratuite, sans clé) — **précision au niveau de la ville**, pas de l'adresse exacte (choix validé pour ce lot : l'Excel ne fournit pas de latitude/longitude sauf pour la marque JMM).
+3. Géocodage à l'**adresse complète** (rue + code postal + ville, telle que
+   fournie dans le champ `Address` de l'Excel) via l'API officielle Adresse
+   du gouvernement français (`api-adresse.data.gouv.fr`, la Base Adresse
+   Nationale — gratuite, sans clé, et **exclusivement française** par
+   construction : elle ne peut par nature jamais renvoyer une adresse d'un
+   autre pays, donc aucun paramètre "pays" à ajouter). Si la requête sur
+   l'adresse complète échoue, elle retombe sur le nom de la ville seul.
+4. **Validation croisée par département** : la réponse de l'API inclut son
+   propre code postal ; s'il ne correspond pas au département attendu
+   d'après le code postal déjà présent dans l'adresse source, le résultat
+   est rejeté (et la requête retombe sur la ville seule) plutôt qu'accepté
+   tel quel — utile car une adresse chargée de texte parasite (nom
+   d'enseigne, de centre commercial) peut occasionnellement faire
+   correspondre la recherche floue à un lieu sans rapport ailleurs en
+   France.
+
+> ⚠️ **Ce script géocodait auparavant par nom de ville seul** (sans rue ni
+> code postal), ce qui produisait deux problèmes : tous les opticiens d'une
+> même ville partageaient un point identique (imprécis), et surtout, les
+> quelques communes françaises homonymes (ex. "Saint Louis" dans le
+> Haut-Rhin vs à La Réunion, "Montreuil" en Seine-Saint-Denis vs à
+> Montreuil-sur-Mer, "Les Angles" dans le Gard vs dans les
+> Pyrénées-Orientales) pouvaient être géocodées sur les coordonnées du
+> mauvais homonyme, à des milliers de km de leur adresse réelle — alors même
+> que leur code postal en base était correct. Le passage à l'adresse
+> complète (+ la validation croisée par département ci-dessus) corrige ces
+> cas ; `public/stores.json` a été intégralement régénéré avec la version
+> corrigée du script.
 
 Pour régénérer `stores.json` après une mise à jour de l'Excel :
 
@@ -81,9 +108,17 @@ python3 scripts/build_stores_from_excel.py
 ```
 
 **Limites connues** de cette conversion, héritées de la qualité des données sources :
-- Quelques dizaines d'entrées (~55 sur 4 465) ont été écartées faute de géocodage fiable (villes mal renseignées dans l'Excel, ex. des adresses portugaises/suisses marquées par erreur "France", ou des noms de villes tronqués/mal orthographiés).
+- Quelques dizaines d'entrées (14 sur 4 520) ont été écartées faute de géocodage fiable (villes mal renseignées dans l'Excel, ex. des adresses portugaises/suisses marquées par erreur "France", ou des noms de villes tronqués/mal orthographiés).
 - Les horaires d'ouverture ne sont pas fournis par l'Excel : le champ `hours` est donc absent pour ces opticiens (la fiche détaillée masque simplement cette section).
-- La géolocalisation étant au niveau ville, plusieurs opticiens d'une même ville partagent exactement les mêmes coordonnées — la carte les regroupe visuellement via un système de clusters (voir plus bas).
+- Une entrée (opticien "Saint Francois", ville de Guadeloupe) porte un code
+  postal manifestement mal saisi dans l'Excel source (`07118`, un préfixe de
+  l'Ardèche, au lieu de `97118`) ; la validation croisée ne peut pas
+  détecter une erreur dans la donnée source elle-même, seulement une
+  incohérence entre la donnée source et le résultat du géocodage — cette
+  entrée est donc géocodée sur un résultat peu fiable, mais
+  `src/utils/geoSanity.js` le détecte à l'usage et masque simplement son
+  marqueur sur la carte plutôt que d'afficher un point erroné (voir plus
+  haut).
 
 **Corrections manuelles ponctuelles** appliquées directement sur `stores.json` (en plus de la régénération par script) :
 - `door-0000710210` (Atol, 4 Centre Commercial de Toga, 20200) avait un champ `city` vide dans le fichier source Doors Master Data — le code postal 20200 correspondant à Bastia, la ville a été renseignée manuellement ("Bastia") et l'adresse complétée en conséquence.
@@ -123,11 +158,13 @@ dans `src/utils/brands.js` (`FEATURED_BRANDS`) et alimentées séparément par
 2. Regroupement par `Door Code` (identifiant unique du point de vente) pour
    fusionner les opticiens qui distribuent les deux marques en une seule fiche.
 3. Géocodage à l'adresse complète (rue + code postal + ville) via l'API
-   Adresse du gouvernement français — précision bien supérieure au
-   géocodage par ville utilisé pour le premier lot de marques.
+   Adresse du gouvernement français, avec la même validation croisée par
+   département que `build_stores_from_excel.py` ci-dessus (ce script a
+   toujours géocodé à l'adresse complète, contrairement à l'autre avant sa
+   correction — seule la validation croisée est une addition récente).
 
 Résultat : **1 077 opticiens Vuarnet/Barton Perreira** ajoutés à
-`stores.json` (fusionnés avec les 4 465 existants, sans tentative de
+`stores.json` (fusionnés avec les 4 506 existants, sans tentative de
 dédoublonnage entre les deux fichiers sources), avec adresse précise,
 téléphone et email quand disponibles. Pour régénérer :
 
@@ -169,20 +206,26 @@ lorsqu'un filtre par marque affiche plus d'un millier de résultats.
     exclusivement à leur région DOM-TOM respective (Guadeloupe, Martinique,
     Guyane, La Réunion, Saint-Pierre-et-Miquelon, Mayotte), jamais mélangés à
     une région métropolitaine.
-  - **Anomalies de géolocalisation** : une poignée d'opticiens de
-    `stores.json` partagent un nom de commune avec un lieu d'outre-mer (ex.
-    "Saint Louis" dans le Haut-Rhin vs à La Réunion, "La Trinité" dans les
-    Alpes-Maritimes vs en Martinique, "Saint Claude" dans le Jura vs en
-    Guadeloupe) et ont été géocodés par erreur sur les coordonnées du mauvais
-    homonyme — leur code postal est correct (donc le filtre région/
-    département n'est pas affecté), mais leurs coordonnées GPS les placent à
-    des milliers de km de leur adresse réelle, ce qui donnait l'impression
-    qu'un opticien "de Guadeloupe" apparaissait sous la sélection
-    "Bourgogne-Franche-Comté". `src/utils/geoSanity.js` détecte ces
-    incohérences (coordonnées incompatibles avec le territoire impliqué par
-    le code postal de l'opticien) et exclut uniquement le **marqueur sur la
-    carte** de ces opticiens (liste, filtres, exports restent inchangés
-    puisque leurs données textuelles sont fiables) — voir `MapView.jsx`.
+  - **Géocodage** (génération de `stores.json`, voir la section dédiée
+    plus bas) : les coordonnées viennent d'un script Python
+    (`scripts/build_stores_from_excel.py`) qui interroge l'adresse
+    complète (rue + code postal + ville) sur la Base Adresse Nationale du
+    gouvernement français, pas seulement le nom de la ville — un ancien
+    défaut qui provoquait de véritables erreurs de géocodage (une poignée
+    de communes françaises homonymes, ex. "Saint Louis" dans le Haut-Rhin
+    vs à La Réunion, "Montreuil" en Seine-Saint-Denis vs à
+    Montreuil-sur-Mer, "Les Angles" dans le Gard vs dans les
+    Pyrénées-Orientales, se retrouvaient géocodées sur les coordonnées du
+    mauvais homonyme, à des milliers de km de leur adresse réelle — leur
+    code postal en base était pourtant correct, donc le filtre région/
+    département n'était lui-même jamais affecté). `src/utils/geoSanity.js`
+    reste en place comme filet de sécurité applicatif : il détecte toute
+    incohérence résiduelle entre les coordonnées d'un opticien et le
+    territoire impliqué par son propre code postal (utile si une nouvelle
+    erreur de saisie apparaît dans un futur import) et exclut uniquement le
+    **marqueur sur la carte** du ou des opticiens concernés (liste, filtres,
+    exports restent inchangés puisque leurs données textuelles sont
+    fiables) — voir `MapView.jsx`.
   - **Départements** : filtre (`src/utils/departments.js`), déduit du même
     code postal (préfixe à 2 chiffres, 3 pour l'outre-mer) et associé au nom
     officiel du département (ex. "06 – Alpes-Maritimes"). Comme un code

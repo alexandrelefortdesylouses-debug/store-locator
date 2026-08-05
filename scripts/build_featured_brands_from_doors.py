@@ -68,7 +68,19 @@ def save_cache(cache):
         json.dump(cache, f)
 
 
+def expected_dept(zip_code):
+    zip_code = norm(zip_code)
+    if not zip_code:
+        return None
+    return zip_code[:3] if zip_code.startswith(("97", "98")) else zip_code[:2]
+
+
 def geocode(query, retries=3):
+    """Returns (lat, lng, postcode). The postcode lets callers cross-check
+    the match against the postal code already on file for this door: a
+    query containing a shop/mall name alongside the street can occasionally
+    fuzzy-match onto an unrelated place elsewhere in France, and the
+    postcode is a cheap way to catch that (see geocode_store())."""
     params = {"q": query, "limit": 1}
     url = f"https://api-adresse.data.gouv.fr/search/?{urllib.parse.urlencode(params)}"
     for attempt in range(retries):
@@ -78,8 +90,9 @@ def geocode(query, retries=3):
             features = data.get("features") or []
             if not features:
                 return None
+            props = features[0]["properties"]
             lng, lat = features[0]["geometry"]["coordinates"]
-            return (lat, lng)
+            return (lat, lng, props.get("postcode"))
         except Exception as exc:  # noqa: BLE001
             if attempt == retries - 1:
                 print(f"  geocode failed for {query!r}: {exc}", file=sys.stderr)
@@ -94,14 +107,20 @@ def geocode_store(street, zip_code, city, cache):
     if key in cache:
         return cache[key]
 
+    expected = expected_dept(zip_code)
     result = geocode(full_query)
+    if result and expected and expected_dept(result[2]) != expected:
+        result = None
     if not result:
         result = geocode(f"{zip_code} {city}")
+        if result and expected and expected_dept(result[2]) != expected:
+            result = None
     if not result:
         result = geocode(city)
 
-    cache[key] = result
-    return result
+    final = (result[0], result[1]) if result else None
+    cache[key] = final
+    return final
 
 
 def main():
