@@ -1005,7 +1005,7 @@ modèle per-device `localStorage` que le reste de "Mon Carnet") :
 - Deux entrées fixes toujours présentes : **Tous les opticiens** (le
   portefeuille complet) et **Favoris** (les opticiens marqués ♥, tous
   modes confondus). Puis la liste des **dossiers personnalisés** créés par
-  le commercial (ex. "Tournée Mai", "Focus Dior") pour grouper des
+  le commercial (ex. "Tournée Mai", "Megeve 2027") pour grouper des
   opticiens autour d'un objectif précis, au-delà du statut/de la priorité.
 - Chaque entrée affiche son nombre d'opticiens entre parenthèses,
   recalculé à la volée (`countsByFolder` dans `CarnetView.jsx`) et
@@ -1013,28 +1013,72 @@ modèle per-device `localStorage` que le reste de "Mon Carnet") :
   orphelin dans un dossier (opticien retiré des favoris entre-temps) ne
   gonfle pas artificiellement le compteur.
 - **+ Nouveau dossier** : un simple champ nom, pas de description ni
-  d'icône — volontairement minimal.
-- **Classer un opticien dans un dossier** : depuis la colonne Actions du
-  tableau, l'icône dossier ouvre `FolderAssignModal.jsx`, une liste à
-  cocher de tous les dossiers existants (un opticien peut appartenir à
-  plusieurs à la fois) avec un champ "créer et ajouter" en bas pour ne pas
-  avoir à repasser par la sidebar en cours de tri.
+  d'icône à la création — la couleur se choisit après coup (voir
+  ci-dessous), volontairement pour garder la création à un seul champ.
+- **Couleur du dossier** : une pastille ronde devant le nom, choisie parmi
+  7 couleurs prédéfinies (bleu, vert, rouge, jaune, violet, orange, gris —
+  `FOLDER_COLORS` dans `utils/folders.js`, une palette volontairement
+  distincte de `STATUS_COLORS`/`PRIORITY_COLORS` pour qu'un badge de
+  dossier ne soit jamais confondu avec un badge de statut ou de priorité
+  affiché juste à côté dans le tableau). Un nouveau dossier démarre gris
+  par défaut.
+- **Menu "..."** (visible au survol de chaque dossier personnalisé) :
+  **Renommer** (le nom devient un champ éditable directement dans la
+  sidebar, validé par Entrée ou en cliquant ailleurs), **Changer la
+  couleur** (la même palette de 7 couleurs, dans le même menu) et
+  **Supprimer** (ne supprime aucun opticien, seulement le regroupement —
+  si le dossier supprimé était sélectionné, la vue retombe automatiquement
+  sur "Tous les opticiens").
+- Le nom du dossier porte l'attribut `title` (tooltip natif du
+  navigateur) : un nom trop long pour tenir dans la largeur de la sidebar
+  est tronqué visuellement mais reste lisible en entier au survol.
+- **Classer un opticien dans un dossier**, trois façons :
+  - Depuis la colonne Actions du tableau, l'icône dossier ouvre
+    `FolderAssignModal.jsx`, une liste à cocher de tous les dossiers
+    existants (un opticien peut appartenir à plusieurs à la fois) avec un
+    champ "créer et ajouter" en bas.
+  - **Glisser-déposer** : une ligne du tableau est déplaçable (attribut
+    HTML `draggable`) et peut être lâchée directement sur un dossier de la
+    sidebar (API HTML5 native `dataTransfer`, pas de librairie tierce) —
+    le dossier ciblé s'illumine pendant le survol pour confirmer la
+    destination. Fonctionne au clavier/souris sur desktop ; le drag HTML5
+    n'existe pas nativement sur tactile, donc les deux autres méthodes
+    restent le chemin principal sur mobile/tablette.
+  - **Sélection multiple** : une case à cocher par ligne (+ "tout
+    sélectionner" en en-tête) fait apparaître une barre d'action au-dessus
+    du tableau ("N opticiens sélectionnés" + bouton "Ajouter à un
+    dossier"), qui ouvre la même modale en mode groupé — cliquer un
+    dossier y ajoute tous les opticiens sélectionnés d'un coup (ajout pur,
+    jamais un retrait, une case à cocher partiellement cochée dans une
+    sélection multiple n'ayant pas de sens univoque).
+- **Badges de dossier dans le tableau** : chaque ligne affiche une petite
+  pastille par dossier auquel l'opticien appartient (même couleur que
+  dans la sidebar, `title` = nom du dossier), directement à côté de son
+  nom — un repère visuel rapide même en dehors de la vue filtrée par ce
+  dossier.
 - Sur mobile, la colonne de dossiers devient une rangée de puces
   défilante horizontalement au-dessus du tableau plutôt qu'une colonne
   fixe (pas de place pour une vraie sidebar sur un petit écran).
-- Supprimer un dossier (✕ au survol dans la sidebar) ne supprime aucun
-  opticien, seulement le regroupement — et si le dossier supprimé était
-  sélectionné, la vue retombe automatiquement sur "Tous les opticiens".
+
+#### Notes & Mémos du dossier
+
+`src/components/CarnetFolderNotes.jsx` : dès qu'un dossier personnalisé
+(pas "Tous les opticiens"/"Favoris") est sélectionné, un bloc réductible
+apparaît au-dessus du tableau pour noter des consignes ou objectifs
+propres à ce dossier ("RDV fixés avant le 15, prévoir les nouveaux
+catalogues Dior…") — stocké séparément par dossier
+(`getFolderNotes`/`setFolderNote` dans `utils/folders.js`), avec un bouton
+Enregistrer désactivé tant que le texte n'a pas changé.
 
 #### Le tableau
 
 `src/components/CarnetTableTab.jsx` liste les opticiens du dossier
-sélectionné sous forme de tableau : nom, ville, code postal/département,
-marques distribuées, statut, priorité et actions. Une recherche
-(nom/ville/marque) et des badges de statut cliquables (🟢 Client actif,
-🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus — réutilisant les mêmes
-`STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes à
-l'intérieur du dossier actif.
+sélectionné sous forme de tableau : case à cocher, nom (+ badges de
+dossier), ville, code postal/département, marques distribuées, statut,
+priorité et actions. Une recherche (nom/ville/marque) et des badges de
+statut cliquables (🟢 Client actif, 🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus —
+réutilisant les mêmes `STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte")
+filtrent les lignes à l'intérieur du dossier actif.
 
 - **Marques Thélios** : badges discrets par opticien (mêmes styles que
   partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en

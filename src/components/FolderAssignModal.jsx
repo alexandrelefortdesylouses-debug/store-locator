@@ -2,26 +2,42 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 
-// Opened from the Actions column of Mon Carnet's table: lets the rep file
-// one store into any number of folders (checkbox list, toggled directly —
-// no separate "save" step) or spin up a brand new folder and drop the
-// store into it in one action.
+// Opened from the Actions column of Mon Carnet's table (single-store mode:
+// `store`) or from the bulk toolbar above the table when rows are checked
+// (bulk mode: `storeIds`). Single mode toggles membership per folder
+// directly; bulk mode only ever adds (never removes) — toggling membership
+// for a mixed selection has no single sensible meaning, so clicking a
+// folder in bulk mode just files everyone selected into it, with a
+// transient checkmark for feedback rather than a persistent toggle state.
 export default function FolderAssignModal({
   store,
+  storeIds,
   folders,
   folderMembers,
   onToggleMembership,
+  onBulkAdd,
   onCreateAndAssign,
   onClose,
 }) {
   const { t } = useLanguage();
   const [newFolderName, setNewFolderName] = useState("");
+  const [justAdded, setJustAdded] = useState(() => new Set());
+  const isBulk = Array.isArray(storeIds);
+
+  function handleFolderClick(folder) {
+    if (isBulk) {
+      onBulkAdd(folder.id, storeIds);
+      setJustAdded((prev) => new Set(prev).add(folder.id));
+    } else {
+      onToggleMembership(folder.id, store.id);
+    }
+  }
 
   function handleCreateAndAdd(e) {
     e.preventDefault();
     const trimmed = newFolderName.trim();
     if (!trimmed) return;
-    onCreateAndAssign(trimmed, store.id);
+    onCreateAndAssign(trimmed, isBulk ? storeIds : store.id);
     setNewFolderName("");
   }
 
@@ -47,7 +63,9 @@ export default function FolderAssignModal({
             ✕
           </button>
         </div>
-        <p className="mb-3 truncate text-xs text-neutral-500 dark:text-neutral-400">{store.name}</p>
+        <p className="mb-3 truncate text-xs text-neutral-500 dark:text-neutral-400">
+          {isBulk ? t("carnet.folders.bulkCount", { count: storeIds.length }) : store.name}
+        </p>
 
         {folders.length === 0 ? (
           <p className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">
@@ -56,12 +74,14 @@ export default function FolderAssignModal({
         ) : (
           <div className="thin-scrollbar mb-3 flex max-h-52 flex-col gap-0.5 overflow-y-auto">
             {folders.map((folder) => {
-              const active = (folderMembers[folder.id] || []).includes(store.id);
+              const active = isBulk
+                ? justAdded.has(folder.id)
+                : (folderMembers[folder.id] || []).includes(store.id);
               return (
                 <button
                   key={folder.id}
                   type="button"
-                  onClick={() => onToggleMembership(folder.id, store.id)}
+                  onClick={() => handleFolderClick(folder)}
                   aria-pressed={active}
                   className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >

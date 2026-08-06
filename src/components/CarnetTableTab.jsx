@@ -4,6 +4,7 @@ import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard
 import { STATUS_COLORS, PRIORITY_COLORS } from "../utils/palette";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
+import { FOLDER_COLORS } from "../utils/folders";
 import FolderAssignModal from "./FolderAssignModal";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
@@ -138,6 +139,7 @@ export default function CarnetTableTab({
   folders,
   folderMembers,
   onToggleFolderMembership,
+  onBulkAddToFolder,
   onCreateFolder,
 }) {
   const { t } = useLanguage();
@@ -145,6 +147,8 @@ export default function CarnetTableTab({
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
   const [assigningStore, setAssigningStore] = useState(null);
+  const [bulkAssigning, setBulkAssigning] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   function toggleStatusFilter(status) {
     setStatusFilter((prev) =>
@@ -160,9 +164,25 @@ export default function CarnetTableTab({
     );
   }
 
-  function handleCreateAndAssign(name, storeId) {
-    onCreateFolder(name, storeId);
+  function handleCreateAndAssign(name, storeIdOrIds) {
+    onCreateFolder(name, storeIdOrIds);
     setAssigningStore(null);
+    setBulkAssigning(false);
+    if (Array.isArray(storeIdOrIds)) setSelectedIds(new Set());
+  }
+
+  function toggleRowSelected(storeId) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(storeId)) next.delete(storeId);
+      else next.add(storeId);
+      return next;
+    });
+  }
+
+  function handleDragStart(e, storeId) {
+    e.dataTransfer.setData("text/plain", storeId);
+    e.dataTransfer.effectAllowed = "copy";
   }
 
   const rows = useMemo(() => {
@@ -199,6 +219,17 @@ export default function CarnetTableTab({
       return String(va).localeCompare(String(vb)) * direction;
     });
   }, [stores, search, statusFilter, statuses, priorities, sort]);
+
+  const allVisibleSelected = rows.length > 0 && rows.every((s) => selectedIds.has(s.id));
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) rows.forEach((s) => next.delete(s.id));
+      else rows.forEach((s) => next.add(s.id));
+      return next;
+    });
+  }
 
   function SortableTh({ columnKey, children }) {
     return (
@@ -253,6 +284,26 @@ export default function CarnetTableTab({
         </div>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <span>{t("carnet.table.selectedCount", { count: selectedIds.size })}</span>
+          <button
+            type="button"
+            onClick={() => setBulkAssigning(true)}
+            className="cursor-pointer rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+          >
+            {t("carnet.table.addSelectionToFolder")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="cursor-pointer text-xs text-amber-700 underline decoration-dotted transition hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-200"
+          >
+            {t("carnet.table.clearSelection")}
+          </button>
+        </div>
+      )}
+
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
           {stores.length === 0 ? t("carnet.table.emptyPortfolio") : t("carnet.table.noMatch")}
@@ -262,6 +313,15 @@ export default function CarnetTableTab({
           <table className="w-full min-w-[980px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+                <th className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                    aria-label={t("carnet.table.selectAllAria")}
+                    className="h-4 w-4 cursor-pointer accent-amber-600"
+                  />
+                </th>
                 <SortableTh columnKey="name">{t("carnet.table.colName")}</SortableTh>
                 <SortableTh columnKey="city">{t("carnet.table.colCity")}</SortableTh>
                 <SortableTh columnKey="postalCode">{t("carnet.table.colPostal")}</SortableTh>
@@ -277,13 +337,39 @@ export default function CarnetTableTab({
                 const priority = priorities[store.id] || "";
                 const zip = getStoreZip(store);
                 const deptCode = getStoreDeptCode(store);
+                const storeFolders = folders.filter((f) => (folderMembers[f.id] || []).includes(store.id));
                 return (
                   <tr
                     key={store.id}
-                    className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, store.id)}
+                    className="cursor-grab border-b border-neutral-100 last:border-0 active:cursor-grabbing dark:border-neutral-800"
                   >
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(store.id)}
+                        onChange={() => toggleRowSelected(store.id)}
+                        aria-label={t("carnet.table.selectRowAria", { name: store.name })}
+                        className="h-4 w-4 cursor-pointer accent-amber-600"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-serif text-neutral-900 dark:text-neutral-100">
-                      {store.name}
+                      <div className="flex items-center gap-1.5">
+                        <span>{store.name}</span>
+                        {storeFolders.length > 0 && (
+                          <span className="flex shrink-0 items-center gap-0.5">
+                            {storeFolders.map((f) => (
+                              <span
+                                key={f.id}
+                                title={f.name}
+                                className="h-2 w-2 rounded-full"
+                                style={{ background: FOLDER_COLORS[f.color] || FOLDER_COLORS.gray }}
+                              />
+                            ))}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{store.city}</td>
                     <td className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400">
@@ -397,6 +483,17 @@ export default function CarnetTableTab({
           onToggleMembership={onToggleFolderMembership}
           onCreateAndAssign={handleCreateAndAssign}
           onClose={() => setAssigningStore(null)}
+        />
+      )}
+
+      {bulkAssigning && (
+        <FolderAssignModal
+          storeIds={[...selectedIds]}
+          folders={folders}
+          folderMembers={folderMembers}
+          onBulkAdd={onBulkAddToFolder}
+          onCreateAndAssign={handleCreateAndAssign}
+          onClose={() => setBulkAssigning(false)}
         />
       )}
     </div>

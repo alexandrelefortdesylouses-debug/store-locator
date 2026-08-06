@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import CarnetTableTab from "./CarnetTableTab";
 import CarnetFolderSidebar from "./CarnetFolderSidebar";
+import CarnetFolderNotes from "./CarnetFolderNotes";
 import CarnetAgendaTab from "./CarnetAgendaTab";
 import CarnetNotesTab from "./CarnetNotesTab";
 import CarnetPerformanceTab from "./CarnetPerformanceTab";
@@ -10,10 +11,15 @@ import Toast from "./Toast";
 import {
   getFolders,
   createFolder,
+  renameFolder,
+  setFolderColor,
   deleteFolder,
   getFolderMembers,
   addStoreToFolder,
   removeStoreFromFolder,
+  addStoresToFolder,
+  getFolderNotes,
+  setFolderNote,
 } from "../utils/folders";
 
 const TOAST_DURATION_MS = 3500;
@@ -102,6 +108,7 @@ export default function CarnetView({
 
   const [folders, setFolders] = useState(() => getFolders());
   const [folderMembers, setFolderMembers] = useState(() => getFolderMembers());
+  const [folderNotes, setFolderNotes] = useState(() => getFolderNotes());
   const [selectedFolderId, setSelectedFolderId] = useState("all");
 
   function handleOpenNote(storeId) {
@@ -120,21 +127,31 @@ export default function CarnetView({
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
 
-  // storeId is only passed when a folder is created from the per-row
-  // "assign to folder" modal (create-and-add-in-one-step); the sidebar's
-  // own "+ Nouveau dossier" creates an empty folder.
-  function handleCreateFolder(name, storeId) {
+  // storeIdOrIds is only passed when a folder is created from the per-row
+  // or bulk "assign to folder" modal (create-and-add-in-one-step); the
+  // sidebar's own "+ Nouveau dossier" creates an empty folder.
+  function handleCreateFolder(name, storeIdOrIds) {
     const updated = createFolder(name);
     setFolders(updated);
-    if (storeId) {
+    if (storeIdOrIds) {
       const newFolder = updated[updated.length - 1];
-      setFolderMembers(addStoreToFolder(newFolder.id, storeId));
+      const ids = Array.isArray(storeIdOrIds) ? storeIdOrIds : [storeIdOrIds];
+      setFolderMembers(addStoresToFolder(newFolder.id, ids));
     }
+  }
+
+  function handleRenameFolder(folderId, name) {
+    setFolders(renameFolder(folderId, name));
+  }
+
+  function handleChangeFolderColor(folderId, color) {
+    setFolders(setFolderColor(folderId, color));
   }
 
   function handleDeleteFolder(folderId) {
     setFolders(deleteFolder(folderId));
     setFolderMembers(getFolderMembers());
+    setFolderNotes(getFolderNotes());
     if (selectedFolderId === folderId) setSelectedFolderId("all");
   }
 
@@ -143,6 +160,18 @@ export default function CarnetView({
     setFolderMembers(
       isMember ? removeStoreFromFolder(folderId, storeId) : addStoreToFolder(folderId, storeId),
     );
+  }
+
+  function handleBulkAddToFolder(folderId, storeIds) {
+    setFolderMembers(addStoresToFolder(folderId, storeIds));
+  }
+
+  function handleDropStoreOnFolder(folderId, storeId) {
+    setFolderMembers(addStoreToFolder(folderId, storeId));
+  }
+
+  function handleSetFolderNote(folderId, text) {
+    setFolderNotes(setFolderNote(folderId, text));
   }
 
   const folderStoreIdSet = useMemo(() => new Set(stores.map((s) => s.id)), [stores]);
@@ -164,6 +193,8 @@ export default function CarnetView({
     const memberIds = new Set(folderMembers[selectedFolderId] || []);
     return stores.filter((s) => memberIds.has(s.id));
   }, [stores, selectedFolderId, favoriteIds, folderMembers]);
+
+  const selectedFolder = folders.find((f) => f.id === selectedFolderId) || null;
 
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
@@ -208,10 +239,20 @@ export default function CarnetView({
             selectedFolderId={selectedFolderId}
             onSelectFolder={setSelectedFolderId}
             onCreateFolder={handleCreateFolder}
+            onRenameFolder={handleRenameFolder}
+            onChangeFolderColor={handleChangeFolderColor}
             onDeleteFolder={handleDeleteFolder}
+            onDropStoreOnFolder={handleDropStoreOnFolder}
             countsByFolder={countsByFolder}
           />
           <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+            {selectedFolder && (
+              <CarnetFolderNotes
+                folder={selectedFolder}
+                note={folderNotes[selectedFolder.id] || ""}
+                onSave={(text) => handleSetFolderNote(selectedFolder.id, text)}
+              />
+            )}
             <CarnetTableTab
               stores={tableStores}
               statuses={statuses}
@@ -224,6 +265,7 @@ export default function CarnetView({
               folders={folders}
               folderMembers={folderMembers}
               onToggleFolderMembership={handleToggleFolderMembership}
+              onBulkAddToFolder={handleBulkAddToFolder}
               onCreateFolder={handleCreateFolder}
             />
           </div>
