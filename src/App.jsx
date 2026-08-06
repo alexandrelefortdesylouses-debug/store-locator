@@ -674,6 +674,8 @@ function App() {
                   onSetNote={handleSetNote}
                   status={selectedStore ? statuses[selectedStore.id] || null : null}
                   onSetStatus={handleSetStatus}
+                  priority={selectedStore ? priorities[selectedStore.id] || null : null}
+                  onSetPriority={handleSetPriority}
                   tags={selectedStore ? tags[selectedStore.id] || [] : []}
                   onSetTags={handleSetTags}
                 />
@@ -684,7 +686,11 @@ function App() {
       </div>
 
       {showSettings && (
-        <SettingsPanel onClose={() => setShowSettings(false)} onSignOut={handleSignOut} />
+        <SettingsPanel
+          currentUser={currentUser}
+          onClose={() => setShowSettings(false)}
+          onSignOut={handleSignOut}
+        />
       )}
 
       {showAdmin && checkIsAdmin(currentUser) && (

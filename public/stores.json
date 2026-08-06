@@ -19139,11 +19139,11 @@
   {
     "id": "ski-fun-intersport-montagne-isola-2000",
     "name": "Ski Fun - Intersport Montagne",
-    "address": "IMMEUBLE LE PELVOS, PARKING P2 - ISOLA 2000, 06420, ISOLA 2000",
+    "address": "IMMEUBLE LE PELVOS, PARKING P2, 06420, ISOLA 2000",
     "city": "Isola 2000",
     "country": "France",
-    "lat": 41.73428,
-    "lng": 8.84703,
+    "lat": 44.19015,
+    "lng": 7.14868,
     "brands": [
       "Julbo"
     ],
@@ -21541,8 +21541,8 @@
     "address": "FP2A, CENTRE COMMERCIAL AUCHAN, 06340, LA TRINITE",
     "city": "La Trinite",
     "country": "France",
-    "lat": 48.6909,
-    "lng": -2.90545,
+    "lat": 43.74397,
+    "lng": 7.33453,
     "brands": [
       "Julbo"
     ],
@@ -24356,8 +24356,8 @@
     "address": "ACUITE CONSEIL OPTICIEN, CC CARREFOUR LA PIOLINE, 13290, LES MILLES",
     "city": "Les Milles",
     "country": "France",
-    "lat": 48.02578,
-    "lng": -1.86421,
+    "lat": 43.51062,
+    "lng": 5.40338,
     "brands": [
       "Julbo"
     ],

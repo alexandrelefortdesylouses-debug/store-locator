@@ -9,6 +9,10 @@
 // Whitelist entries are per-device: an admin who adds an email on their own
 // browser won't see that reflected on a colleague's browser. Treat this as
 // a working prototype of the feature, not a deployed access-control system.
+// Passwords (optional, set by each user themselves via Paramètres > Mon
+// Compte) are stored in plaintext right alongside everything else — a real
+// backend would hash them server-side, but there is no server here, so
+// "hashing" client-side would only be theater.
 const WHITELIST_KEY = "storeLocator_auth_whitelist";
 const SESSION_KEY = "storeLocator_auth_session";
 
@@ -111,13 +115,19 @@ export function getCurrentUser() {
   }
 }
 
-// No password: this only checks whitelist membership, matching the scope
-// explicitly asked for. Returns { user } on success or { error } on
-// failure — never throws, so callers can render either case directly.
-export function signIn(email) {
+// Password is optional per account: a whitelist entry only has one once its
+// owner sets it via setPassword() below (Paramètres > Mon Compte). Accounts
+// without one (the seeded default admin, any commercial an admin just
+// added) sign in on email alone, matching the originally-specified scope.
+// Returns { user } on success or { error } on failure — never throws, so
+// callers can render either case directly.
+export function signIn(email, password = "") {
   const entry = findWhitelistEntry(email);
   if (!entry) {
     return { error: "not-whitelisted" };
+  }
+  if (entry.password && entry.password !== password) {
+    return { error: "wrong-password" };
   }
   const user = { email: entry.email, role: entry.role };
   localStorage.setItem(SESSION_KEY, JSON.stringify(user));
@@ -126,6 +136,23 @@ export function signIn(email) {
 
 export function signOut() {
   localStorage.removeItem(SESSION_KEY);
+}
+
+// Lets a signed-in user set/change their own password. Requires the
+// current password when one is already set (nothing to check the first
+// time). Stored in plaintext in this local simulation, same as the
+// existing review secret-code — see this file's header comment for why
+// that's an accepted limitation here, not a real security posture.
+export function setPassword(email, currentPassword, newPassword) {
+  const target = normalizeEmail(email);
+  const list = readWhitelist();
+  const entry = list.find((e) => normalizeEmail(e.email) === target);
+  if (!entry) return { error: "not-found" };
+  if (entry.password && entry.password !== currentPassword) {
+    return { error: "wrong-current" };
+  }
+  writeWhitelist(list.map((e) => (normalizeEmail(e.email) === target ? { ...e, password: newPassword } : e)));
+  return { ok: true };
 }
 
 export function isAdmin(user) {

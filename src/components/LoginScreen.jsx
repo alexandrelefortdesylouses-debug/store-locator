@@ -7,6 +7,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function LoginScreen({ onSignedIn }) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
   function handleSubmit(e) {
@@ -16,7 +17,11 @@ export default function LoginScreen({ onSignedIn }) {
       setError(t("login.errorInvalidFormat"));
       return;
     }
-    const { user, error: signInError } = signIn(trimmed);
+    const { user, error: signInError } = signIn(trimmed, password);
+    if (signInError === "wrong-password") {
+      setError(t("login.errorWrongPassword"));
+      return;
+    }
     if (signInError) {
       setError(t("login.errorNotWhitelisted"));
       return;
@@ -62,6 +67,20 @@ export default function LoginScreen({ onSignedIn }) {
                 className="mt-1.5 w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-neutral-100 focus:border-amber-500 focus:outline-none"
               />
             </label>
+
+            <label className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              {t("login.passwordLabel")}
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("login.passwordPlaceholder")}
+                className="mt-1.5 w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-neutral-100 focus:border-amber-500 focus:outline-none"
+              />
+            </label>
+            <p className="-mt-1.5 text-[11px] leading-relaxed text-neutral-600">
+              {t("login.passwordHint")}
+            </p>
 
             {error && <p className="text-xs text-red-400">{error}</p>}
 

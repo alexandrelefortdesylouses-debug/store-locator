@@ -3,6 +3,7 @@ import ReviewSection from "./ReviewSection";
 import FavoriteButton from "./FavoriteButton";
 import StoreNotes from "./StoreNotes";
 import StatusSelector from "./StatusSelector";
+import PrioritySelector from "./PrioritySelector";
 import TagPicker from "./TagPicker";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
@@ -20,6 +21,8 @@ export default function StoreDetailPanel({
   onSetNote,
   status = null,
   onSetStatus,
+  priority = null,
+  onSetPriority,
   tags = [],
   onSetTags,
 }) {
@@ -97,6 +100,9 @@ export default function StoreDetailPanel({
         )}
 
         {onSetStatus && <StatusSelector value={status} onChange={(s) => onSetStatus(store.id, s)} />}
+        {onSetPriority && (
+          <PrioritySelector value={priority} onChange={(p) => onSetPriority(store.id, p)} />
+        )}
         {onSetTags && <TagPicker tags={tags} onChange={(t2) => onSetTags(store.id, t2)} />}
 
         <div className="mb-6">

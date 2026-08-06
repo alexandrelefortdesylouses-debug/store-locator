@@ -1,4 +1,3 @@
-import DarkModeToggle from "./DarkModeToggle";
 import { useLanguage } from "../i18n/LanguageContext";
 
 function StatsIcon() {
@@ -98,7 +97,6 @@ export default function Header({
             <SettingsIcon />
             <span className="hidden sm:inline">{t("header.settings")}</span>
           </button>
-          <DarkModeToggle />
           {currentUser && (
             <button
               type="button"

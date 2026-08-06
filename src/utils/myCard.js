@@ -24,6 +24,16 @@ export const PRIORITY_LEVELS = {
   LOW: "low",
 };
 
+// Star count per tier, so the badge's visual weight (not just its color)
+// scales with priority — distinguishable even without color (colorblind
+// users, grayscale printouts) and reinforces the gold/silver/bronze
+// hierarchy in PRIORITY_COLORS (utils/palette.js).
+export const PRIORITY_STARS = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
 export const PRESET_TAGS = ["Premium", "Besoin de PLV", "Collection Solaire uniquement"];
 
 function readArray(key) {

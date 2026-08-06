@@ -136,6 +136,7 @@ python3 scripts/build_stores_from_excel.py
   - Un numéro de boîte postale ("BP 10525", "BP 70026"...) présent plus tôt dans l'adresse était pris pour le code postal par l'extraction runtime (qui ne prenait que la *première* séquence de 5 chiffres trouvée, sans filtrer les BP — contrairement à `build_stores_from_excel.py` qui le faisait déjà). Corrigé à la source dans `getStoreZip()` (`src/utils/postalCode.js`) : les références BP sont désormais retirées avant extraction, et c'est la *dernière* séquence de 5 chiffres qui est retenue (le code postal se trouve systématiquement juste avant le nom de ville, en fin d'adresse) — un correctif qui bénéficie à l'ensemble des 5 583 fiches, pas seulement aux 26 signalées (12 changements de département au total après vérification, tous des corrections).
   - Une dizaine de véritables erreurs de saisie du code postal dans la donnée source (ex. Les Opticiens Perceval à Dijon noté `08000` au lieu de `21000`, Edgard Opticiens Reims noté `37000/Tours` au lieu de `51100`), corrigées manuellement.
   - Dans les deux cas, les coordonnées GPS ont été **entièrement recalculées** (même pipeline de géocodage + validation croisée par département que `build_stores_from_excel.py`) plutôt que simplement laissées telles quelles, plusieurs d'entre elles pointant vers un homonyme sans rapport ailleurs en France (ex. "Optique Guez Neuilly" pointait en Saône-et-Loire, "Lissac Opticiens Clamart" près de Nantes).
+- **3 opticiens PACA mal géolocalisés** (Ski Fun - Intersport Montagne à Isola 2000, Alain Afflelou aux Milles/La Pioline, Alain Afflelou à La Trinité/CC Auchan) : leur code postal était déjà correct (dépt. 04/06/13, région PACA bien résolue), seules leurs coordonnées GPS étaient erronées — deux d'entre elles pointaient carrément en Bretagne, une dans la mer Méditerranée au large de la Sardaigne. Recalculées avec le même pipeline de géocodage que ci-dessus.
 
 Structure d'une entrée :
 
@@ -646,8 +647,9 @@ lues dans une application de calendrier tierce, pas dans l'app elle-même.
 
 ## Mode sombre
 
-Bascule soleil/lune dans l'en-tête (`src/components/DarkModeToggle.jsx`),
-pilotée par `src/theme/ThemeContext.jsx` :
+Boutons Clair/Sombre dans **Paramètres > Préférences** (déplacés hors de
+l'en-tête pour l'alléger — voir "Rubrique Paramètres" plus bas), pilotés
+par `src/theme/ThemeContext.jsx` :
 
 - Préférence persistée dans le `localStorage` (`storeLocator_theme`), avec
   repli sur `prefers-color-scheme` du système si rien n'est enregistré.
@@ -731,10 +733,16 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
 L'app est désormais protégée par un écran de connexion
 (`src/components/LoginScreen.jsx`) :
 
-- **Connexion par e-mail, sans mot de passe** : l'utilisateur saisit son
-  adresse e-mail ; si elle figure dans la whitelist, l'accès est autorisé.
-  Sinon, le message **"Accès non autorisé. Veuillez contacter
-  l'administrateur."** s'affiche et bloque l'accès à l'application.
+- **Connexion par e-mail, avec mot de passe optionnel** : l'utilisateur
+  saisit son adresse e-mail ; si elle figure dans la whitelist, l'accès est
+  autorisé. Sinon, le message **"Accès non autorisé. Veuillez contacter
+  l'administrateur."** s'affiche et bloque l'accès à l'application. Un
+  compte n'a de mot de passe que si son propriétaire en a défini un
+  lui-même depuis Paramètres > Mon Compte (voir plus bas) — tant que ce
+  n'est pas fait, le champ mot de passe reste facultatif à la connexion,
+  conformément au périmètre initial "accès sur simple whitelist". Un mot
+  de passe incorrect affiche un message dédié plutôt que de se confondre
+  avec "e-mail non autorisé".
 - **Administrateur principal par défaut** :
   `a.lefortdesylouses@thelios.com`, pré-inséminé dans la whitelist avec le
   rôle Admin au premier chargement (`DEFAULT_ADMIN_EMAIL` dans
@@ -810,17 +818,37 @@ reste de l'application :
 - Les fichiers `*.local.js` documentent en tête de fichier, en détail,
   pourquoi leur implémentation actuelle est une simulation par appareil
   et non un vrai système multi-utilisateurs.
+- Les mots de passe (`setPassword()`, voir "Rubrique Paramètres" ci-dessous)
+  sont stockés en clair dans le même objet whitelist — un vrai backend les
+  hacherait côté serveur ; le faire côté client ici n'aurait aucune valeur
+  de sécurité réelle puisque le code de vérification tourne dans le même
+  navigateur que celui qui pourrait le lire.
 
 ## Rubrique Paramètres
 
 Le bouton **Paramètres** de l'en-tête, accessible à **tous les
-utilisateurs connectés** (peu importe leur rôle), ouvre une modale à deux
+utilisateurs connectés** (peu importe leur rôle), ouvre une modale à trois
 onglets (`src/components/SettingsPanel.jsx`) :
 
+- **Mon Compte** :
+  - **Profil** : rappel en lecture seule de l'e-mail et du rôle (Admin /
+    Commercial) du compte connecté.
+  - **Changer le mot de passe** : formulaire mot de passe actuel / nouveau
+    / confirmation (le mot de passe actuel n'est demandé que si le compte
+    en a déjà un — la première fois, il suffit de choisir un nouveau mot
+    de passe). Passe par `setPassword()` dans `src/services/authService.js`
+    — voir "Connexion, rôles & Administration" plus haut pour le
+    fonctionnement et les limites (mot de passe optionnel, stocké en
+    clair, propre à cet appareil).
+  - **Session** : bouton "Se déconnecter", en plus de celui de l'en-tête.
 - **Préférences** :
   - **Langue de l'interface** : les mêmes boutons FR / EN que le
     sélecteur de l'en-tête (voir la section "Langue (FR / EN)" plus haut),
     dupliqués ici pour un accès direct depuis les réglages.
+  - **Mode sombre** : boutons Clair / Sombre — déplacés ici depuis
+    l'en-tête (voir "Mode sombre" plus haut) pour désencombrer la barre
+    supérieure, qui accumulait déjà Statistiques/Administration/
+    Paramètres/Déconnexion.
   - **Changer le code secret** des avis clients (reprend, inchangée, la
     fonctionnalité qui vivait auparavant dans un composant dédié
     `SecretCodeSettings.jsx` — désormais fusionné ici).
@@ -964,10 +992,19 @@ statut, priorité, date de dernier contact et actions. Une recherche
 - **Marques Thélios** : badges discrets par opticien (mêmes styles que
   partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en
   plein, les autres restent en ton pastel).
-- **Potentiel / Priorité** : un niveau facultatif (⭐ Élevée / Moyenne /
-  Faible, ou non renseigné) propre à "Mon Carnet", stocké séparément du
-  statut CRM (`PRIORITY_LEVELS`/`getPriorities`/`setPriority` dans
-  `src/utils/myCard.js`) — jamais montré ailleurs dans l'app.
+- **Potentiel / Priorité** : un niveau facultatif (Élevée / Moyenne /
+  Faible, ou non renseigné) stocké séparément du statut CRM
+  (`PRIORITY_LEVELS`/`getPriorities`/`setPriority` dans
+  `src/utils/myCard.js`). Affiché comme un badge à médailles — étoiles
+  dorées ×3 pour "Élevée", argentées ×2 pour "Moyenne", bronze ×1 pour
+  "Faible" (`PRIORITY_COLORS`/`PRIORITY_STARS`, `src/utils/palette.js` +
+  `src/utils/myCard.js`) — pour que le niveau se distingue au premier coup
+  d'œil par la couleur *et* le nombre d'étoiles, pas seulement par le
+  texte à côté d'une icône identique. Modifiable ici même que dans
+  `src/components/StoreDetailPanel.jsx` (le panneau de fiche ouvert depuis
+  la carte), via le composant partagé `PrioritySelector.jsx` — dont les
+  boutons grandissent aussi avec le niveau de priorité, en plus de changer
+  de couleur.
 - **Code Postal / Dép.** : extrait de l'adresse (`getStoreZip`/
   `getStoreDeptCode` dans `src/utils/postalCode.js`, déjà utilisés pour les
   filtres géographiques), pour trier ou repérer un secteur d'un coup d'œil.

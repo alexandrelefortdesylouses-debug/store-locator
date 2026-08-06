@@ -5,6 +5,7 @@
 export const GOLD_ACCENT = "#a67c34";
 export const NEUTRAL_ACCENT = "#57534e";
 export const SILVER_ACCENT = "#98a1ad";
+export const BRONZE_ACCENT = "#96603a";
 export const INK = "#0f1015";
 export const PALE_GOLD = "#e6d2a4";
 
@@ -26,6 +27,17 @@ export const STATUS_COLORS = {
 
 // Used for "Ma Carte" markers that have no status assigned yet.
 export const STATUS_NONE_COLOR = NEUTRAL_ACCENT;
+
+// Sales-priority ("potentiel") tiers, styled as a medal ladder (gold >
+// silver > bronze) so the three levels read as a hierarchy at a glance
+// rather than three arbitrary colors — reinforced further by badge size
+// and star count where these are used (see PRIORITY_STARS in myCard.js).
+export const PRIORITY_COLORS = {
+  high: GOLD_ACCENT,
+  medium: SILVER_ACCENT,
+  low: BRONZE_ACCENT,
+};
+export const PRIORITY_NONE_COLOR = "#d4d4d4";
 
 // A distinct, non-brand hue for the "zones blanches" prospecting overlay —
 // a muted teal, intentionally outside the gold/neutral/status families (and

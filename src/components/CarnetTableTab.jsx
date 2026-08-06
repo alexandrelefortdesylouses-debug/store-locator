@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
-import { STORE_STATUSES, PRIORITY_LEVELS } from "../utils/myCard";
-import { STATUS_COLORS } from "../utils/palette";
+import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard";
+import { STATUS_COLORS, PRIORITY_COLORS } from "../utils/palette";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
 
@@ -321,12 +321,17 @@ export default function CarnetTableTab({
                       <select
                         value={priority}
                         onChange={(e) => onSetPriority(store.id, e.target.value || null)}
-                        className="cursor-pointer rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] text-neutral-600 focus:border-amber-400 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+                        className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium focus:outline-none focus:ring-1 focus:ring-amber-400"
+                        style={
+                          priority
+                            ? { background: PRIORITY_COLORS[priority], color: "white", borderColor: "transparent" }
+                            : { borderColor: "#d4d4d4", color: "#57534e" }
+                        }
                       >
                         <option value="">{t("carnet.priority.none")}</option>
                         {PRIORITY_ORDER.map((p) => (
                           <option key={p} value={p}>
-                            ⭐ {t(`carnet.priority.${p}`)}
+                            {"★".repeat(PRIORITY_STARS[p])} {t(`carnet.priority.${p}`)}
                           </option>
                         ))}
                       </select>
