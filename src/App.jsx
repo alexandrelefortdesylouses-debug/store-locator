@@ -684,7 +684,7 @@ function App() {
       </div>
 
       {showSettings && (
-        <SettingsPanel onClose={() => setShowSettings(false)} />
+        <SettingsPanel onClose={() => setShowSettings(false)} onSignOut={handleSignOut} />
       )}
 
       {showAdmin && checkIsAdmin(currentUser) && (

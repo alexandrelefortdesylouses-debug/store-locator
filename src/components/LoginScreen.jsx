@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
-import { signIn } from "../services/authService";
+import { signIn, DEFAULT_ADMIN_EMAIL } from "../services/authService";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,6 +23,15 @@ export default function LoginScreen({ onSignedIn }) {
     }
     setError(null);
     onSignedIn(user);
+  }
+
+  // Bypasses typing an email for local demos/QA: signs in directly as the
+  // default admin (always whitelisted, see authService.local.js). Purely a
+  // convenience shortcut on top of the same local-simulation signIn() —
+  // not a separate access path.
+  function handleQuickTestLogin() {
+    const { user } = signIn(DEFAULT_ADMIN_EMAIL);
+    if (user) onSignedIn(user);
   }
 
   return (
@@ -63,6 +72,20 @@ export default function LoginScreen({ onSignedIn }) {
               {t("login.submitButton")}
             </button>
           </form>
+
+          <div className="my-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-neutral-800" />
+            <span className="text-[10px] uppercase tracking-wide text-neutral-600">{t("login.or")}</span>
+            <div className="h-px flex-1 bg-neutral-800" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleQuickTestLogin}
+            className="w-full cursor-pointer rounded-full border border-neutral-700 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:border-amber-500/60 hover:text-amber-200"
+          >
+            {t("login.quickTestButton")}
+          </button>
         </div>
 
         <p className="mt-5 text-center text-[11px] leading-relaxed text-neutral-600">

@@ -132,6 +132,27 @@ function SecretCodeSection() {
   );
 }
 
+function SignOutSection({ onSignOut }) {
+  const { t } = useLanguage();
+  return (
+    <div className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-700">
+      <h3 className="mb-1 font-serif text-base text-neutral-900 dark:text-neutral-100">
+        {t("settingsPanel.sessionTitle")}
+      </h3>
+      <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+        {t("settingsPanel.sessionHint")}
+      </p>
+      <button
+        type="button"
+        onClick={onSignOut}
+        className="cursor-pointer rounded-full border border-red-300 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+      >
+        {t("header.signOut")}
+      </button>
+    </div>
+  );
+}
+
 function FaqSection() {
   const { t } = useLanguage();
   const faqItems = ["addToRoute", "visitNote", "icsExport", "endOfDayReport", "whiteZones"];
@@ -182,7 +203,7 @@ function FaqSection() {
   );
 }
 
-export default function SettingsPanel({ onClose }) {
+export default function SettingsPanel({ onClose, onSignOut }) {
   const { t } = useLanguage();
   const [tab, setTab] = useState("preferences");
 
@@ -226,6 +247,7 @@ export default function SettingsPanel({ onClose }) {
             <>
               <LanguageSection />
               <SecretCodeSection />
+              <SignOutSection onSignOut={onSignOut} />
             </>
           ) : (
             <FaqSection />

@@ -44,9 +44,10 @@ npm run preview
   Sur la carte, les opticiens qui distribuent l'une de ces deux marques
   affichent un marqueur doré, les autres un marqueur gris/anthracite (une
   légende en bas à gauche de la carte rappelle ce code couleur).
-- **Bilingue FR / EN** : sélecteur de langue dans l'en-tête qui bascule toute
-  l'interface (filtres, fiches, chatbot, messages d'erreur) en anglais. Les
-  données des opticiens (noms, adresses, marques) restent inchangées — seule
+- **Bilingue FR / EN** : sélecteur de langue dans Paramètres > Préférences
+  qui bascule toute l'interface (filtres, fiches, chatbot, messages
+  d'erreur) en anglais. Les données des opticiens (noms, adresses,
+  marques) restent inchangées — seule
   l'interface est traduite. Voir la section dédiée plus bas.
 - **Logo officiel** en en-tête (`public/logo-thelios.jpg`), sur un socle clair
   arrondi pour rester lisible malgré son fond crème opaque sur l'en-tête sombre.
@@ -318,8 +319,10 @@ La sidebar a été restructurée en accordéon compact façon Nike
 
 ## Langue (FR / EN)
 
-Le sélecteur `FR / EN` dans l'en-tête bascule toute l'interface. La logique se
-trouve dans `src/i18n/` :
+Le sélecteur `FR / EN` dans **Paramètres > Préférences** (voir "Rubrique
+Paramètres" plus bas) bascule toute l'interface — il n'y a plus de
+sélecteur dupliqué dans l'en-tête, pour l'alléger. La logique se trouve
+dans `src/i18n/` :
 
 - `translations.js` : dictionnaire plat `{ fr: {...}, en: {...} }`.
 - `LanguageContext.jsx` : fournit `useLanguage()` (`{ lang, setLang, t }`),
@@ -328,7 +331,7 @@ trouve dans `src/i18n/` :
 Le chatbot (`src/utils/chatbot.js`) répond aussi dans la langue active
 (templates de réponse séparés par langue), sans dépendre d'un service de
 traduction externe. Pour ajouter une langue, dupliquer un bloc dans
-`translations.js` et l'ajouter au sélecteur dans `Header.jsx`.
+`translations.js` et l'ajouter au sélecteur dans `SettingsPanel.jsx`.
 
 ## Avis clients et code secret
 
@@ -738,8 +741,14 @@ L'app est désormais protégée par un écran de connexion
   connexion) : si un admin retire quelqu'un ou change son rôle, l'effet
   s'applique dès la prochaine action de cet utilisateur plutôt que
   d'attendre une reconnexion.
+- **Connexion rapide (Mode Test)** : un bouton de secours sur l'écran de
+  connexion permet d'entrer dans l'app en un clic (connecté comme
+  l'administrateur par défaut), sans avoir à taper une adresse e-mail —
+  pratique pour les démos et les tests, sans remplacer le vrai formulaire
+  de connexion au-dessus.
 - **Déconnexion** : bouton dédié dans l'en-tête (icône, e-mail affiché en
-  info-bulle).
+  info-bulle), ainsi qu'un bouton "Se déconnecter" dans Paramètres >
+  Préférences pour ceux qui préfèrent y accéder depuis là.
 
 ### Panneau d'Administration
 
@@ -1037,7 +1046,11 @@ c'est le rôle de l'onglet Agenda & RDV et de son export `.ics`) :
   visite datée du jour dans l'onglet Bloc-Notes sont pré-cochés par défaut
   (`src/utils/endOfDayReport.js`, `buildReportRows`) — un point de départ
   pratique que le commercial reste libre de corriger avant export (oubli
-  de note, visite non prévue à l'origine, etc.).
+  de note, visite non prévue à l'origine, etc.). Une **barre de recherche**
+  au-dessus de la liste filtre par nom, ville ou code postal — utile pour
+  un portefeuille conséquent, sans jamais décocher les opticiens déjà
+  sélectionnés en dehors du résultat filtré (la sélection reste
+  indépendante de la recherche affichée).
 - Un champ **Note individuelle** par opticien coché, pré-rempli à partir de
   la note de visite du jour la plus récente pour cet opticien quand elle
   existe — modifiable directement dans la modale avant export (édition

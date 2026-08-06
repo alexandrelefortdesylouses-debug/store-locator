@@ -13,6 +13,8 @@ export const translations = {
     "login.submitButton": "Se connecter",
     "login.errorInvalidFormat": "Adresse e-mail invalide.",
     "login.errorNotWhitelisted": "Accès non autorisé. Veuillez contacter l'administrateur.",
+    "login.or": "ou",
+    "login.quickTestButton": "Connexion rapide (Mode Test)",
     "login.localOnlyNote":
       "Connexion simulée localement sur cet appareil (pas de compte partagé entre plusieurs postes) — voir le README pour le détail.",
 
@@ -50,6 +52,8 @@ export const translations = {
     "settingsPanel.languageHint": "Choisissez la langue utilisée dans toute l'application.",
     "settingsPanel.languageFr": "Français",
     "settingsPanel.languageEn": "English",
+    "settingsPanel.sessionTitle": "Session",
+    "settingsPanel.sessionHint": "Fermez votre session sur cet appareil si besoin.",
     "settingsPanel.faqStatusTitle": "Statuts & codes couleurs",
     "settingsPanel.faqStatusDesc.active_client": "L'opticien fait partie de vos clients actifs Thélios.",
     "settingsPanel.faqStatusDesc.prospect": "Un contact a été établi, la relation reste à développer.",
@@ -278,6 +282,8 @@ export const translations = {
     "eodReport.detailTitle": "Détail par Opticien Visité",
     "eodReport.checkHint": "Cochez les opticiens que vous avez réellement visités aujourd'hui.",
     "eodReport.emptyPortfolio": "Aucun opticien dans votre portefeuille pour l'instant. Ajoutez des favoris ou importez votre portefeuille depuis Ma Carte.",
+    "eodReport.searchPlaceholder": "Rechercher par nom, ville ou code postal…",
+    "eodReport.noSearchResults": "Aucun opticien ne correspond à cette recherche.",
     "eodReport.noVisitsToday": "Aucun opticien visité aujourd'hui pour l'instant. Ajoutez une note de visite datée dans l'onglet Bloc-Notes pour qu'un opticien apparaisse ici.",
     "eodReport.individualNoteLabel": "Note individuelle",
     "eodReport.noIndividualNote": "Aucune note individuelle renseignée.",
@@ -382,6 +388,8 @@ export const translations = {
     "login.submitButton": "Sign in",
     "login.errorInvalidFormat": "Invalid email address.",
     "login.errorNotWhitelisted": "Access denied. Please contact your administrator.",
+    "login.or": "or",
+    "login.quickTestButton": "Quick sign-in (Test Mode)",
     "login.localOnlyNote":
       "This sign-in is simulated locally on this device (no account shared across devices) — see the README for details.",
 
@@ -419,6 +427,8 @@ export const translations = {
     "settingsPanel.languageHint": "Choose the language used throughout the application.",
     "settingsPanel.languageFr": "Français",
     "settingsPanel.languageEn": "English",
+    "settingsPanel.sessionTitle": "Session",
+    "settingsPanel.sessionHint": "Sign out of this device's session if needed.",
     "settingsPanel.faqStatusTitle": "Statuses & color codes",
     "settingsPanel.faqStatusDesc.active_client": "This optician is one of your active Thélios clients.",
     "settingsPanel.faqStatusDesc.prospect": "Contact has been made, the relationship is still to be developed.",
@@ -645,6 +655,8 @@ export const translations = {
     "eodReport.detailTitle": "Detail by Optician Visited",
     "eodReport.checkHint": "Tick the opticians you actually visited today.",
     "eodReport.emptyPortfolio": "No opticians in your portfolio yet. Add favorites or import your portfolio from My Map.",
+    "eodReport.searchPlaceholder": "Search by name, city, or postal code…",
+    "eodReport.noSearchResults": "No opticians match this search.",
     "eodReport.noVisitsToday": "No optician visited today yet. Add a dated visit note in the Notebook tab so an optician shows up here.",
     "eodReport.individualNoteLabel": "Individual note",
     "eodReport.noIndividualNote": "No individual note provided.",

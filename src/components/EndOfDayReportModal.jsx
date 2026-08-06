@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import { buildReportRows } from "../utils/endOfDayReport";
@@ -7,6 +7,11 @@ import { getStoreZip } from "../utils/postalCode";
 import { STATUS_COLORS } from "../utils/palette";
 import { exportEndOfDayReportPdf } from "../utils/endOfDayReportPdf";
 import { exportEndOfDayReportDocx } from "../utils/endOfDayReportDocx";
+
+const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
+function normalize(text) {
+  return String(text ?? "").normalize("NFD").replace(DIACRITICS_REGEX, "").toLowerCase();
+}
 
 function todayDateString(lang) {
   return new Date().toLocaleDateString(lang === "en" ? "en-US" : "fr-FR", {
@@ -35,8 +40,19 @@ export default function EndOfDayReportModal({ stores, visitNotes, statuses, onCl
     () => new Set(buildReportRows({ stores, visitNotes }).filter((r) => r.hasNoteToday).map((r) => r.store.id)),
   );
   const [generating, setGenerating] = useState(null);
+  const [search, setSearch] = useState("");
 
   const selectedCount = checkedIds.size;
+
+  const visibleRows = useMemo(() => {
+    const query = normalize(search.trim());
+    if (!query) return rows;
+    return rows.filter((row) => {
+      const zip = getStoreZip(row.store);
+      const haystack = normalize(`${row.store.name} ${row.store.city} ${zip || ""}`);
+      return haystack.includes(query);
+    });
+  }, [rows, search]);
 
   function handleRepNameChange(value) {
     setRepNameState(value);
@@ -194,79 +210,94 @@ export default function EndOfDayReportModal({ stores, visitNotes, statuses, onCl
                 {t("eodReport.emptyPortfolio")}
               </p>
             ) : (
-              <ul className="flex flex-col gap-2.5">
-                {rows.map((row) => {
-                  const checked = checkedIds.has(row.store.id);
-                  const status = statuses[row.store.id];
-                  const zip = getStoreZip(row.store);
-                  return (
-                    <li
-                      key={row.store.id}
-                      className={`rounded-xl border p-3.5 transition ${
-                        checked
-                          ? "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800"
-                          : "border-neutral-100 bg-transparent opacity-60 dark:border-neutral-800"
-                      }`}
-                    >
-                      <label className="flex cursor-pointer items-start gap-2.5">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleChecked(row.store.id)}
-                          className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-amber-600"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="font-serif text-base text-neutral-900 dark:text-neutral-100">
-                              {row.store.name}
-                            </p>
-                            {status && (
-                              <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                <span
-                                  className="h-2 w-2 shrink-0 rounded-full"
-                                  style={{ background: STATUS_COLORS[status] }}
-                                />
-                                {t(`myCard.status.${status}`)}
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-                            {row.store.city}
-                            {zip ? ` (${zip})` : ""}
-                          </p>
-                          {row.store.brands.length > 0 && (
-                            <div className="mt-1.5 flex flex-wrap gap-1">
-                              {row.store.brands.map((brand) => (
-                                <span
-                                  key={brand}
-                                  className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                                >
-                                  {brand}
-                                </span>
-                              ))}
+              <>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t("eodReport.searchPlaceholder")}
+                  className="mb-3 w-full rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+                />
+                {visibleRows.length === 0 ? (
+                  <p className="rounded-xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                    {t("eodReport.noSearchResults")}
+                  </p>
+                ) : (
+                  <ul className="flex flex-col gap-2.5">
+                    {visibleRows.map((row) => {
+                      const checked = checkedIds.has(row.store.id);
+                      const status = statuses[row.store.id];
+                      const zip = getStoreZip(row.store);
+                      return (
+                        <li
+                          key={row.store.id}
+                          className={`rounded-xl border p-3.5 transition ${
+                            checked
+                              ? "border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800"
+                              : "border-neutral-100 bg-transparent opacity-60 dark:border-neutral-800"
+                          }`}
+                        >
+                          <label className="flex cursor-pointer items-start gap-2.5">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleChecked(row.store.id)}
+                              className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-amber-600"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="font-serif text-base text-neutral-900 dark:text-neutral-100">
+                                  {row.store.name}
+                                </p>
+                                {status && (
+                                  <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                    <span
+                                      className="h-2 w-2 shrink-0 rounded-full"
+                                      style={{ background: STATUS_COLORS[status] }}
+                                    />
+                                    {t(`myCard.status.${status}`)}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                {row.store.city}
+                                {zip ? ` (${zip})` : ""}
+                              </p>
+                              {row.store.brands.length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap gap-1">
+                                  {row.store.brands.map((brand) => (
+                                    <span
+                                      key={brand}
+                                      className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                                    >
+                                      {brand}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+
+                          {checked && (
+                            <div className="mt-2.5 pl-6">
+                              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                                {t("eodReport.individualNoteLabel")}
+                              </label>
+                              <textarea
+                                value={row.note}
+                                onChange={(e) => handleRowNoteChange(row.store.id, e.target.value)}
+                                rows={2}
+                                placeholder={t("eodReport.noIndividualNote")}
+                                className="w-full resize-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+                              />
                             </div>
                           )}
-                        </div>
-                      </label>
-
-                      {checked && (
-                        <div className="mt-2.5 pl-6">
-                          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                            {t("eodReport.individualNoteLabel")}
-                          </label>
-                          <textarea
-                            value={row.note}
-                            onChange={(e) => handleRowNoteChange(row.store.id, e.target.value)}
-                            rows={2}
-                            placeholder={t("eodReport.noIndividualNote")}
-                            className="w-full resize-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
-                          />
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </>
             )}
           </div>
         </div>

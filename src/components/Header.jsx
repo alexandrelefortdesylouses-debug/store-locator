@@ -1,30 +1,6 @@
 import DarkModeToggle from "./DarkModeToggle";
 import { useLanguage } from "../i18n/LanguageContext";
 
-function LanguageToggle() {
-  const { lang, setLang } = useLanguage();
-
-  return (
-    <div className="flex overflow-hidden rounded-full border border-neutral-700 text-xs uppercase tracking-wide">
-      {["fr", "en"].map((code) => (
-        <button
-          key={code}
-          type="button"
-          onClick={() => setLang(code)}
-          className={`flex h-8 min-w-8 cursor-pointer items-center justify-center px-2.5 transition ${
-            lang === code
-              ? "bg-amber-200 text-neutral-900"
-              : "text-neutral-300 hover:text-amber-200"
-          }`}
-          aria-pressed={lang === code}
-        >
-          {code}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function StatsIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
@@ -93,7 +69,6 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
-          <LanguageToggle />
           <button
             type="button"
             onClick={onOpenStats}
