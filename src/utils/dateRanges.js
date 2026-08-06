@@ -25,6 +25,14 @@ export function currentAndPreviousWeek(referenceDate = new Date()) {
   };
 }
 
+export function currentDay(referenceDate = new Date()) {
+  const start = new Date(referenceDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start, end };
+}
+
 export function currentAndPreviousMonth(referenceDate = new Date()) {
   const currentStart = startOfMonth(referenceDate);
   const currentEnd = new Date(currentStart);

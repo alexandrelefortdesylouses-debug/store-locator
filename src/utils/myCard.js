@@ -7,6 +7,7 @@ const NOTES_KEY = "storeLocator_mycard_notes";
 const STATUSES_KEY = "storeLocator_mycard_statuses";
 const TAGS_KEY = "storeLocator_mycard_tags";
 const PRIORITIES_KEY = "storeLocator_mycard_priorities";
+const REP_NAME_KEY = "storeLocator_mycard_repname";
 
 export const STORE_STATUSES = {
   ACTIVE_CLIENT: "active_client",
@@ -120,6 +121,22 @@ export function setTags(storeId, tags) {
   }
   localStorage.setItem(TAGS_KEY, JSON.stringify(updated));
   return updated;
+}
+
+// Freeform rep name used to fill the end-of-day report's header — not a
+// real account system (there is none), just a convenience so it doesn't
+// need retyping every day on this device.
+export function getRepName() {
+  try {
+    return localStorage.getItem(REP_NAME_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+export function setRepName(name) {
+  localStorage.setItem(REP_NAME_KEY, name);
+  return name;
 }
 
 export function getPriorities() {

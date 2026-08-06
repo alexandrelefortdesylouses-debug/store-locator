@@ -904,6 +904,53 @@ indicateurs (`src/utils/performance.js`) :
 > Le détail de la méthodologie est rappelé directement sous les indicateurs
 > dans l'interface.
 
+### 📋 Rapport de fin de journée
+
+Le bouton **Générer le rapport de fin de journée**, dans la barre d'onglets
+de "Mon Carnet" (accessible depuis n'importe quel onglet), ouvre une modale
+(`src/components/EndOfDayReportModal.jsx`) centrée uniquement sur les
+opticiens **effectivement visités dans la journée** — pas la tournée
+planifiée (ça, c'est le rôle de l'onglet Agenda & RDV et de son export
+`.ics`) :
+
+- Un opticien compte comme "visité aujourd'hui" s'il a au moins une note de
+  visite datée du jour dans l'onglet Bloc-Notes
+  (`src/utils/endOfDayReport.js`, `getTodaysVisitedStores`) — c'est le même
+  système de notes datées que celui qui alimente déjà la colonne "Dernier
+  Contact" du Tableau et les indicateurs de Performance ci-dessus.
+- L'en-tête reprend la date du jour, un champ **Nom du commercial** (texte
+  libre, mémorisé dans le `localStorage` de l'appareil pour ne pas avoir à
+  le ressaisir chaque jour — toujours pas un vrai système de comptes) et le
+  nombre d'opticiens visités.
+- **Synthèse Globale de la Journée** : un champ de texte libre pour un
+  bilan général.
+- **Détail par Opticien Visité** : chaque opticien visité affiche nom,
+  ville (code postal), statut CRM et marques distribuées, avec une zone
+  **Note individuelle** pré-remplie à partir de la note de visite du jour
+  la plus récente pour cet opticien — modifiable directement dans la
+  modale avant export (édition rapide, sans avoir à retourner dans le
+  Bloc-Notes).
+- **Deux formats d'export**, tous deux générés côté client à partir des
+  mêmes données (aucun aller-retour serveur) :
+  - **PDF** (`src/utils/endOfDayReportPdf.js`, `jspdf`) : mise en page
+    directement imprimable/partageable, avec un encadré propre par
+    opticien.
+  - **Word (.docx)** (`src/utils/endOfDayReportDocx.js`, bibliothèque
+    [`docx`](https://www.npmjs.com/package/docx) — vérifiée via `npm audit`
+    avant intégration, 0 vulnérabilité) : un vrai fichier `.docx` éditable
+    dans Word ou Google Docs (chaque opticien dans un tableau à une cellule
+    avec bordures et fond légèrement teinté, pour le même effet
+    "encadrement propre" qu'en PDF), pensé pour que le commercial puisse
+    enrichir ou corriger le rapport après coup, depuis son ordinateur ou
+    son téléphone.
+  - La modale reste ouverte après un export pour permettre de télécharger
+    l'autre format sans avoir à tout ressaisir.
+  - Les deux bibliothèques (`jspdf` et `docx`) sont chargées par un
+    `import()` dynamique déclenché uniquement au clic sur le bouton de
+    téléchargement correspondant, pour ne pas alourdir le chargement
+    initial de l'app (`docx` apparaît comme un chunk séparé dans le build,
+    voir `npm run build`).
+
 ## Prochaine étape (non traitée dans cette itération)
 
 Le point "page d'accueil + système de compte (favoris, avis personnalisés,

@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import CarnetTableTab from "./CarnetTableTab";
 import CarnetAgendaTab from "./CarnetAgendaTab";
 import CarnetNotesTab from "./CarnetNotesTab";
 import CarnetPerformanceTab from "./CarnetPerformanceTab";
+import EndOfDayReportModal from "./EndOfDayReportModal";
+import Toast from "./Toast";
+
+const TOAST_DURATION_MS = 3500;
 
 const TABS = ["table", "agenda", "notes", "performance"];
 
@@ -46,6 +50,19 @@ function ChartIcon() {
   );
 }
 
+function ReportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"
+      />
+      <path strokeLinecap="round" d="M9 13l2 2 4-4" />
+    </svg>
+  );
+}
+
 const TAB_ICONS = { table: TableIcon, agenda: CalendarIcon, notes: NoteIcon, performance: ChartIcon };
 
 export default function CarnetView({
@@ -69,6 +86,9 @@ export default function CarnetView({
   const { t } = useLanguage();
   const [tab, setTab] = useState("table");
   const [carnetSelectedStoreId, setCarnetSelectedStoreId] = useState(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
   function handleOpenNote(storeId) {
     setCarnetSelectedStoreId(storeId);
@@ -80,29 +100,46 @@ export default function CarnetView({
     setTab("agenda");
   }
 
+  function handleReportExported(format) {
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage(format === "pdf" ? t("eodReport.toastSuccessPdf") : t("eodReport.toastSuccessDocx"));
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }
+
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
-      <div className="thin-scrollbar flex shrink-0 gap-1 overflow-x-auto border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900 sm:px-6">
-        {TABS.map((key) => {
-          const Icon = TAB_ICONS[key];
-          const active = tab === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              aria-pressed={active}
-              className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition sm:px-4 ${
-                active
-                  ? "bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
-                  : "text-neutral-500 hover:text-amber-700 dark:text-neutral-400 dark:hover:text-amber-400"
-              }`}
-            >
-              <Icon />
-              {t(`carnet.tab.${key}`)}
-            </button>
-          );
-        })}
+      <div className="flex shrink-0 flex-col gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="thin-scrollbar flex gap-1 overflow-x-auto">
+          {TABS.map((key) => {
+            const Icon = TAB_ICONS[key];
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTab(key)}
+                aria-pressed={active}
+                className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition sm:px-4 ${
+                  active
+                    ? "bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+                    : "text-neutral-500 hover:text-amber-700 dark:text-neutral-400 dark:hover:text-amber-400"
+                }`}
+              >
+                <Icon />
+                {t(`carnet.tab.${key}`)}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setReportModalOpen(true)}
+          className="flex shrink-0 cursor-pointer items-center justify-center gap-1.5 self-start rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400 sm:self-auto"
+        >
+          <ReportIcon />
+          {t("eodReport.openButton")}
+        </button>
       </div>
 
       <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
@@ -150,6 +187,18 @@ export default function CarnetView({
           />
         )}
       </div>
+
+      {reportModalOpen && (
+        <EndOfDayReportModal
+          stores={stores}
+          visitNotes={visitNotes}
+          statuses={statuses}
+          onClose={() => setReportModalOpen(false)}
+          onExported={handleReportExported}
+        />
+      )}
+
+      <Toast message={toastMessage} />
     </div>
   );
 }
