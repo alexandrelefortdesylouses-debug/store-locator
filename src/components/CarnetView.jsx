@@ -1,11 +1,20 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import CarnetTableTab from "./CarnetTableTab";
+import CarnetFolderSidebar from "./CarnetFolderSidebar";
 import CarnetAgendaTab from "./CarnetAgendaTab";
 import CarnetNotesTab from "./CarnetNotesTab";
 import CarnetPerformanceTab from "./CarnetPerformanceTab";
 import EndOfDayReportModal from "./EndOfDayReportModal";
 import Toast from "./Toast";
+import {
+  getFolders,
+  createFolder,
+  deleteFolder,
+  getFolderMembers,
+  addStoreToFolder,
+  removeStoreFromFolder,
+} from "../utils/folders";
 
 const TOAST_DURATION_MS = 3500;
 
@@ -74,6 +83,7 @@ export default function CarnetView({
   visitNotes,
   onAddVisitNote,
   prospectFirstSeen,
+  favoriteIds,
   routeStops,
   routeOrder,
   onToggleRouteStop,
@@ -90,6 +100,10 @@ export default function CarnetView({
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimeoutRef = useRef(null);
 
+  const [folders, setFolders] = useState(() => getFolders());
+  const [folderMembers, setFolderMembers] = useState(() => getFolderMembers());
+  const [selectedFolderId, setSelectedFolderId] = useState("all");
+
   function handleOpenNote(storeId) {
     setCarnetSelectedStoreId(storeId);
     setTab("notes");
@@ -105,6 +119,51 @@ export default function CarnetView({
     setToastMessage(format === "pdf" ? t("eodReport.toastSuccessPdf") : t("eodReport.toastSuccessDocx"));
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
+
+  // storeId is only passed when a folder is created from the per-row
+  // "assign to folder" modal (create-and-add-in-one-step); the sidebar's
+  // own "+ Nouveau dossier" creates an empty folder.
+  function handleCreateFolder(name, storeId) {
+    const updated = createFolder(name);
+    setFolders(updated);
+    if (storeId) {
+      const newFolder = updated[updated.length - 1];
+      setFolderMembers(addStoreToFolder(newFolder.id, storeId));
+    }
+  }
+
+  function handleDeleteFolder(folderId) {
+    setFolders(deleteFolder(folderId));
+    setFolderMembers(getFolderMembers());
+    if (selectedFolderId === folderId) setSelectedFolderId("all");
+  }
+
+  function handleToggleFolderMembership(folderId, storeId) {
+    const isMember = (folderMembers[folderId] || []).includes(storeId);
+    setFolderMembers(
+      isMember ? removeStoreFromFolder(folderId, storeId) : addStoreToFolder(folderId, storeId),
+    );
+  }
+
+  const folderStoreIdSet = useMemo(() => new Set(stores.map((s) => s.id)), [stores]);
+
+  const countsByFolder = useMemo(() => {
+    const counts = {
+      all: stores.length,
+      favorites: stores.filter((s) => favoriteIds.includes(s.id)).length,
+    };
+    folders.forEach((folder) => {
+      counts[folder.id] = (folderMembers[folder.id] || []).filter((id) => folderStoreIdSet.has(id)).length;
+    });
+    return counts;
+  }, [stores, favoriteIds, folders, folderMembers, folderStoreIdSet]);
+
+  const tableStores = useMemo(() => {
+    if (selectedFolderId === "all") return stores;
+    if (selectedFolderId === "favorites") return stores.filter((s) => favoriteIds.includes(s.id));
+    const memberIds = new Set(folderMembers[selectedFolderId] || []);
+    return stores.filter((s) => memberIds.has(s.id));
+  }, [stores, selectedFolderId, favoriteIds, folderMembers]);
 
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
@@ -142,51 +201,66 @@ export default function CarnetView({
         </button>
       </div>
 
-      <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-        {tab === "table" && (
-          <CarnetTableTab
-            stores={stores}
-            statuses={statuses}
-            onSetStatus={onSetStatus}
-            priorities={priorities}
-            onSetPriority={onSetPriority}
-            visitNotes={visitNotes}
-            onOpenNote={handleOpenNote}
-            onScheduleStore={handleScheduleStore}
-            onViewOnMap={onViewOnMap}
+      {tab === "table" ? (
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:flex-row">
+          <CarnetFolderSidebar
+            folders={folders}
+            selectedFolderId={selectedFolderId}
+            onSelectFolder={setSelectedFolderId}
+            onCreateFolder={handleCreateFolder}
+            onDeleteFolder={handleDeleteFolder}
+            countsByFolder={countsByFolder}
           />
-        )}
+          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+            <CarnetTableTab
+              stores={tableStores}
+              statuses={statuses}
+              onSetStatus={onSetStatus}
+              priorities={priorities}
+              onSetPriority={onSetPriority}
+              onOpenNote={handleOpenNote}
+              onScheduleStore={handleScheduleStore}
+              onViewOnMap={onViewOnMap}
+              folders={folders}
+              folderMembers={folderMembers}
+              onToggleFolderMembership={handleToggleFolderMembership}
+              onCreateFolder={handleCreateFolder}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          {tab === "agenda" && (
+            <CarnetAgendaTab
+              stops={routeStops}
+              order={routeOrder}
+              userLocation={userLocation}
+              onRemoveStop={onRemoveRouteStop}
+              onClear={onClearRoute}
+              onOptimize={onOptimizeRoute}
+            />
+          )}
 
-        {tab === "agenda" && (
-          <CarnetAgendaTab
-            stops={routeStops}
-            order={routeOrder}
-            userLocation={userLocation}
-            onRemoveStop={onRemoveRouteStop}
-            onClear={onClearRoute}
-            onOptimize={onOptimizeRoute}
-          />
-        )}
+          {tab === "notes" && (
+            <CarnetNotesTab
+              stores={stores}
+              selectedStoreId={carnetSelectedStoreId}
+              onSelectStore={setCarnetSelectedStoreId}
+              statuses={statuses}
+              visitNotes={visitNotes}
+              onAddVisitNote={onAddVisitNote}
+            />
+          )}
 
-        {tab === "notes" && (
-          <CarnetNotesTab
-            stores={stores}
-            selectedStoreId={carnetSelectedStoreId}
-            onSelectStore={setCarnetSelectedStoreId}
-            statuses={statuses}
-            visitNotes={visitNotes}
-            onAddVisitNote={onAddVisitNote}
-          />
-        )}
-
-        {tab === "performance" && (
-          <CarnetPerformanceTab
-            stores={stores}
-            visitNotes={visitNotes}
-            prospectFirstSeen={prospectFirstSeen}
-          />
-        )}
-      </div>
+          {tab === "performance" && (
+            <CarnetPerformanceTab
+              stores={stores}
+              visitNotes={visitNotes}
+              prospectFirstSeen={prospectFirstSeen}
+            />
+          )}
+        </div>
+      )}
 
       {reportModalOpen && (
         <EndOfDayReportModal

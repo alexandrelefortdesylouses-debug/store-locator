@@ -344,12 +344,14 @@ Chaque fiche opticien affiche une section d'avis clients. Le formulaire
 d'ajout d'avis est protégé par un code secret (par défaut : `1234`).
 
 - Les avis sont enregistrés dans le `localStorage` du navigateur (par magasin).
-- Le code secret peut être modifié à tout moment via le bouton
-  **Paramètres** en haut de la page, onglet **Préférences** (il faut
-  connaître le code actuel pour le changer) — voir la section "Rubrique
-  Paramètres" plus bas pour le reste de ce qu'on y trouve.
-- Le code est stocké dans le `localStorage` de l'appareil : il est donc propre
-  à chaque navigateur/appareil utilisé pour administrer le site.
+- Le code est stocké dans le `localStorage` de l'appareil (`getSecretCode`,
+  `src/utils/storage.js`) : il est donc propre à chaque navigateur/appareil
+  utilisé pour administrer le site.
+- Il n'existe plus d'écran pour le modifier depuis l'interface — la section
+  correspondante a été retirée de Paramètres (voir "Rubrique Paramètres"
+  plus bas) à la demande explicite du client. Le code reste modifiable
+  directement dans le `localStorage` de l'appareil si besoin
+  (`storeLocator_secretCode`).
 
 > Pour une mise en production réelle avec des avis partagés entre tous les
 > visiteurs, il faudra remplacer le stockage `localStorage` par une API/backend.
@@ -833,13 +835,15 @@ onglets (`src/components/SettingsPanel.jsx`) :
 - **Mon Compte** :
   - **Profil** : rappel en lecture seule de l'e-mail et du rôle (Admin /
     Commercial) du compte connecté.
-  - **Changer le mot de passe** : formulaire mot de passe actuel / nouveau
-    / confirmation (le mot de passe actuel n'est demandé que si le compte
-    en a déjà un — la première fois, il suffit de choisir un nouveau mot
-    de passe). Passe par `setPassword()` dans `src/services/authService.js`
-    — voir "Connexion, rôles & Administration" plus haut pour le
-    fonctionnement et les limites (mot de passe optionnel, stocké en
-    clair, propre à cet appareil).
+  - **Changer mon mot de passe** : un simple bouton — il n'affiche le
+    formulaire (mot de passe actuel / nouveau / confirmation) qu'au clic,
+    en accordéon, plutôt que de l'exposer en permanence. Le mot de passe
+    actuel n'est demandé que si le compte en a déjà un — la première fois,
+    il suffit de choisir un nouveau mot de passe. Passe par
+    `setPassword()` dans `src/services/authService.js` — voir "Connexion,
+    rôles & Administration" plus haut pour le fonctionnement et les
+    limites (mot de passe optionnel, stocké en clair, propre à cet
+    appareil).
   - **Session** : bouton "Se déconnecter", en plus de celui de l'en-tête.
 - **Préférences** :
   - **Langue de l'interface** : les mêmes boutons FR / EN que le
@@ -849,19 +853,25 @@ onglets (`src/components/SettingsPanel.jsx`) :
     l'en-tête (voir "Mode sombre" plus haut) pour désencombrer la barre
     supérieure, qui accumulait déjà Statistiques/Administration/
     Paramètres/Déconnexion.
-  - **Changer le code secret** des avis clients (reprend, inchangée, la
-    fonctionnalité qui vivait auparavant dans un composant dédié
-    `SecretCodeSettings.jsx` — désormais fusionné ici).
-- **Aide & FAQ** :
+  - Le changement de code secret des avis a été retiré de cet onglet (voir
+    "Avis clients et code secret" plus haut) — Mon Compte et Préférences
+    ne couvrent plus que l'identité et l'apparence de l'app.
+- **Aide & FAQ** : une dizaine de questions/réponses couvrant l'usage
+  global de l'app, avec un focus explicite sur l'import/export
+  (`settingsPanel.faqGuide.*` dans `src/i18n/translations.js`) :
   - **Statuts & codes couleurs** : rappel visuel des 4 statuts CRM
     utilisés dans "Mon Carnet" (Client actif, Prospect à contacter, RDV à
     fixer, Refus), avec leur pastille de couleur et une explication de
     chacun.
-  - **Guide d'utilisation sur le terrain** : questions/réponses courtes
-    sur les parcours clés (préparer sa tournée, enregistrer un
-    compte-rendu de visite, exporter vers l'agenda, envoyer son rapport
-    de fin de journée...), pour un commercial en déplacement qui a besoin
-    d'un rappel rapide sans documentation externe.
+  - **Guide d'utilisation sur le terrain** : format et colonnes attendues
+    pour un import Excel/CSV d'opticiens, export du carnet filtré et des
+    rapports de fin de journée, que faire quand le géocodage échoue à
+    l'import, créer un dossier thématique et y classer des opticiens,
+    pourquoi un opticien peut apparaître dans la mauvaise région,
+    générer/envoyer son rapport de fin de journée, utilisation hors-ligne
+    de l'app, changer son mot de passe depuis Mon Compte — plus deux
+    rappels sur la préparation de tournée et la saisie de comptes-rendus
+    de visite déjà présents dans une itération précédente.
 
 ## Carte Globale vs Ma Carte
 
@@ -982,12 +992,49 @@ favoris).
 
 ### 📋 Tableau
 
-`src/components/CarnetTableTab.jsx` liste l'intégralité du portefeuille sous
-forme de tableau : nom, ville, code postal/département, marques distribuées,
-statut, priorité, date de dernier contact et actions. Une recherche
+L'onglet Tableau adopte une disposition à deux colonnes façon
+client mail (Gmail/Outlook) : un panneau de **dossiers thématiques** à
+gauche, le tableau des opticiens à droite, filtré dynamiquement selon le
+dossier sélectionné.
+
+#### Dossiers thématiques
+
+`src/components/CarnetFolderSidebar.jsx` + `src/utils/folders.js` (même
+modèle per-device `localStorage` que le reste de "Mon Carnet") :
+
+- Deux entrées fixes toujours présentes : **Tous les opticiens** (le
+  portefeuille complet) et **Favoris** (les opticiens marqués ♥, tous
+  modes confondus). Puis la liste des **dossiers personnalisés** créés par
+  le commercial (ex. "Tournée Mai", "Focus Dior") pour grouper des
+  opticiens autour d'un objectif précis, au-delà du statut/de la priorité.
+- Chaque entrée affiche son nombre d'opticiens entre parenthèses,
+  recalculé à la volée (`countsByFolder` dans `CarnetView.jsx`) et
+  limité aux opticiens toujours présents dans le portefeuille — un id
+  orphelin dans un dossier (opticien retiré des favoris entre-temps) ne
+  gonfle pas artificiellement le compteur.
+- **+ Nouveau dossier** : un simple champ nom, pas de description ni
+  d'icône — volontairement minimal.
+- **Classer un opticien dans un dossier** : depuis la colonne Actions du
+  tableau, l'icône dossier ouvre `FolderAssignModal.jsx`, une liste à
+  cocher de tous les dossiers existants (un opticien peut appartenir à
+  plusieurs à la fois) avec un champ "créer et ajouter" en bas pour ne pas
+  avoir à repasser par la sidebar en cours de tri.
+- Sur mobile, la colonne de dossiers devient une rangée de puces
+  défilante horizontalement au-dessus du tableau plutôt qu'une colonne
+  fixe (pas de place pour une vraie sidebar sur un petit écran).
+- Supprimer un dossier (✕ au survol dans la sidebar) ne supprime aucun
+  opticien, seulement le regroupement — et si le dossier supprimé était
+  sélectionné, la vue retombe automatiquement sur "Tous les opticiens".
+
+#### Le tableau
+
+`src/components/CarnetTableTab.jsx` liste les opticiens du dossier
+sélectionné sous forme de tableau : nom, ville, code postal/département,
+marques distribuées, statut, priorité et actions. Une recherche
 (nom/ville/marque) et des badges de statut cliquables (🟢 Client actif,
 🔵 Prospect, 🟠 RDV à fixer, 🔴 Refus — réutilisant les mêmes
-`STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes.
+`STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte") filtrent les lignes à
+l'intérieur du dossier actif.
 
 - **Marques Thélios** : badges discrets par opticien (mêmes styles que
   partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en
@@ -1012,9 +1059,10 @@ statut, priorité, date de dernier contact et actions. Une recherche
   un menu déroulant ("saisie rapide") — pas besoin d'ouvrir la fiche
   détaillée de l'opticien.
 - **En-têtes de colonnes cliquables** (Nom, Ville, Code Postal, Statut,
-  Priorité, Dernier Contact) trient le tableau, croissant puis décroissant
-  au clic suivant sur la même colonne (un chevron indique la colonne et le
-  sens actifs).
+  Priorité) trient le tableau, croissant puis décroissant au clic suivant
+  sur la même colonne (un chevron indique la colonne et le sens actifs).
+  La colonne "Dernier Contact" présente dans une itération précédente a
+  été retirée à la demande du client.
 - **Actions rapides**, en icônes compactes : 📝 ouvrir/ajouter une note
   (bascule sur l'onglet Bloc-Notes avec cet opticien pré-sélectionné),
   📅 programmer un RDV (ajoute l'opticien au trajet en cours et bascule sur
@@ -1022,7 +1070,9 @@ statut, priorité, date de dernier contact et actions. Une recherche
   de numéro renseigné — les numéros de `stores.json` ne sont pas tous au
   même format, ils sont normalisés à la volée avant de construire le lien),
   🗺️ voir sur la carte (quitte Mon Carnet, revient sur Carte Globale et
-  ouvre directement la fiche détaillée de cet opticien).
+  ouvre directement la fiche détaillée de cet opticien), 📁 classer dans un
+  dossier (ouvre `FolderAssignModal.jsx`, voir "Dossiers thématiques"
+  ci-dessus).
 
 ### 📅 Agenda & RDV
 
@@ -1043,8 +1093,8 @@ horodatées automatiquement à l'ajout. C'est un système distinct de la
 la carte : celui-ci reste un pense-bête simple, alors que le Bloc-Notes de
 Mon Carnet tient un historique chronologique de visites
 (`src/utils/activity.js`, clé `localStorage` séparée), qui sert aussi de
-source pour la colonne "Dernier Contact" du Tableau et pour l'onglet
-Performance ci-dessous.
+source pour le pré-cochage automatique du rapport de fin de journée (voir
+plus bas) et pour l'onglet Performance ci-dessous.
 
 ### 📊 Performance & Historique
 

@@ -6,10 +6,6 @@ export function getSecretCode() {
   return localStorage.getItem(SECRET_CODE_KEY) || DEFAULT_SECRET_CODE;
 }
 
-export function setSecretCode(newCode) {
-  localStorage.setItem(SECRET_CODE_KEY, newCode);
-}
-
 export function getReviews(storeId) {
   const raw = localStorage.getItem(REVIEWS_KEY_PREFIX + storeId);
   if (!raw) return [];

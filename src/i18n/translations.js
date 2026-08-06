@@ -67,6 +67,8 @@ export const translations = {
     "account.profileTitle": "Profil",
     "account.emailLabel": "E-mail",
     "account.roleLabel": "Rôle",
+    "account.changePasswordButton": "Changer mon mot de passe",
+    "account.cancelPasswordChange": "Annuler",
     "account.passwordTitle": "Changer le mot de passe",
     "account.passwordHint": "Saisissez votre mot de passe actuel puis le nouveau, à deux reprises.",
     "account.passwordHintFirstTime":
@@ -86,21 +88,44 @@ export const translations = {
     "settingsPanel.faqStatusDesc.appointment_pending": "Un rendez-vous reste à fixer avec cet opticien.",
     "settingsPanel.faqStatusDesc.refused": "L'opticien a décliné ou n'est pas intéressé pour l'instant.",
     "settingsPanel.faqGuideTitle": "Guide d'utilisation sur le terrain",
+    "settingsPanel.faqGuide.importFormat.q":
+      "Quels formats de fichiers sont acceptés pour importer des opticiens, et comment structurer mes colonnes ?",
+    "settingsPanel.faqGuide.importFormat.a":
+      "Le panneau Administration accepte les fichiers .xlsx et .csv. Les colonnes reconnues automatiquement sont : Nom, Adresse, Ville, Code postal, Marques, Téléphone, E-mail et Site web (l'ordre des colonnes n'a pas d'importance, seuls les intitulés comptent). Chaque ligne est ensuite géocodée automatiquement à partir de l'adresse et du code postal.",
+    "settingsPanel.faqGuide.exportData.q":
+      "Comment exporter mon carnet d'adresses filtré ou mes rapports de fin de journée ?",
+    "settingsPanel.faqGuide.exportData.a":
+      "Le bouton « Exporter la sélection » de la sidebar télécharge en .xlsx tous les opticiens actuellement filtrés/affichés. Le rapport de fin de journée (Mon Carnet) s'exporte en PDF ou en Word (.docx) directement depuis sa fenêtre, avec les mêmes informations dans les deux formats.",
+    "settingsPanel.faqGuide.geocodeFailure.q":
+      "Que faire si la géolocalisation automatique d'une adresse échoue lors d'un import ?",
+    "settingsPanel.faqGuide.geocodeFailure.a":
+      "Les lignes dont l'adresse n'a pas pu être géocodée sont listées séparément dans le résumé d'import, sans bloquer l'import du reste du fichier. Vérifiez l'orthographe de la ville et du code postal dans le fichier source, puis réimportez uniquement ces lignes corrigées.",
+    "settingsPanel.faqGuide.folders.q":
+      "Comment créer un dossier thématique et y classer mes opticiens pour préparer une tournée ?",
+    "settingsPanel.faqGuide.folders.a":
+      "Dans Mon Carnet > Tableau, cliquez sur « + Nouveau dossier » dans le panneau de gauche et donnez-lui un nom (ex. « Tournée Mai »). Depuis la colonne Actions de chaque opticien, ouvrez l'icône dossier et cochez les dossiers dans lesquels le classer — un opticien peut appartenir à plusieurs dossiers à la fois.",
+    "settingsPanel.faqGuide.wrongRegion.q":
+      "Pourquoi certains opticiens n'apparaissent pas dans la bonne région et comment corriger leur position ?",
+    "settingsPanel.faqGuide.wrongRegion.a":
+      "La région et le département affichés sont recalculés automatiquement à partir du code postal de l'adresse : une erreur de code postal dans la donnée source suffit à classer un opticien dans la mauvaise région, même si ses coordonnées GPS sont correctes. Contactez un administrateur pour corriger l'adresse via un réimport.",
+    "settingsPanel.faqGuide.endOfDayReport.q":
+      "Comment générer et envoyer mon rapport de fin de journée en fin de tournée ?",
+    "settingsPanel.faqGuide.endOfDayReport.a":
+      "Dans Mon Carnet, cliquez sur « Générer le rapport de fin de journée », cochez les opticiens réellement visités, ajoutez vos notes et votre synthèse, puis téléchargez le PDF ou le Word — à joindre ensuite à un e-mail comme n'importe quel fichier téléchargé.",
+    "settingsPanel.faqGuide.offlineUsage.q":
+      "Puis-je consulter mon carnet ou saisir des notes sans connexion Internet ?",
+    "settingsPanel.faqGuide.offlineUsage.a":
+      "Une fois l'application chargée, la consultation de Mon Carnet et la saisie de notes, statuts ou priorités fonctionnent sans connexion (tout est stocké sur cet appareil). Le chargement initial de l'application, l'affichage de la carte et la géolocalisation d'adresses nécessitent en revanche une connexion.",
+    "settingsPanel.faqGuide.passwordSecurity.q":
+      "Comment modifier mes identifiants ou mon mot de passe depuis mon espace Compte ?",
+    "settingsPanel.faqGuide.passwordSecurity.a":
+      "Dans Paramètres > Mon Compte, cliquez sur « Changer mon mot de passe » pour afficher le formulaire (mot de passe actuel si vous en avez déjà un, puis le nouveau à deux reprises). Votre adresse e-mail ne peut, elle, être modifiée que par un administrateur depuis le panneau Administration.",
     "settingsPanel.faqGuide.addToRoute.q": "Comment préparer ma tournée du jour ?",
     "settingsPanel.faqGuide.addToRoute.a":
       "Depuis la Carte Globale, cochez « Ajouter au trajet » sur les opticiens à visiter, puis ouvrez le planificateur en bas de carte pour optimiser l'ordre et ouvrir l'itinéraire dans Google Maps ou Waze.",
     "settingsPanel.faqGuide.visitNote.q": "Comment enregistrer le compte-rendu d'une visite ?",
     "settingsPanel.faqGuide.visitNote.a":
       "Dans Mon Carnet > Bloc-Notes, sélectionnez l'opticien et ajoutez une note de visite datée — elle alimente automatiquement le Tableau et le Rapport de fin de journée.",
-    "settingsPanel.faqGuide.icsExport.q": "Comment ajouter ma tournée à mon agenda ?",
-    "settingsPanel.faqGuide.icsExport.a":
-      "Depuis le planificateur de trajet, cliquez sur « Ajouter à mon agenda (.ics) » pour générer un fichier compatible avec la plupart des applications de calendrier.",
-    "settingsPanel.faqGuide.endOfDayReport.q": "Comment envoyer mon rapport de fin de journée ?",
-    "settingsPanel.faqGuide.endOfDayReport.a":
-      "Dans Mon Carnet, cliquez sur « Générer le rapport de fin de journée », cochez les opticiens visités, ajoutez vos notes, puis téléchargez le rapport en PDF ou en Word.",
-    "settingsPanel.faqGuide.whiteZones.q": "Qu'est-ce que les « zones blanches » sur la carte ?",
-    "settingsPanel.faqGuide.whiteZones.a":
-      "Des secteurs à forte densité d'opticiens concurrents sans aucun opticien Thélios — un indicateur d'opportunité de prospection, activable via le bouton dédié sur la carte.",
 
     "sidebar.collapsedLabel": "Opticiens Thélios",
     "sidebar.expand": "Afficher la liste",
@@ -157,13 +182,25 @@ export const translations = {
     "carnet.table.colBrands": "Marques Thélios",
     "carnet.table.colStatus": "Statut",
     "carnet.table.colPriority": "Potentiel / Priorité",
-    "carnet.table.colLastContact": "Dernier Contact",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Ouvrir la note",
     "carnet.table.actionScheduleRdv": "Programmer un RDV",
     "carnet.table.actionCall": "Appeler",
     "carnet.table.actionCallDisabled": "Aucun numéro renseigné",
     "carnet.table.actionViewOnMap": "Voir sur la carte",
+    "carnet.table.actionAssignFolder": "Classer dans un dossier",
+
+    "carnet.folders.all": "Tous les opticiens",
+    "carnet.folders.favorites": "Favoris",
+    "carnet.folders.customTitle": "Mes dossiers",
+    "carnet.folders.newFolder": "Nouveau dossier",
+    "carnet.folders.namePlaceholder": "Nom du dossier…",
+    "carnet.folders.create": "Créer",
+    "carnet.folders.cancel": "Annuler",
+    "carnet.folders.deleteAria": "Supprimer le dossier",
+    "carnet.folders.assignTitle": "Classer dans un dossier",
+    "carnet.folders.empty": "Aucun dossier pour l'instant. Créez-en un ci-dessous.",
+    "carnet.folders.createAndAdd": "Créer et ajouter",
 
     "carnet.priority.none": "Non renseignée",
     "carnet.priority.high": "Élevée",
@@ -378,18 +415,7 @@ export const translations = {
       "Merci de renseigner votre nom et votre commentaire.",
     "reviews.errorWrongCode": "Code secret incorrect.",
 
-    "settings.title": "Changer le code secret",
     "settings.close": "Fermer",
-    "settings.description":
-      "Ce code protège le formulaire d'ajout d'avis. Il est stocké uniquement sur cet appareil.",
-    "settings.currentCode": "Code secret actuel",
-    "settings.newCode": "Nouveau code",
-    "settings.confirmCode": "Confirmer le nouveau code",
-    "settings.save": "Enregistrer",
-    "settings.errorWrongCurrent": "Code secret actuel incorrect.",
-    "settings.errorEmptyNew": "Le nouveau code ne peut pas être vide.",
-    "settings.errorMismatch": "Les deux nouveaux codes ne correspondent pas.",
-    "settings.success": "Code secret mis à jour avec succès.",
 
     "chat.online": "En ligne",
     "chat.openAria": "Ouvrir l'assistant Thélios",
@@ -467,6 +493,8 @@ export const translations = {
     "account.profileTitle": "Profile",
     "account.emailLabel": "Email",
     "account.roleLabel": "Role",
+    "account.changePasswordButton": "Change my password",
+    "account.cancelPasswordChange": "Cancel",
     "account.passwordTitle": "Change password",
     "account.passwordHint": "Enter your current password, then the new one twice.",
     "account.passwordHintFirstTime":
@@ -486,21 +514,42 @@ export const translations = {
     "settingsPanel.faqStatusDesc.appointment_pending": "An appointment still needs to be scheduled with this optician.",
     "settingsPanel.faqStatusDesc.refused": "The optician declined or isn't interested for now.",
     "settingsPanel.faqGuideTitle": "Field usage guide",
+    "settingsPanel.faqGuide.importFormat.q":
+      "What file formats are accepted to import opticians, and how should I structure my columns?",
+    "settingsPanel.faqGuide.importFormat.a":
+      "The Administration panel accepts .xlsx and .csv files. Automatically recognized columns are: Name, Address, City, Postal code, Brands, Phone, Email and Website (column order doesn't matter, only the headers do). Each row is then automatically geocoded from its address and postal code.",
+    "settingsPanel.faqGuide.exportData.q":
+      "How do I export my filtered address book or my end-of-day reports?",
+    "settingsPanel.faqGuide.exportData.a":
+      "The sidebar's \"Export selection\" button downloads every currently filtered/displayed optician as .xlsx. The end-of-day report (My Notebook) exports as PDF or Word (.docx) directly from its window, with the same information in both formats.",
+    "settingsPanel.faqGuide.geocodeFailure.q":
+      "What should I do if automatic geolocation fails for an address during an import?",
+    "settingsPanel.faqGuide.geocodeFailure.a":
+      "Rows whose address couldn't be geocoded are listed separately in the import summary, without blocking the rest of the file. Check the city and postal code spelling in the source file, then re-import just those corrected rows.",
+    "settingsPanel.faqGuide.folders.q":
+      "How do I create a thematic folder and file my opticians into it to prepare a route?",
+    "settingsPanel.faqGuide.folders.a":
+      "In My Notebook > Table, click \"+ New folder\" in the left-hand panel and give it a name (e.g. \"May route\"). From each optician's Actions column, open the folder icon and tick the folders to file it into — an optician can belong to several folders at once.",
+    "settingsPanel.faqGuide.wrongRegion.q":
+      "Why do some opticians show up in the wrong region, and how can I fix their position?",
+    "settingsPanel.faqGuide.wrongRegion.a":
+      "The region and department shown are recalculated automatically from the address's postal code: a postal code error in the source data is enough to file an optician under the wrong region, even if its GPS coordinates are correct. Contact an administrator to fix the address via a re-import.",
+    "settingsPanel.faqGuide.endOfDayReport.q": "How do I generate and send my end-of-day report after a route?",
+    "settingsPanel.faqGuide.endOfDayReport.a":
+      "In My Notebook, click \"Generate end-of-day report\", tick the opticians you actually visited, add your notes and summary, then download the PDF or Word file — attach it to an email afterwards like any other downloaded file.",
+    "settingsPanel.faqGuide.offlineUsage.q": "Can I check my notebook or write notes without an internet connection?",
+    "settingsPanel.faqGuide.offlineUsage.a":
+      "Once the app has loaded, browsing My Notebook and entering notes, statuses or priorities all work offline (everything is stored on this device). The app's initial load, the map display, and address geolocation all require a connection, though.",
+    "settingsPanel.faqGuide.passwordSecurity.q":
+      "How do I change my login or password from my Account area?",
+    "settingsPanel.faqGuide.passwordSecurity.a":
+      "In Settings > My Account, click \"Change my password\" to reveal the form (current password if you already have one, then the new one twice). Your email address, on the other hand, can only be changed by an administrator from the Administration panel.",
     "settingsPanel.faqGuide.addToRoute.q": "How do I prepare today's route?",
     "settingsPanel.faqGuide.addToRoute.a":
       "From the Global Map, tick \"Add to route\" on the opticians to visit, then open the planner at the bottom of the map to optimize the order and open the itinerary in Google Maps or Waze.",
     "settingsPanel.faqGuide.visitNote.q": "How do I log a visit report?",
     "settingsPanel.faqGuide.visitNote.a":
       "In My Notebook > Notebook, select the optician and add a dated visit note — it automatically feeds the Table and the end-of-day report.",
-    "settingsPanel.faqGuide.icsExport.q": "How do I add my route to my calendar?",
-    "settingsPanel.faqGuide.icsExport.a":
-      "From the route planner, click \"Add to my calendar (.ics)\" to generate a file compatible with most calendar apps.",
-    "settingsPanel.faqGuide.endOfDayReport.q": "How do I send my end-of-day report?",
-    "settingsPanel.faqGuide.endOfDayReport.a":
-      "In My Notebook, click \"Generate end-of-day report\", tick the opticians you visited, add your notes, then download the report as PDF or Word.",
-    "settingsPanel.faqGuide.whiteZones.q": "What are the \"white zones\" on the map?",
-    "settingsPanel.faqGuide.whiteZones.a":
-      "Areas with a high density of competitor opticians and no Thélios optician at all — a prospecting-opportunity indicator, toggled via the dedicated button on the map.",
 
     "sidebar.collapsedLabel": "Thélios Opticians",
     "sidebar.expand": "Show list",
@@ -557,13 +606,25 @@ export const translations = {
     "carnet.table.colBrands": "Thélios Brands",
     "carnet.table.colStatus": "Status",
     "carnet.table.colPriority": "Potential / Priority",
-    "carnet.table.colLastContact": "Last Contact",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Open note",
     "carnet.table.actionScheduleRdv": "Schedule appointment",
     "carnet.table.actionCall": "Call",
     "carnet.table.actionCallDisabled": "No phone number on file",
     "carnet.table.actionViewOnMap": "View on map",
+    "carnet.table.actionAssignFolder": "File into a folder",
+
+    "carnet.folders.all": "All opticians",
+    "carnet.folders.favorites": "Favorites",
+    "carnet.folders.customTitle": "My folders",
+    "carnet.folders.newFolder": "New folder",
+    "carnet.folders.namePlaceholder": "Folder name…",
+    "carnet.folders.create": "Create",
+    "carnet.folders.cancel": "Cancel",
+    "carnet.folders.deleteAria": "Delete folder",
+    "carnet.folders.assignTitle": "File into a folder",
+    "carnet.folders.empty": "No folders yet. Create one below.",
+    "carnet.folders.createAndAdd": "Create and add",
 
     "carnet.priority.none": "Not set",
     "carnet.priority.high": "High",
@@ -775,18 +836,7 @@ export const translations = {
     "reviews.errorMissingFields": "Please fill in your name and comment.",
     "reviews.errorWrongCode": "Incorrect secret code.",
 
-    "settings.title": "Change secret code",
     "settings.close": "Close",
-    "settings.description":
-      "This code protects the review submission form. It is stored only on this device.",
-    "settings.currentCode": "Current secret code",
-    "settings.newCode": "New code",
-    "settings.confirmCode": "Confirm new code",
-    "settings.save": "Save",
-    "settings.errorWrongCurrent": "Current secret code is incorrect.",
-    "settings.errorEmptyNew": "The new code cannot be empty.",
-    "settings.errorMismatch": "The two new codes do not match.",
-    "settings.success": "Secret code updated successfully.",
 
     "chat.online": "Online",
     "chat.openAria": "Open Thélios assistant",

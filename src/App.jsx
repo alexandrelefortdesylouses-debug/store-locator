@@ -520,6 +520,7 @@ function App() {
             visitNotes={visitNotes}
             onAddVisitNote={handleAddVisitNote}
             prospectFirstSeen={prospectFirstSeen}
+            favoriteIds={favoriteIds}
             routeStops={routeStops}
             routeOrder={routeOrder}
             onToggleRouteStop={toggleRouteStop}

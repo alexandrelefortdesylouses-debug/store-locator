@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useTheme } from "../theme/ThemeContext";
-import { getSecretCode, setSecretCode } from "../utils/storage";
 import { findWhitelistEntry, setPassword, ROLES } from "../services/authService";
 import { STATUS_COLORS } from "../utils/palette";
 import { STORE_STATUSES } from "../utils/myCard";
@@ -73,95 +72,6 @@ function DarkModeSection() {
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-function SecretCodeSection() {
-  const { t } = useLanguage();
-  const [currentCode, setCurrentCode] = useState("");
-  const [newCode, setNewCode] = useState("");
-  const [confirmCode, setConfirmCode] = useState("");
-  const [message, setMessage] = useState(null);
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    if (currentCode !== getSecretCode()) {
-      setMessage({ type: "error", text: t("settings.errorWrongCurrent") });
-      return;
-    }
-    if (!newCode.trim()) {
-      setMessage({ type: "error", text: t("settings.errorEmptyNew") });
-      return;
-    }
-    if (newCode !== confirmCode) {
-      setMessage({ type: "error", text: t("settings.errorMismatch") });
-      return;
-    }
-
-    setSecretCode(newCode.trim());
-    setMessage({ type: "success", text: t("settings.success") });
-    setCurrentCode("");
-    setNewCode("");
-    setConfirmCode("");
-  }
-
-  return (
-    <div>
-      <h3 className="mb-1 font-serif text-base text-neutral-900 dark:text-neutral-100">
-        {t("settings.title")}
-      </h3>
-      <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
-        {t("settings.description")}
-      </p>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <label className="text-sm text-neutral-700 dark:text-neutral-300">
-          {t("settings.currentCode")}
-          <input
-            type="password"
-            value={currentCode}
-            onChange={(e) => setCurrentCode(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
-          />
-        </label>
-        <label className="text-sm text-neutral-700 dark:text-neutral-300">
-          {t("settings.newCode")}
-          <input
-            type="password"
-            value={newCode}
-            onChange={(e) => setNewCode(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
-          />
-        </label>
-        <label className="text-sm text-neutral-700 dark:text-neutral-300">
-          {t("settings.confirmCode")}
-          <input
-            type="password"
-            value={confirmCode}
-            onChange={(e) => setConfirmCode(e.target.value)}
-            className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
-          />
-        </label>
-
-        {message && (
-          <p
-            className={`text-sm ${
-              message.type === "error" ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"
-            }`}
-          >
-            {message.text}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          className="mt-2 w-fit cursor-pointer rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
-        >
-          {t("settings.save")}
-        </button>
-      </form>
     </div>
   );
 }
@@ -268,13 +178,14 @@ function ChangePasswordSection({ currentUser }) {
 
 function AccountSection({ currentUser, onSignOut }) {
   const { t } = useLanguage();
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
 
   return (
     <div>
       <h3 className="mb-3 font-serif text-base text-neutral-900 dark:text-neutral-100">
         {t("account.profileTitle")}
       </h3>
-      <div className="mb-8 flex flex-col gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-700 dark:bg-neutral-800">
+      <div className="mb-4 flex flex-col gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-700 dark:bg-neutral-800">
         <div className="flex items-center justify-between text-sm">
           <span className="text-neutral-500 dark:text-neutral-400">{t("account.emailLabel")}</span>
           <span className="font-medium text-neutral-900 dark:text-neutral-100">{currentUser.email}</span>
@@ -287,7 +198,22 @@ function AccountSection({ currentUser, onSignOut }) {
         </div>
       </div>
 
-      <ChangePasswordSection currentUser={currentUser} />
+      <button
+        type="button"
+        onClick={() => setShowPasswordForm((v) => !v)}
+        aria-expanded={showPasswordForm}
+        className={`cursor-pointer rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400 ${
+          showPasswordForm ? "mb-4" : "mb-8"
+        }`}
+      >
+        {showPasswordForm ? t("account.cancelPasswordChange") : t("account.changePasswordButton")}
+      </button>
+
+      {showPasswordForm && (
+        <div className="mb-8">
+          <ChangePasswordSection currentUser={currentUser} />
+        </div>
+      )}
 
       <div className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-700">
         <h3 className="mb-1 font-serif text-base text-neutral-900 dark:text-neutral-100">
@@ -310,7 +236,18 @@ function AccountSection({ currentUser, onSignOut }) {
 
 function FaqSection() {
   const { t } = useLanguage();
-  const faqItems = ["addToRoute", "visitNote", "icsExport", "endOfDayReport", "whiteZones"];
+  const faqItems = [
+    "importFormat",
+    "exportData",
+    "geocodeFailure",
+    "folders",
+    "wrongRegion",
+    "endOfDayReport",
+    "offlineUsage",
+    "passwordSecurity",
+    "addToRoute",
+    "visitNote",
+  ];
 
   return (
     <div>
@@ -403,7 +340,6 @@ export default function SettingsPanel({ currentUser, onClose, onSignOut }) {
             <>
               <LanguageSection />
               <DarkModeSection />
-              <SecretCodeSection />
             </>
           )}
           {tab === "help" && <FaqSection />}

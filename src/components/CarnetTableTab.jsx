@@ -4,6 +4,7 @@ import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard
 import { STATUS_COLORS, PRIORITY_COLORS } from "../utils/palette";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
+import FolderAssignModal from "./FolderAssignModal";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 function normalize(text) {
@@ -68,6 +69,18 @@ function MapPinIcon() {
   );
 }
 
+function FolderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 6a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6z"
+      />
+    </svg>
+  );
+}
+
 function IconButton({ onClick, href, disabled, label, children }) {
   const className = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
     disabled
@@ -119,16 +132,19 @@ export default function CarnetTableTab({
   onSetStatus,
   priorities,
   onSetPriority,
-  visitNotes,
   onOpenNote,
   onScheduleStore,
   onViewOnMap,
+  folders,
+  folderMembers,
+  onToggleFolderMembership,
+  onCreateFolder,
 }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
-  const locale = lang === "en" ? "en-US" : "fr-FR";
+  const [assigningStore, setAssigningStore] = useState(null);
 
   function toggleStatusFilter(status) {
     setStatusFilter((prev) =>
@@ -144,9 +160,9 @@ export default function CarnetTableTab({
     );
   }
 
-  function lastContactDate(storeId) {
-    const entries = visitNotes[storeId];
-    return entries && entries.length > 0 ? entries[0].date : null;
+  function handleCreateAndAssign(name, storeId) {
+    onCreateFolder(name, storeId);
+    setAssigningStore(null);
   }
 
   const rows = useMemo(() => {
@@ -162,10 +178,6 @@ export default function CarnetTableTab({
           return STATUS_RANK[statuses[store.id]] ?? STATUS_ORDER.length;
         case "priority":
           return PRIORITY_RANK[priorities[store.id]] ?? PRIORITY_ORDER.length;
-        case "lastContact": {
-          const entries = visitNotes[store.id];
-          return entries && entries.length > 0 ? entries[0].date : "";
-        }
         default:
           return "";
       }
@@ -186,7 +198,7 @@ export default function CarnetTableTab({
       if (typeof va === "number" && typeof vb === "number") return (va - vb) * direction;
       return String(va).localeCompare(String(vb)) * direction;
     });
-  }, [stores, search, statusFilter, statuses, priorities, visitNotes, sort]);
+  }, [stores, search, statusFilter, statuses, priorities, sort]);
 
   function SortableTh({ columnKey, children }) {
     return (
@@ -256,13 +268,11 @@ export default function CarnetTableTab({
                 <th className="px-4 py-3">{t("carnet.table.colBrands")}</th>
                 <SortableTh columnKey="status">{t("carnet.table.colStatus")}</SortableTh>
                 <SortableTh columnKey="priority">{t("carnet.table.colPriority")}</SortableTh>
-                <SortableTh columnKey="lastContact">{t("carnet.table.colLastContact")}</SortableTh>
                 <th className="px-4 py-3">{t("carnet.table.colActions")}</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((store) => {
-                const lastContact = lastContactDate(store.id);
                 const status = statuses[store.id] || "";
                 const priority = priorities[store.id] || "";
                 const zip = getStoreZip(store);
@@ -336,9 +346,6 @@ export default function CarnetTableTab({
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400">
-                      {lastContact ? new Date(lastContact).toLocaleDateString(locale) : "—"}
-                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <IconButton
@@ -366,6 +373,12 @@ export default function CarnetTableTab({
                         >
                           <MapPinIcon />
                         </IconButton>
+                        <IconButton
+                          onClick={() => setAssigningStore(store)}
+                          label={t("carnet.table.actionAssignFolder")}
+                        >
+                          <FolderIcon />
+                        </IconButton>
                       </div>
                     </td>
                   </tr>
@@ -374,6 +387,17 @@ export default function CarnetTableTab({
             </tbody>
           </table>
         </div>
+      )}
+
+      {assigningStore && (
+        <FolderAssignModal
+          store={assigningStore}
+          folders={folders}
+          folderMembers={folderMembers}
+          onToggleMembership={onToggleFolderMembership}
+          onCreateAndAssign={handleCreateAndAssign}
+          onClose={() => setAssigningStore(null)}
+        />
       )}
     </div>
   );
