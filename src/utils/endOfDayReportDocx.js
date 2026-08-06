@@ -14,7 +14,15 @@ function textLines(text) {
     .filter((line, i, arr) => !(line === "" && (i === 0 || i === arr.length - 1)));
 }
 
-export async function exportEndOfDayReportDocx({ date, repName, globalNote, entries, statuses, labels }) {
+export async function exportEndOfDayReportDocx({
+  date,
+  repName,
+  globalNote,
+  otherTasks,
+  entries,
+  statuses,
+  labels,
+}) {
   const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType } =
     await import("docx");
 
@@ -35,19 +43,23 @@ export async function exportEndOfDayReportDocx({ date, repName, globalNote, entr
       ],
     });
 
-  const globalNoteParagraphs = globalNote?.trim()
-    ? textLines(globalNote).map(
-        (line) =>
+  const freeTextParagraphs = (text, emptyLabel) =>
+    text?.trim()
+      ? textLines(text).map(
+          (line) =>
+            new Paragraph({
+              spacing: { after: 80 },
+              children: [new TextRun({ text: line || " ", color: GRAY_HEX, size: 21 })],
+            }),
+        )
+      : [
           new Paragraph({
-            spacing: { after: 80 },
-            children: [new TextRun({ text: line || " ", color: GRAY_HEX, size: 21 })],
+            children: [new TextRun({ text: emptyLabel, italics: true, color: LIGHT_GRAY_HEX, size: 21 })],
           }),
-      )
-    : [
-        new Paragraph({
-          children: [new TextRun({ text: labels.noGlobalNote, italics: true, color: LIGHT_GRAY_HEX, size: 21 })],
-        }),
-      ];
+        ];
+
+  const globalNoteParagraphs = freeTextParagraphs(globalNote, labels.noGlobalNote);
+  const otherTasksParagraphs = freeTextParagraphs(otherTasks, labels.noOtherTasks);
 
   function buildCard(entry) {
     const status = statuses[entry.store.id];
@@ -146,6 +158,8 @@ export async function exportEndOfDayReportDocx({ date, repName, globalNote, entr
           infoLine(labels.countLabel, String(entries.length)),
           heading(labels.globalTitle),
           ...globalNoteParagraphs,
+          heading(labels.otherTasksTitle),
+          ...otherTasksParagraphs,
           heading(labels.detailTitle),
           ...detailChildren,
           new Paragraph({

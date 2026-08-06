@@ -10,11 +10,13 @@ import RoutePlanner from "./components/RoutePlanner";
 import MobileTabs from "./components/MobileTabs";
 import Dashboard from "./components/Dashboard";
 import StoreDetailPanel from "./components/StoreDetailPanel";
-import SecretCodeSettings from "./components/SecretCodeSettings";
+import SettingsPanel from "./components/SettingsPanel";
 import ImportSummaryModal from "./components/ImportSummaryModal";
 import WhiteZonesToggle from "./components/WhiteZonesToggle";
 import ChatWidget from "./components/ChatWidget";
 import CarnetView from "./components/CarnetView";
+import LoginScreen from "./components/LoginScreen";
+import AdminPanel from "./components/AdminPanel";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
@@ -45,6 +47,8 @@ import {
   getProspectFirstSeen,
   recordProspectContact,
 } from "./utils/activity";
+import { getCurrentUser, signOut as authSignOut, isAdmin as checkIsAdmin } from "./services/authService";
+import { mergeWithOverrides } from "./services/storesService";
 import { useLanguage } from "./i18n/LanguageContext";
 import { useTheme } from "./theme/ThemeContext";
 
@@ -58,11 +62,14 @@ function normalize(text) {
 function App() {
   const { t } = useLanguage();
   const { isDark } = useTheme();
-  const [stores, setStores] = useState([]);
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [baseStores, setBaseStores] = useState([]);
+  const [storesOverrideVersion, setStoresOverrideVersion] = useState(0);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
   const [search, setSearch] = useState("");
@@ -96,8 +103,17 @@ function App() {
   useEffect(() => {
     fetch("/stores.json")
       .then((res) => res.json())
-      .then((data) => setStores(data));
+      .then((data) => setBaseStores(data));
   }, []);
+
+  // Layers any admin-imported opticians (Administration panel) on top of
+  // the static dataset — see services/storesService.js for why this is a
+  // per-device merge, not a real shared database update.
+  const stores = useMemo(
+    () => mergeWithOverrides(baseStores),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [baseStores, storesOverrideVersion],
+  );
 
   const myCardStores = useMemo(
     () => stores.filter((s) => portfolioIds.includes(s.id) || favoriteIds.includes(s.id)),
@@ -297,6 +313,15 @@ function App() {
     setMobileView("map");
   }
 
+  function handleSignOut() {
+    authSignOut();
+    setCurrentUser(null);
+  }
+
+  function handleStoresOverrideUpdated() {
+    setStoresOverrideVersion((v) => v + 1);
+  }
+
   // "Voir sur la carte" action from Mon Carnet's table: leaves the Carnet
   // workspace and drops the user back on Carte Globale with that optician's
   // detail panel already open.
@@ -459,11 +484,19 @@ function App() {
     }
   }
 
+  if (!currentUser) {
+    return <LoginScreen onSignedIn={setCurrentUser} />;
+  }
+
   return (
     <div className="flex h-screen flex-col bg-neutral-100 dark:bg-neutral-950">
       <Header
+        currentUser={currentUser}
+        isAdmin={checkIsAdmin(currentUser)}
         onOpenSettings={() => setShowSettings(true)}
         onOpenStats={() => setShowStats(true)}
+        onOpenAdmin={() => setShowAdmin(true)}
+        onSignOut={handleSignOut}
       />
 
       <ViewModeToggle mode={viewMode} onChange={setViewMode} />
@@ -651,7 +684,15 @@ function App() {
       </div>
 
       {showSettings && (
-        <SecretCodeSettings onClose={() => setShowSettings(false)} />
+        <SettingsPanel onClose={() => setShowSettings(false)} />
+      )}
+
+      {showAdmin && checkIsAdmin(currentUser) && (
+        <AdminPanel
+          currentUser={currentUser}
+          onStoresUpdated={handleStoresOverrideUpdated}
+          onClose={() => setShowAdmin(false)}
+        />
       )}
 
       {showStats && (

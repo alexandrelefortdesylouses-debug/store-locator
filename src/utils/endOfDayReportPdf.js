@@ -122,7 +122,15 @@ function drawCard(doc, entry, y, labels, statuses) {
   return y + height;
 }
 
-export async function exportEndOfDayReportPdf({ date, repName, globalNote, entries, statuses, labels }) {
+export async function exportEndOfDayReportPdf({
+  date,
+  repName,
+  globalNote,
+  otherTasks,
+  entries,
+  statuses,
+  labels,
+}) {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
@@ -161,6 +169,25 @@ export async function exportEndOfDayReportPdf({ date, repName, globalNote, entri
   doc.setTextColor(...(globalNote?.trim() ? GRAY_RGB : LIGHT_GRAY_RGB));
   const globalLines = doc.splitTextToSize(globalNote?.trim() || labels.noGlobalNote, CONTENT_WIDTH);
   globalLines.forEach((line) => {
+    y = ensureSpace(doc, y, 5);
+    doc.text(line, MARGIN, y);
+    y += 5;
+  });
+  y += 6;
+
+  // Section — other tasks / non-visit activity
+  y = ensureSpace(doc, y, 12);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...INK_RGB);
+  doc.text(labels.otherTasksTitle, MARGIN, y);
+  y += 6;
+
+  doc.setFont("helvetica", otherTasks?.trim() ? "normal" : "italic");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...(otherTasks?.trim() ? GRAY_RGB : LIGHT_GRAY_RGB));
+  const otherTasksLines = doc.splitTextToSize(otherTasks?.trim() || labels.noOtherTasks, CONTENT_WIDTH);
+  otherTasksLines.forEach((line) => {
     y = ensureSpace(doc, y, 5);
     doc.text(line, MARGIN, y);
     y += 5;

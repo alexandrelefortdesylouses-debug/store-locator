@@ -18,6 +18,10 @@ npm run preview
 
 ## Interface
 
+- **Écran de connexion** : l'app est protégée par une whitelist d'e-mails
+  (accès autorisé ou bloqué selon l'adresse saisie) et un rôle Admin /
+  Commercial par utilisateur — voir "Connexion, rôles & Administration"
+  plus bas pour le détail et l'avertissement sur son caractère local.
 - **Carte interactive** intégrée dans un conteneur encadré (marges, coins
   arrondis, ombre légère) plutôt qu'en arrière-plan plein écran, centrée par
   défaut sur la France.
@@ -333,8 +337,9 @@ d'ajout d'avis est protégé par un code secret (par défaut : `1234`).
 
 - Les avis sont enregistrés dans le `localStorage` du navigateur (par magasin).
 - Le code secret peut être modifié à tout moment via le bouton
-  **Paramètres** en haut de la page (il faut connaître le code actuel pour
-  le changer).
+  **Paramètres** en haut de la page, onglet **Préférences** (il faut
+  connaître le code actuel pour le changer) — voir la section "Rubrique
+  Paramètres" plus bas pour le reste de ce qu'on y trouve.
 - Le code est stocké dans le `localStorage` de l'appareil : il est donc propre
   à chaque navigateur/appareil utilisé pour administrer le site.
 
@@ -703,6 +708,120 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
   "T" par détection de pixels non-fond, mise à l'échelle sur un canevas
   carré) est documentée ici pour pouvoir être reproduite.
 
+## Connexion, rôles & Administration
+
+> ⚠️ **Simulation locale, pas un vrai système de comptes.** Comme pour "Ma
+> Carte" et le code secret des avis, l'app n'a pas de backend : la
+> whitelist, les rôles et la session sont stockés dans le `localStorage` de
+> cet appareil/navigateur uniquement. Un administrateur qui ajoute un
+> e-mail ou change un rôle sur son poste ne rend pas ce changement visible
+> sur le poste d'un collègue — il n'y a pas de base de données partagée
+> tant qu'aucun backend n'est branché. Ceci a été un choix explicite pour
+> valider l'interface et les parcours avant d'investir dans une
+> intégration réelle (voir "Architecture pensée pour un vrai backend"
+> ci-dessous).
+
+L'app est désormais protégée par un écran de connexion
+(`src/components/LoginScreen.jsx`) :
+
+- **Connexion par e-mail, sans mot de passe** : l'utilisateur saisit son
+  adresse e-mail ; si elle figure dans la whitelist, l'accès est autorisé.
+  Sinon, le message **"Accès non autorisé. Veuillez contacter
+  l'administrateur."** s'affiche et bloque l'accès à l'application.
+- **Administrateur principal par défaut** :
+  `a.lefortdesylouses@thelios.com`, pré-inséminé dans la whitelist avec le
+  rôle Admin au premier chargement (`DEFAULT_ADMIN_EMAIL` dans
+  `src/services/authService.local.js`).
+- **Session persistante sur l'appareil** : une fois connecté, l'utilisateur
+  n'a pas à ressaisir son e-mail à chaque visite. La session est
+  re-validée contre la whitelist à chaque lecture (pas seulement à la
+  connexion) : si un admin retire quelqu'un ou change son rôle, l'effet
+  s'applique dès la prochaine action de cet utilisateur plutôt que
+  d'attendre une reconnexion.
+- **Déconnexion** : bouton dédié dans l'en-tête (icône, e-mail affiché en
+  info-bulle).
+
+### Panneau d'Administration
+
+Visible et accessible **uniquement pour les utilisateurs avec le rôle
+Admin** — le bouton "Administration" de l'en-tête n'apparaît pas du tout
+pour un rôle Commercial (`src/components/Header.jsx`,
+`src/components/AdminPanel.jsx`) :
+
+- **Gestion de la Whitelist & des Rôles** : ajouter ou retirer des
+  adresses e-mail autorisées à se connecter, et attribuer le rôle Admin
+  ou Commercial à chacune via un sélecteur — y compris se retirer
+  soi-même ou promouvoir quelqu'un d'autre Admin (utile pour donner le
+  rôle au responsable plus tard).
+  - **Protection du dernier administrateur** : retirer ou rétrograder le
+    seul admin restant est bloqué avec un message explicite, pour ne
+    jamais se retrouver sans accès au panneau d'administration sur cet
+    appareil.
+- **Import d'opticiens (Excel / CSV)** : un fichier `.xlsx` ou `.csv` avec
+  des colonnes reconnues automatiquement (nom, adresse, ville, code
+  postal, marques, téléphone, e-mail, site web —
+  `src/utils/adminStoreImport.js`, `detectImportColumns`) est parsé, puis
+  chaque ligne est **géocodée côté client** via l'API publique
+  [Base Adresse Nationale](https://adresse.data.gouv.fr/) du gouvernement
+  français (même service que les scripts de génération de données
+  hors-ligne du projet — voir `scripts/build_stores_from_excel.py` — mais
+  sous une forme plus légère adaptée à un import interactif, sans la
+  passe de validation croisée par code postal de ce script). Une barre de
+  progression affiche le géocodage en temps réel (`X / Y`). Les lignes
+  qui échouent au géocodage sont listées séparément dans le résumé plutôt
+  que silencieusement ignorées.
+  - Les opticiens importés sont fusionnés avec `stores.json` au moment de
+    l'affichage (`src/services/storesService.local.js`,
+    `mergeWithOverrides`) : un id déjà existant est remplacé, un nouvel id
+    est ajouté à la liste. **Cette fusion reste elle aussi propre à
+    l'appareil** — ce n'est pas une mise à jour de la base de données
+    partagée.
+- Un bandeau d'avertissement rappelant la nature locale de la simulation
+  est affiché en permanence en haut du panneau.
+
+### Architecture pensée pour un vrai backend
+
+Le code a été volontairement écrit avec un point de bascule net pour
+brancher un vrai backend (Supabase, Firebase, ou autre) sans toucher au
+reste de l'application :
+
+- `src/services/authService.js` et `src/services/storesService.js` sont
+  de simples ré-exports (`export * from "./xxxService.local"`) — tout le
+  reste de l'app importe exclusivement depuis ces deux fichiers, jamais
+  directement depuis leur implémentation `.local.js`.
+- Pour passer à un vrai backend, il suffit de remplacer le contenu de ces
+  deux fichiers par une implémentation qui respecte la même interface
+  (mêmes fonctions exportées, mêmes formes de retour) — aucun composant
+  consommateur (`LoginScreen`, `AdminPanel`, `Header`, `App.jsx`...) n'a
+  besoin d'être modifié.
+- Les fichiers `*.local.js` documentent en tête de fichier, en détail,
+  pourquoi leur implémentation actuelle est une simulation par appareil
+  et non un vrai système multi-utilisateurs.
+
+## Rubrique Paramètres
+
+Le bouton **Paramètres** de l'en-tête, accessible à **tous les
+utilisateurs connectés** (peu importe leur rôle), ouvre une modale à deux
+onglets (`src/components/SettingsPanel.jsx`) :
+
+- **Préférences** :
+  - **Langue de l'interface** : les mêmes boutons FR / EN que le
+    sélecteur de l'en-tête (voir la section "Langue (FR / EN)" plus haut),
+    dupliqués ici pour un accès direct depuis les réglages.
+  - **Changer le code secret** des avis clients (reprend, inchangée, la
+    fonctionnalité qui vivait auparavant dans un composant dédié
+    `SecretCodeSettings.jsx` — désormais fusionné ici).
+- **Aide & FAQ** :
+  - **Statuts & codes couleurs** : rappel visuel des 4 statuts CRM
+    utilisés dans "Mon Carnet" (Client actif, Prospect à contacter, RDV à
+    fixer, Refus), avec leur pastille de couleur et une explication de
+    chacun.
+  - **Guide d'utilisation sur le terrain** : questions/réponses courtes
+    sur les parcours clés (préparer sa tournée, enregistrer un
+    compte-rendu de visite, exporter vers l'agenda, envoyer son rapport
+    de fin de journée...), pour un commercial en déplacement qui a besoin
+    d'un rappel rapide sans documentation externe.
+
 ## Carte Globale vs Ma Carte
 
 Un sélecteur en haut de l'interface (`src/components/ViewModeToggle.jsx`)
@@ -908,28 +1027,33 @@ indicateurs (`src/utils/performance.js`) :
 
 Le bouton **Générer le rapport de fin de journée**, dans la barre d'onglets
 de "Mon Carnet" (accessible depuis n'importe quel onglet), ouvre une modale
-(`src/components/EndOfDayReportModal.jsx`) centrée uniquement sur les
-opticiens **effectivement visités dans la journée** — pas la tournée
-planifiée (ça, c'est le rôle de l'onglet Agenda & RDV et de son export
-`.ics`) :
+(`src/components/EndOfDayReportModal.jsx`) — pas la tournée planifiée (ça,
+c'est le rôle de l'onglet Agenda & RDV et de son export `.ics`) :
 
-- Un opticien compte comme "visité aujourd'hui" s'il a au moins une note de
-  visite datée du jour dans l'onglet Bloc-Notes
-  (`src/utils/endOfDayReport.js`, `getTodaysVisitedStores`) — c'est le même
-  système de notes datées que celui qui alimente déjà la colonne "Dernier
-  Contact" du Tableau et les indicateurs de Performance ci-dessus.
+- **Sélection par case à cocher** : la modale liste tous les opticiens du
+  portefeuille ("Ma Carte"), chacun avec une case à cocher — le commercial
+  coche ceux qu'il a **réellement visités** aujourd'hui, sans être limité
+  aux opticiens ayant déjà une note datée. Les opticiens ayant une note de
+  visite datée du jour dans l'onglet Bloc-Notes sont pré-cochés par défaut
+  (`src/utils/endOfDayReport.js`, `buildReportRows`) — un point de départ
+  pratique que le commercial reste libre de corriger avant export (oubli
+  de note, visite non prévue à l'origine, etc.).
+- Un champ **Note individuelle** par opticien coché, pré-rempli à partir de
+  la note de visite du jour la plus récente pour cet opticien quand elle
+  existe — modifiable directement dans la modale avant export (édition
+  rapide, sans avoir à retourner dans le Bloc-Notes).
 - L'en-tête reprend la date du jour, un champ **Nom du commercial** (texte
   libre, mémorisé dans le `localStorage` de l'appareil pour ne pas avoir à
   le ressaisir chaque jour — toujours pas un vrai système de comptes) et le
-  nombre d'opticiens visités.
+  nombre d'opticiens cochés.
 - **Synthèse Globale de la Journée** : un champ de texte libre pour un
   bilan général.
-- **Détail par Opticien Visité** : chaque opticien visité affiche nom,
-  ville (code postal), statut CRM et marques distribuées, avec une zone
-  **Note individuelle** pré-remplie à partir de la note de visite du jour
-  la plus récente pour cet opticien — modifiable directement dans la
-  modale avant export (édition rapide, sans avoir à retourner dans le
-  Bloc-Notes).
+- **Autres missions / Tâches annexes** : un second champ de texte libre
+  distinct, pour les activités de la journée qui ne correspondent à aucune
+  visite d'opticien (formation interne, réunion d'équipe, préparation de
+  showroom, rendez-vous manqué chez un prospect...) — pour que le rapport
+  reflète toute la journée du commercial, pas seulement les visites
+  cochées.
 - **Deux formats d'export**, tous deux générés côté client à partir des
   mêmes données (aucun aller-retour serveur) :
   - **PDF** (`src/utils/endOfDayReportPdf.js`, `jspdf`) : mise en page
@@ -953,7 +1077,17 @@ planifiée (ça, c'est le rôle de l'onglet Agenda & RDV et de son export
 
 ## Prochaine étape (non traitée dans cette itération)
 
-Le point "page d'accueil + système de compte (favoris, avis personnalisés,
-historique)" a été explicitement mis de côté pour une itération future, le
-temps de décider de l'architecture (compte local au navigateur vs backend
-réel type Supabase/Firebase).
+Le système de connexion, de rôles (Admin / Commercial) et le panneau
+d'administration ont été implémentés (voir "Connexion, rôles &
+Administration" plus haut), mais **en simulation locale uniquement** — un
+choix explicite pour valider l'interface et les parcours avant d'investir
+dans un vrai backend. Ce qui reste à faire pour une mise en production
+réelle multi-utilisateurs :
+
+- Remplacer `src/services/authService.js` et
+  `src/services/storesService.js` par une implémentation branchée sur un
+  vrai backend (Supabase, Firebase, ou autre) — c'est le point de bascule
+  prévu pour ça, aucun autre fichier n'a besoin d'être modifié.
+- Idem pour les avis clients (`src/utils/storage.js`) et "Ma Carte"
+  (`src/utils/myCard.js`, `src/utils/activity.js`) : mêmes limites de
+  stockage local par appareil, pour les mêmes raisons.

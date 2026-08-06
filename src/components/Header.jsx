@@ -42,7 +42,36 @@ function SettingsIcon() {
   );
 }
 
-export default function Header({ onOpenSettings, onOpenStats }) {
+function AdminIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 3l7 3v5c0 4.4-2.9 8.4-7 9.7C7.9 19.4 5 15.4 5 11V6l7-3z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12l1.8 1.8L15 10" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l5-5-5-5M21 12H9" />
+    </svg>
+  );
+}
+
+export default function Header({
+  currentUser,
+  isAdmin,
+  onOpenSettings,
+  onOpenStats,
+  onOpenAdmin,
+  onSignOut,
+}) {
   const { t } = useLanguage();
 
   return (
@@ -74,6 +103,17 @@ export default function Header({ onOpenSettings, onOpenStats }) {
             <StatsIcon />
             <span className="hidden sm:inline">{t("header.stats")}</span>
           </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              aria-label={t("header.admin")}
+              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-amber-700/60 px-2.5 text-xs uppercase tracking-wide text-amber-300 transition hover:border-amber-400 hover:text-amber-200 sm:px-4"
+            >
+              <AdminIcon />
+              <span className="hidden sm:inline">{t("header.admin")}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onOpenSettings}
@@ -84,6 +124,17 @@ export default function Header({ onOpenSettings, onOpenStats }) {
             <span className="hidden sm:inline">{t("header.settings")}</span>
           </button>
           <DarkModeToggle />
+          {currentUser && (
+            <button
+              type="button"
+              onClick={onSignOut}
+              title={currentUser.email}
+              aria-label={t("header.signOut")}
+              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-red-400/60 hover:text-red-300"
+            >
+              <LogoutIcon />
+            </button>
+          )}
         </div>
       </div>
     </header>
