@@ -1481,11 +1481,11 @@
   {
     "id": "anjou-optique-optic-libre-angers",
     "name": "Anjou Optique Optic Libre",
-    "address": "23 Rue D Alsace Bp 12109, 49000 Angers, France",
+    "address": "23 Rue D Alsace, 49000 Angers, France",
     "city": "Angers",
     "country": "France",
-    "lat": 47.46375,
-    "lng": -0.54998,
+    "lat": 47.45006,
+    "lng": -0.54802,
     "brands": [
       "Serengeti"
     ],
@@ -2711,11 +2711,11 @@
   {
     "id": "grand-optical-arcades-arcades",
     "name": "Grand Optical Arcades",
-    "address": "Ccr Les Arcades Niveau Bas - Boite 104, Arcades, 93193",
-    "city": "Arcades",
+    "address": "Ccr Les Arcades Niveau Bas - Boite 104, 93193 Noisy-le-Grand",
+    "city": "Noisy-le-Grand",
     "country": "France",
-    "lat": 43.92791,
-    "lng": 2.14114,
+    "lat": 48.84188,
+    "lng": 2.54575,
     "brands": [
       "Cartier"
     ]
@@ -3115,11 +3115,11 @@
   {
     "id": "optique-audio-assistance-asnieres-asnieres",
     "name": "Optique Audio Assistance Asnieres",
-    "address": "90 Rue Des Bouguignons, Asnieres, 92500",
-    "city": "Asnieres",
+    "address": "90 Rue Des Bourguignons, 92500 Asnières-sur-Seine",
+    "city": "Asnières-sur-Seine",
     "country": "France",
-    "lat": 47.8034,
-    "lng": 3.07042,
+    "lat": 48.91478,
+    "lng": 2.27488,
     "brands": [
       "Cartier"
     ],
@@ -5012,11 +5012,11 @@
   {
     "id": "grand-optical-belle-epine-belle-epine",
     "name": "Grand Optical Belle Epine",
-    "address": "Ccr Belle-Epine 148 Niveau Bas - Allée Principale Thiais, Belle Epine, 94511",
-    "city": "Belle Epine",
+    "address": "Ccr Belle-Epine 148 Niveau Bas - Allée Principale, 94511 Thiais",
+    "city": "Thiais",
     "country": "France",
-    "lat": 48.15096,
-    "lng": -1.69472,
+    "lat": 48.76047,
+    "lng": 2.38699,
     "brands": [
       "Cartier"
     ]
@@ -7802,7 +7802,7 @@
   {
     "id": "vision-2000-sarl-bouzonville",
     "name": "Vision 2000 Sarl",
-    "address": "OPTIC 2000, 47 RUE REPUBLIQUE         BP 60052, 57320, BOUZONVILLE",
+    "address": "OPTIC 2000, 47 RUE REPUBLIQUE, 57320, BOUZONVILLE",
     "city": "Bouzonville",
     "country": "France",
     "lat": 49.29208,
@@ -12005,8 +12005,8 @@
     "address": "OPTIQUE DE LA PLAINE SAS, 12 PLACE AIME CESAIRE, CENTRE COMMERCIAL PLAINE, 92140, CLAMART",
     "city": "Clamart",
     "country": "France",
-    "lat": 47.57461,
-    "lng": -2.35727,
+    "lat": 48.7961,
+    "lng": 2.25475,
     "brands": [
       "Julbo"
     ],
@@ -15179,11 +15179,11 @@
   {
     "id": "ekosport-sas-2f-epagny",
     "name": "Ekosport - Sas 2f",
-    "address": "(LIV 9H30-12H15 / 14H30-17H00), 252 RUE DU CENTRE, M. MORAT, 74330, EPAGNY",
+    "address": "252 RUE DU CENTRE, 74330, EPAGNY",
     "city": "Epagny",
     "country": "France",
-    "lat": 49.46495,
-    "lng": 3.24745,
+    "lat": 45.93623,
+    "lng": 6.08159,
     "brands": [
       "Julbo"
     ],
@@ -17420,8 +17420,8 @@
     "address": "Route de Villedieu C C Leclerc, 50400 Granville, France",
     "city": "Granville",
     "country": "France",
-    "lat": 47.79943,
-    "lng": -2.15447,
+    "lat": 48.83071,
+    "lng": -1.57398,
     "brands": [
       "Serengeti"
     ],
@@ -18971,7 +18971,7 @@
   {
     "id": "sport-et-loisirs-cda-sud-ouest-ibos",
     "name": "Sport et Loisirs Cda Sud Ouest",
-    "address": "CENTRE COMMERCIAL MERIDIEN, ROUTE DE PAU, BP 70026, 65429, IBOS",
+    "address": "CENTRE COMMERCIAL MERIDIEN, ROUTE DE PAU, 65429, IBOS",
     "city": "Ibos",
     "country": "France",
     "lat": 43.24338,
@@ -21732,11 +21732,11 @@
   {
     "id": "lissac-opticiens-la-ville-du-bois",
     "name": "Lissac Opticiens",
-    "address": "C CCIAL CARREFOUR, LA VILLE DU BOIS, N/A, 91620",
+    "address": "C Ccial Carrefour, 91620 La Ville du Bois, France",
     "city": "La Ville du Bois",
     "country": "France",
-    "lat": 48.42468,
-    "lng": -1.38914,
+    "lat": 48.65915,
+    "lng": 2.26382,
     "brands": [
       "Maui Jim"
     ],
@@ -23517,8 +23517,8 @@
     "address": "MARTIN JACQUES ALBAN, 04400, LE SAUZE",
     "city": "Le Sauze",
     "country": "France",
-    "lat": 45.29341,
-    "lng": 4.26168,
+    "lat": 44.37382,
+    "lng": 6.68115,
     "brands": [
       "Julbo"
     ],
@@ -33418,7 +33418,7 @@
   {
     "id": "royer-decaf-paridis-nantes",
     "name": "Royer Decaf Paridis",
-    "address": "SARL ROYER DECAF, CCIAL PARIDIS RTE DE PARIS BP 10525, 44300, NANTES",
+    "address": "SARL ROYER DECAF, CCIAL PARIDIS RTE DE PARIS, 44300, NANTES",
     "city": "Nantes",
     "country": "France",
     "lat": 47.25163,
@@ -33627,11 +33627,11 @@
   {
     "id": "optique-guez-neuilly-neuilly",
     "name": "Optique Guez Neuilly",
-    "address": "48 Avenue Du Général De Gaulle, Neuilly, 92200",
-    "city": "Neuilly",
+    "address": "48 Avenue Du Général De Gaulle, 92200 Neuilly-sur-Seine",
+    "city": "Neuilly-sur-Seine",
     "country": "France",
-    "lat": 46.32564,
-    "lng": 4.46819,
+    "lat": 48.88619,
+    "lng": 2.26587,
     "brands": [
       "Cartier"
     ],
@@ -34785,11 +34785,11 @@
   {
     "id": "les-lunettes-de-cecile-nimes",
     "name": "Les lunettes de Cécile",
-    "address": "21 bis rue de la madeleine, 33000, Nimes",
+    "address": "21 bis rue de la madeleine, 30000, Nimes",
     "city": "Nimes",
     "country": "France",
-    "lat": 43.81465,
-    "lng": 4.35629,
+    "lat": 43.83751,
+    "lng": 4.35778,
     "brands": [
       "Thierry Lasry"
     ]
@@ -35501,11 +35501,11 @@
   {
     "id": "mod-optic-orleans-orleans",
     "name": "Mod Optic Orleans",
-    "address": "5 Rue Du Vieux Marche, Orleans, 54000",
+    "address": "5 Rue Du Vieux Marche, Orleans, 45000",
     "city": "Orleans",
     "country": "France",
-    "lat": 47.87357,
-    "lng": 1.91136,
+    "lat": 47.89898,
+    "lng": 1.90357,
     "brands": [
       "Cartier"
     ]
@@ -44305,11 +44305,11 @@
   {
     "id": "edgard-opticiens-reims-reims",
     "name": "Edgard Opticiens Reims",
-    "address": "16-18 Rue de Talleyrand, Reims, 37000",
+    "address": "16-18 Rue de Talleyrand, Reims, 51100",
     "city": "Reims",
     "country": "France",
-    "lat": 49.25095,
-    "lng": 4.0556,
+    "lat": 49.25502,
+    "lng": 4.02968,
     "brands": [
       "Moscot"
     ],
@@ -44412,7 +44412,7 @@
   {
     "id": "chaton-motrcycles-remiremont",
     "name": "Chaton Motrcycles",
-    "address": "16 PLACE JULES MELINE, BP 50118, 88204, REMIREMONT",
+    "address": "16 PLACE JULES MELINE, 88204, REMIREMONT",
     "city": "Remiremont",
     "country": "France",
     "lat": 48.01415,
@@ -45060,11 +45060,11 @@
   {
     "id": "dg-optique-roissy-roissy-cdg",
     "name": "Dg Optique Roissy",
-    "address": "LE DOME 4 RUE DE LA HAYE BP 10920, ROISSY CDG, Val-d'Oise, 95731",
+    "address": "LE DOME 4 RUE DE LA HAYE, ROISSY CDG, Val-d'Oise, 95731",
     "city": "Roissy Cdg",
     "country": "France",
-    "lat": 48.79318,
-    "lng": 2.65504,
+    "lat": 48.9989,
+    "lng": 2.51116,
     "brands": [
       "Maui Jim"
     ],
@@ -45086,7 +45086,7 @@
   {
     "id": "solaris-roissy-en-france-roissy-en-france",
     "name": "Solaris Roissy-En-France",
-    "address": "Aéroport Cdg 2 - Bp 30056 - Terminal S4 Roissy Charles De Gaulle, Roissy-En-France, 95716",
+    "address": "Aéroport Cdg 2 - Terminal S4 Roissy Charles De Gaulle, Roissy-En-France, 95716",
     "city": "Roissy-En-France",
     "country": "France",
     "lat": 49.00794,
@@ -46655,8 +46655,8 @@
     "address": "CENTRE COMMERCIAL LECLERC, ZA HELLIEULE 2, 88100, SAINT DIE",
     "city": "Saint Die",
     "country": "France",
-    "lat": 47.4702,
-    "lng": 1.71704,
+    "lat": 48.2947,
+    "lng": 6.94098,
     "brands": [
       "Julbo"
     ],
@@ -47871,11 +47871,11 @@
   {
     "id": "optique-nageleisen-saint-louis",
     "name": "Optique Nageleisen",
-    "address": "OPTIQUE MODERNE, 5 AVENUE DE BÂLE, B.P. 216, 68306, SAINT LOUIS",
+    "address": "OPTIQUE MODERNE, 5 AVENUE DE BÂLE, 68306, SAINT LOUIS",
     "city": "Saint Louis",
     "country": "France",
-    "lat": 47.49699,
-    "lng": -1.31594,
+    "lat": 47.59879,
+    "lng": 7.55022,
     "brands": [
       "Julbo"
     ],
@@ -47939,8 +47939,8 @@
     "address": "6 RUE DE SEVILLE, ZONE DES PECHEURS, INTERSPORT, 68304, SAINT LOUIS",
     "city": "Saint Louis",
     "country": "France",
-    "lat": 47.49699,
-    "lng": -1.31594,
+    "lat": 47.60777,
+    "lng": 7.53459,
     "brands": [
       "Julbo"
     ],
@@ -56369,8 +56369,8 @@
     "address": "SAS AVALANCHE SKI SHOP, CENTRE VARS, 05560, VARS",
     "city": "Vars",
     "country": "France",
-    "lat": 45.57797,
-    "lng": 1.74424,
+    "lat": 44.59117,
+    "lng": 6.68776,
     "brands": [
       "Julbo"
     ],
@@ -57176,8 +57176,8 @@
     "address": "CHEMIN DES LONES CC LECLERC, VIENNE, Isère, 38200",
     "city": "Vienne",
     "country": "France",
-    "lat": 45.80206,
-    "lng": 1.12566,
+    "lat": 45.52649,
+    "lng": 4.88366,
     "brands": [
       "Maui Jim"
     ],
@@ -60352,11 +60352,11 @@
   {
     "id": "door-0000705887",
     "name": "Les Opticiens Perceval",
-    "address": "72 Rue de la Liberte, 08000 Dijon",
+    "address": "72 Rue de la Liberte, 21000 Dijon",
     "city": "Dijon",
     "country": "France",
-    "lat": 47.33195,
-    "lng": 5.0336,
+    "lat": 47.32189,
+    "lng": 5.03895,
     "brands": [
       "Vuarnet"
     ],
@@ -73380,11 +73380,11 @@
   {
     "id": "door-0000721872",
     "name": "Optique Queuleu",
-    "address": "28 Rue Queuleu, 50070 Metz",
+    "address": "28 Rue Queuleu, 57070 Metz",
     "city": "Metz",
     "country": "France",
-    "lat": 49.10838,
-    "lng": 6.19489,
+    "lat": 49.11015,
+    "lng": 6.18839,
     "brands": [
       "Vuarnet"
     ],
