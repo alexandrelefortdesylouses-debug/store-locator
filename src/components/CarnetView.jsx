@@ -21,8 +21,28 @@ import {
   getFolderNotes,
   setFolderNote,
 } from "../utils/folders";
+import { STORE_STATUSES } from "../utils/myCard";
+import { exportFolderToPdf } from "../utils/folderExportPdf";
+import { exportFolderToXlsx } from "../utils/folderExportXlsx";
 
 const TOAST_DURATION_MS = 3500;
+
+const EXPORT_STATUS_ORDER = [
+  STORE_STATUSES.ACTIVE_CLIENT,
+  STORE_STATUSES.PROSPECT,
+  STORE_STATUSES.APPOINTMENT_PENDING,
+  STORE_STATUSES.REFUSED,
+];
+
+const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
+function slugify(text) {
+  return String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(DIACRITICS_REGEX, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "dossier";
+}
 
 const TABS = ["table", "agenda", "notes", "performance"];
 
@@ -93,13 +113,14 @@ export default function CarnetView({
   routeStops,
   routeOrder,
   onToggleRouteStop,
+  onAddRouteStops,
   onRemoveRouteStop,
   onClearRoute,
   onOptimizeRoute,
   onViewOnMap,
   userLocation,
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [tab, setTab] = useState("table");
   const [carnetSelectedStoreId, setCarnetSelectedStoreId] = useState(null);
   const [reportModalOpen, setReportModalOpen] = useState(false);
@@ -195,6 +216,82 @@ export default function CarnetView({
   }, [stores, selectedFolderId, favoriteIds, folderMembers]);
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId) || null;
+  const currentViewLabel =
+    selectedFolderId === "all"
+      ? t("carnet.folders.all")
+      : selectedFolderId === "favorites"
+        ? t("carnet.folders.favorites")
+        : selectedFolder?.name || "";
+
+  function buildKpiRows(entries) {
+    const rows = [{ label: t("carnet.export.kpiTotal"), value: entries.length }];
+    EXPORT_STATUS_ORDER.forEach((status) => {
+      rows.push({
+        label: t(`myCard.status.${status}`),
+        value: entries.filter((s) => statuses[s.id] === status).length,
+      });
+    });
+    return rows;
+  }
+
+  function buildExportLabels(entries) {
+    const statusLabels = Object.fromEntries(
+      Object.values(STORE_STATUSES).map((s) => [s, t(`myCard.status.${s}`)]),
+    );
+    const dateValue = new Date().toLocaleDateString(lang === "en" ? "en-US" : "fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const slug = slugify(currentViewLabel);
+    return {
+      dateLabel: t("carnet.export.dateLabel"),
+      dateValue,
+      countLabel: t("carnet.export.countLabel"),
+      notesTitle: t("carnet.folders.notesTitle", { name: currentViewLabel }),
+      kpiTitle: t("carnet.export.kpiTitle"),
+      kpiRows: buildKpiRows(entries),
+      detailTitle: t("carnet.export.detailTitle"),
+      noEntries: t("carnet.export.noEntries"),
+      brandsLabel: t("storeDetail.brands"),
+      phoneLabel: t("carnet.export.phoneLabel"),
+      statusLabels,
+      statusNone: t("myCard.status.none"),
+      colName: t("carnet.table.colName"),
+      colCity: t("carnet.table.colCity"),
+      colPostal: t("carnet.table.colPostal"),
+      colBrands: t("carnet.table.colBrands"),
+      colStatus: t("carnet.table.colStatus"),
+      colPhone: t("carnet.export.colPhone"),
+      sheetName: currentViewLabel.slice(0, 31) || "Dossier",
+      footer: t("route.pdfFooter"),
+      filename: `thelios-dossier-${slug}.pdf`,
+    };
+  }
+
+  async function handleExportFolder(format, entries) {
+    const notes = selectedFolder ? folderNotes[selectedFolder.id] || "" : "";
+    const labels = buildExportLabels(entries);
+    if (format === "xlsx") {
+      labels.filename = `thelios-dossier-${slugify(currentViewLabel)}.xlsx`;
+    }
+    if (format === "pdf") {
+      await exportFolderToPdf({ title: currentViewLabel, notes, entries, statuses, labels });
+    } else {
+      await exportFolderToXlsx({ title: currentViewLabel, notes, entries, statuses, labels });
+    }
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage(t("carnet.export.toastSuccess"));
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }
+
+  function handleCreateRoute(entries) {
+    onAddRouteStops(entries);
+    setTab("agenda");
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage(t("carnet.export.toastRouteCreated", { count: entries.length }));
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }
 
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
@@ -267,6 +364,8 @@ export default function CarnetView({
               onToggleFolderMembership={handleToggleFolderMembership}
               onBulkAddToFolder={handleBulkAddToFolder}
               onCreateFolder={handleCreateFolder}
+              onExportFolder={handleExportFolder}
+              onCreateRoute={handleCreateRoute}
             />
           </div>
         </div>

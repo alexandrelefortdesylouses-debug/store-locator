@@ -392,6 +392,18 @@ function App() {
     });
   }
 
+  // Bulk, additive version of toggleRouteStop — used by Mon Carnet's
+  // "Créer l'itinéraire" action on a folder/selection: always adds,
+  // never removes, since toggling would be surprising when several of the
+  // target stores might already be on the route.
+  function addRouteStops(newStores) {
+    setRouteStops((prev) => {
+      const existingIds = new Set(prev.map((s) => s.id));
+      const toAdd = newStores.filter((s) => !existingIds.has(s.id));
+      return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+    });
+  }
+
   function handleToggleFavorite(storeId) {
     setFavoriteIds(toggleFavorite(storeId));
   }
@@ -524,6 +536,7 @@ function App() {
             routeStops={routeStops}
             routeOrder={routeOrder}
             onToggleRouteStop={toggleRouteStop}
+            onAddRouteStops={addRouteStops}
             onRemoveRouteStop={removeRouteStop}
             onClearRoute={clearRoute}
             onOptimizeRoute={handleRouteOptimized}

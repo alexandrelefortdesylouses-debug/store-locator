@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard";
 import { STATUS_COLORS, PRIORITY_COLORS } from "../utils/palette";
@@ -127,6 +127,115 @@ function SortIndicator({ active, direction }) {
   );
 }
 
+function RouteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <circle cx="6" cy="6" r="2.5" />
+      <circle cx="18" cy="18" r="2.5" />
+      <path strokeLinecap="round" d="M6 8.5v3a4 4 0 004 4h4a4 4 0 004-4v-.5" />
+    </svg>
+  );
+}
+
+function ExportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4" />
+      <path strokeLinecap="round" d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+    </svg>
+  );
+}
+
+// Dropdown offering PDF/Excel export, scoped to either the checked rows
+// (when any are checked) or every row currently visible in the table — see
+// CarnetTableTab's handleExport for how the scope is resolved into an
+// actual store list. Closes on an outside click, same pattern as
+// CarnetFolderSidebar's "..." folder menu.
+function ExportMenu({ totalCount, selectedCount, onPick }) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function handleClickOutside(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  async function handlePick(format, scope) {
+    setOpen(false);
+    setExporting(true);
+    try {
+      await onPick(format, scope);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const hasSelection = selectedCount > 0;
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        disabled={totalCount === 0 || exporting}
+        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+      >
+        <ExportIcon />
+        {exporting ? t("carnet.export.generating") : t("carnet.export.button")}
+      </button>
+
+      {open && (
+        <div className="thin-scrollbar absolute right-0 top-full z-20 mt-1 w-64 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+          {hasSelection && (
+            <>
+              <p className="px-2.5 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+                {t("carnet.export.scopeSelection", { count: selectedCount })}
+              </p>
+              <button
+                type="button"
+                onClick={() => handlePick("pdf", "selection")}
+                className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              >
+                {t("carnet.export.formatPdf")}
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePick("xlsx", "selection")}
+                className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              >
+                {t("carnet.export.formatXlsx")}
+              </button>
+            </>
+          )}
+          <p className="px-2.5 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+            {t("carnet.export.scopeAll", { count: totalCount })}
+          </p>
+          <button
+            type="button"
+            onClick={() => handlePick("pdf", "all")}
+            className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+          >
+            {t("carnet.export.formatPdf")}
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePick("xlsx", "all")}
+            className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1.5 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+          >
+            {t("carnet.export.formatXlsx")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CarnetTableTab({
   stores,
   statuses,
@@ -141,6 +250,8 @@ export default function CarnetTableTab({
   onToggleFolderMembership,
   onBulkAddToFolder,
   onCreateFolder,
+  onExportFolder,
+  onCreateRoute,
 }) {
   const { t } = useLanguage();
   const [search, setSearch] = useState("");
@@ -231,6 +342,21 @@ export default function CarnetTableTab({
     });
   }
 
+  // Scope resolution shared by export and route creation: the checked
+  // rows when there are any, otherwise every row currently visible in the
+  // table (i.e. already narrowed by the active folder/search/status
+  // filters) — never the raw unfiltered folder membership, so "export
+  // everything" matches what's actually on screen.
+  async function handleExportPick(format, scope) {
+    const target = scope === "selection" ? rows.filter((s) => selectedIds.has(s.id)) : rows;
+    await onExportFolder(format, target);
+  }
+
+  function handleCreateRouteClick() {
+    const target = selectedIds.size > 0 ? rows.filter((s) => selectedIds.has(s.id)) : rows;
+    onCreateRoute(target);
+  }
+
   function SortableTh({ columnKey, children }) {
     return (
       <th className="px-4 py-3">
@@ -248,6 +374,21 @@ export default function CarnetTableTab({
 
   return (
     <div>
+      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={handleCreateRouteClick}
+          disabled={rows.length === 0}
+          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          <RouteIcon />
+          {selectedIds.size > 0
+            ? t("carnet.export.routeSelection", { count: selectedIds.size })
+            : t("carnet.export.routeAll", { count: rows.length })}
+        </button>
+        <ExportMenu totalCount={rows.length} selectedCount={selectedIds.size} onPick={handleExportPick} />
+      </div>
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
           type="text"

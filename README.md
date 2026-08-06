@@ -1080,6 +1080,37 @@ statut cliquables (🟢 Client actif, 🔵 Prospect, 🟠 RDV à fixer, 🔴 Ref
 réutilisant les mêmes `STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte")
 filtrent les lignes à l'intérieur du dossier actif.
 
+#### Export et itinéraire, à portée dynamique (dossier ou sélection)
+
+Deux boutons au-dessus du tableau s'adaptent automatiquement selon qu'une
+case à cocher est active ou non — le même principe pour les deux :
+
+- **Aucune case cochée** : les actions portent sur l'ensemble des
+  opticiens actuellement affichés (le dossier/la vue active, après
+  recherche et filtres de statut) — "Créer l'itinéraire (dossier — Y)".
+- **Au moins une case cochée** : le bouton **Exporter** propose
+  explicitement les deux portées côte à côte ("Sélection (X opticiens)" et
+  "Ensemble du dossier (Y opticiens)"), et **Créer l'itinéraire** bascule
+  sur la sélection ("Créer l'itinéraire (sélection — X)").
+- **Exporter** (`src/utils/folderExportPdf.js` + `folderExportXlsx.js`,
+  bibliothèques `jspdf`/`write-excel-file` déjà utilisées ailleurs dans
+  l'app) génère :
+  - **PDF** : titre (nom du dossier ou "Tous les opticiens"/"Favoris"),
+    section **Notes & Mémos** du dossier reprise en en-tête si elle
+    contient du texte (absente pour "Tous les opticiens"/"Favoris", qui
+    n'ont pas de notes), **indicateurs clés** (total exporté + répartition
+    par statut CRM), puis une fiche par opticien (nom, statut, ville/code
+    postal, marques, téléphone) — mise en page dans le même style de
+    carte que le rapport de fin de journée.
+  - **Excel (.xlsx)** : mêmes informations de titre/notes/indicateurs en
+    lignes d'en-tête au-dessus du tableau de données (colonnes Nom, Ville,
+    Code Postal, Marques Thélios, Statut, Téléphone).
+- **Créer l'itinéraire** ajoute les opticiens ciblés (sélection ou dossier
+  entier) au trajet en cours (`addRouteStops` dans `App.jsx`, purement
+  additif — n'enlève jamais un arrêt déjà présent) et bascule sur l'onglet
+  **Agenda & RDV**, où l'optimisation, l'export `.ics` et la fiche PDF de
+  tournée déjà existants prennent le relais.
+
 - **Marques Thélios** : badges discrets par opticien (mêmes styles que
   partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en
   plein, les autres restent en ton pastel).
