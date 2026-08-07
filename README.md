@@ -692,6 +692,16 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
   Tailwind (marqueurs de carte, dégradé de la heatmap, barres du tableau de
   bord — non affectées par la redéfinition CSS) sont centralisées dans
   `src/utils/palette.js` pour rester alignées avec cette même teinte.
+  - **Exception scoping délibéré** : les 4 boutons d'action de "Mon Carnet"
+    (Note/RDV/Appeler/GPS, voir plus bas) utilisent volontairement un cyan,
+    un vert et un violet saturés en plus de l'ambre — une entorse assumée à
+    la règle "un seul accent chaud" ci-dessus, mais strictement cantonnée à
+    ces boutons ronds compacts d'une colonne d'actions (`ACTION_COLORS`
+    dans `src/utils/palette.js`), où plusieurs couleurs distinctes servent
+    à différencier des commandes au coup d'œil plutôt qu'à décorer une
+    grande surface. Le reste de l'interface (marqueurs de carte, badges de
+    statut/priorité, boutons primaires) continue de n'utiliser que la
+    gamme dorée comme accent.
 - **Tuiles de carte harmonisées** : en mode sombre, les tuiles CartoDB
   "dark_all" (par défaut plutôt bleu-gris froid) reçoivent un filtre CSS
   (`filter: brightness() saturate() sepia() hue-rotate()` sur
@@ -846,6 +856,29 @@ onglets (`src/components/SettingsPanel.jsx`) :
     appareil).
   - **Session** : bouton "Se déconnecter", en plus de celui de l'en-tête.
 - **Préférences** :
+  - **GPS & Géolocalisation** (`src/utils/gpsPrefs.js`) :
+    - Un interrupteur "Autoriser l'accès à ma position GPS en temps réel" —
+      activé par défaut (comportement historique du bouton "Me localiser").
+      Coupé, tous les calculs d'itinéraire (RoutePlanner, Agenda & RDV,
+      bouton "Itinéraire" de la fiche opticien, action GPS de Mon Carnet)
+      utilisent l'**adresse de départ par défaut** à la place de la position
+      GPS réelle.
+    - **Adresse de départ par défaut (Domicile/Agence)** : un champ texte
+      géocodé au clic sur "Enregistrer" via l'API publique BAN
+      (`api-adresse.data.gouv.fr`, même service que l'import Excel — voir
+      `src/utils/geocode.js`, désormais partagé entre les deux usages).
+      N'apparaît que quand la position temps réel est désactivée.
+    - **Application GPS favorite** : Waze / Google Maps / Apple Maps,
+      trois boutons cliquables. Le choix est mémorisé et utilisé partout où
+      l'app ouvre un itinéraire vers un seul opticien (fiche détail, action
+      "GPS" de Mon Carnet) via `buildPreferredDirectionsUrl()`. Le panneau
+      d'itinéraire multi-arrêts (RoutePlanner) propose toujours ses trois
+      boutons Google Maps / Waze / Apple Maps explicites, sans en
+      présélectionner un — cette préférence ne s'applique qu'aux
+      itinéraires à une seule destination.
+    - ⚠️ Comme le reste de l'app, ces préférences sont stockées en
+      `localStorage`, propres à cet appareil — pas de synchronisation entre
+      appareils.
   - **Langue de l'interface** : les mêmes boutons FR / EN que le
     sélecteur de l'en-tête (voir la section "Langue (FR / EN)" plus haut),
     dupliqués ici pour un accès direct depuis les réglages.
@@ -1080,6 +1113,16 @@ statut cliquables (🟢 Client actif, 🔵 Prospect, 🟠 RDV à fixer, 🔴 Ref
 réutilisant les mêmes `STORE_STATUSES`/`STATUS_COLORS` que "Ma Carte")
 filtrent les lignes à l'intérieur du dossier actif.
 
+**Charte visuelle** : le statut de chaque ligne s'affiche comme une
+capsule ("pill") pleine, fortement contrastée (fond de couleur + texte
+blanc en gras) plutôt qu'un simple menu déroulant discret ; chaque ligne
+s'élève légèrement au survol (fond teinté + ombre douce) pour mieux
+repérer la ligne active ; et les boutons d'en-tête (**Exporter**,
+**Créer l'itinéraire**, **Générer le rapport de fin de journée**) reprennent
+le même traitement plein/arrondi que les actions de ligne plutôt qu'un
+simple contour discret, pour une hiérarchie visuelle homogène sur tout
+l'onglet.
+
 #### Export et itinéraire, à portée dynamique (dossier ou sélection)
 
 Deux boutons au-dessus du tableau s'adaptent automatiquement selon qu'une
@@ -1138,16 +1181,28 @@ case à cocher est active ou non — le même principe pour les deux :
   sur la même colonne (un chevron indique la colonne et le sens actifs).
   La colonne "Dernier Contact" présente dans une itération précédente a
   été retirée à la demande du client.
-- **Actions rapides**, en icônes compactes : 📝 ouvrir/ajouter une note
-  (bascule sur l'onglet Bloc-Notes avec cet opticien pré-sélectionné),
-  📅 programmer un RDV (ajoute l'opticien au trajet en cours et bascule sur
-  l'onglet Agenda), 📞 appeler (lien `tel:`, désactivé si l'opticien n'a pas
-  de numéro renseigné — les numéros de `stores.json` ne sont pas tous au
-  même format, ils sont normalisés à la volée avant de construire le lien),
-  🗺️ voir sur la carte (quitte Mon Carnet, revient sur Carte Globale et
-  ouvre directement la fiche détaillée de cet opticien), 📁 classer dans un
-  dossier (ouvre `FolderAssignModal.jsx`, voir "Dossiers thématiques"
-  ci-dessus).
+- **Actions rapides**, en boutons ronds colorés (📄 Note en cyan `#0284c7`,
+  📅 RDV en ambre `#d97706`, 📞 Appeler en vert `#16a34a`, 📍 GPS en violet
+  `#9333ea` — `ACTION_COLORS` dans `src/utils/palette.js`, le dossier
+  `📁` restant sans couleur assignée par la charte et gardant son style
+  neutre en contour) :
+  - 📄 **Note** ouvre `CarnetVisitNoteModal.jsx`, une fenêtre modale pour
+    consulter/ajouter les notes de visite datées de cet opticien (voir
+    "Bloc-Notes" ci-dessous pour où vivait cette UI avant).
+  - 📅 **RDV** ajoute l'opticien au trajet en cours et bascule sur l'onglet
+    Agenda.
+  - 📞 **Appeler** (lien `tel:`, désactivé si l'opticien n'a pas de numéro
+    renseigné — les numéros de `stores.json` ne sont pas tous au même
+    format, ils sont normalisés à la volée avant de construire le lien).
+  - 📍 **GPS** ouvre directement un nouvel onglet vers l'application de
+    navigation choisie dans Paramètres > Préférences (Waze / Google Maps /
+    Apple Maps par défaut), avec comme point de départ la position GPS
+    réelle ou l'adresse par défaut selon ce réglage (voir "Rubrique
+    Paramètres" plus haut, `buildPreferredDirectionsUrl()` dans
+    `src/utils/gpsPrefs.js`) — ce bouton ne rouvre plus Carte Globale, il
+    lance directement l'itinéraire.
+  - 📁 **Classer dans un dossier** (ouvre `FolderAssignModal.jsx`, voir
+    "Dossiers thématiques" ci-dessus).
 
 ### 📅 Agenda & RDV
 
@@ -1159,17 +1214,45 @@ côtés. Cet onglet affiche la liste des étapes programmées, un bouton
 de trajet" plus haut) et un accès direct au réglage de l'export agenda
 (`.ics`, voir plus haut) — sans avoir besoin de rouvrir la carte.
 
-### 📝 Bloc-Notes Client
+### 📝 Bloc-Notes
 
-`src/components/CarnetNotesTab.jsx` permet de sélectionner un opticien du
-portefeuille et de consulter/ajouter des **notes de visite datées** —
-horodatées automatiquement à l'ajout. C'est un système distinct de la
-"Note privée" (texte libre unique) déjà présente dans le panneau détaillé de
-la carte : celui-ci reste un pense-bête simple, alors que le Bloc-Notes de
-Mon Carnet tient un historique chronologique de visites
-(`src/utils/activity.js`, clé `localStorage` séparée), qui sert aussi de
-source pour le pré-cochage automatique du rapport de fin de journée (voir
-plus bas) et pour l'onglet Performance ci-dessous.
+`src/components/CarnetNotesTab.jsx` est un espace d'écriture libre **unique
+sur une seule page**, partagé par tout le portefeuille, plutôt qu'un
+formulaire par opticien : une seule zone de texte, avec **sauvegarde
+automatique** sur un court délai après la dernière frappe (`utils/globalNote.js`,
+indicateur "Enregistrement…" / "Enregistré sur cet appareil" en haut à
+droite). ⚠️ Comme partout ailleurs dans l'app, cette sauvegarde reste
+**locale à cet appareil** (`localStorage`) — le texte affiché n'est pas une
+vraie synchronisation Cloud entre appareils, un bandeau d'avertissement le
+rappelle explicitement dans l'interface.
+
+- **Mentions "@"** : taper `@` fait apparaître une autocomplétion —
+  opticiens du portefeuille (ex. `@Optique Lachal`) et marques Thélios
+  présentes sur l'ensemble du réseau (ex. `@VUARNET`, `@CELINE`, dérivées
+  dynamiquement de `stores.json`, pas d'une liste figée). Choisir une
+  suggestion insère un **badge atomique non éditable** dans le texte
+  (implémenté à la main avec `contenteditable="false"` sur un `<span>` —
+  pas de librairie de mentions tierce), qui reste cliquable :
+  - un badge **opticien** (bleu) ouvre sa fiche détaillée sur Carte
+    Globale (même comportement que l'ancien bouton "voir sur la carte" des
+    actions rapides, réutilisé ici) ;
+  - un badge **marque** (ambre) bascule sur l'onglet Tableau et filtre le
+    portefeuille sur cette marque (réutilise la recherche texte libre du
+    tableau, déjà capable de matcher sur les marques).
+- Techniquement, un `contentEditable` non contrôlé par React (le HTML
+  sauvegardé est injecté une seule fois au montage via une ref, jamais
+  re-rendu ensuite) pour laisser le navigateur gérer le curseur/la saisie
+  normalement pendant que les badges de mention restent de vrais nœuds DOM
+  cliquables au milieu du texte.
+
+Le système de **notes de visite datées** par opticien (horodatées
+automatiquement, historique chronologique) existe toujours et n'a pas
+changé de moteur (`src/utils/activity.js`, clé `localStorage` séparée, qui
+sert aussi de source pour le pré-cochage automatique du rapport de fin de
+journée et pour l'onglet Performance ci-dessous) — seule son interface a
+déménagé : elle vit maintenant dans `CarnetVisitNoteModal.jsx`, ouverte
+depuis l'action rapide 📄 **Note** du Tableau plutôt que dans cet onglet,
+qui est désormais entièrement dédié au bloc-notes global.
 
 ### 📊 Performance & Historique
 
@@ -1270,3 +1353,10 @@ réelle multi-utilisateurs :
 - Idem pour les avis clients (`src/utils/storage.js`) et "Ma Carte"
   (`src/utils/myCard.js`, `src/utils/activity.js`) : mêmes limites de
   stockage local par appareil, pour les mêmes raisons.
+- Idem pour les préférences GPS/Géolocalisation (`src/utils/gpsPrefs.js`)
+  et le Bloc-Notes global de "Mon Carnet" (`src/utils/globalNote.js`) : la
+  "sauvegarde automatique" du Bloc-Notes en particulier est un auto-save
+  `localStorage` réel, mais **pas** une synchronisation Cloud entre
+  appareils malgré le vocabulaire "auto-save" — un vrai backend est
+  nécessaire pour qu'un commercial retrouve ses notes/préférences en se
+  connectant depuis un autre poste.

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard";
-import { STATUS_COLORS, PRIORITY_COLORS } from "../utils/palette";
+import { STATUS_COLORS, PRIORITY_COLORS, ACTION_COLORS } from "../utils/palette";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
 import { FOLDER_COLORS } from "../utils/folders";
+import { GPS_APPS, buildPreferredDirectionsUrl } from "../utils/gpsPrefs";
 import FolderAssignModal from "./FolderAssignModal";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
@@ -82,16 +83,35 @@ function FolderIcon() {
   );
 }
 
-function IconButton({ onClick, href, disabled, label, children }) {
-  const className = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
+// Actions with a `color` render as solid rounded buttons per the "Mon
+// Carnet" design system (Note/RDV/Appeler/GPS); the folder-assign action
+// has no assigned color in that system and keeps the original neutral
+// outline treatment instead.
+function IconButton({ onClick, href, external, disabled, label, color, children }) {
+  const filledClassName = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white shadow-sm transition ${
+    disabled
+      ? "cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
+      : "cursor-pointer hover:brightness-110 hover:shadow-md active:scale-95"
+  }`;
+  const outlineClassName = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
     disabled
       ? "cursor-not-allowed border-neutral-200 text-neutral-300 dark:border-neutral-800 dark:text-neutral-600"
       : "cursor-pointer border-neutral-300 text-neutral-600 hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
   }`;
+  const className = color ? filledClassName : outlineClassName;
+  const style = color && !disabled ? { background: color } : undefined;
 
   if (href && !disabled) {
     return (
-      <a href={href} title={label} aria-label={label} className={className}>
+      <a
+        href={href}
+        title={label}
+        aria-label={label}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noreferrer" : undefined}
+        style={style}
+        className={className}
+      >
         {children}
       </a>
     );
@@ -104,6 +124,7 @@ function IconButton({ onClick, href, disabled, label, children }) {
       disabled={disabled}
       title={label}
       aria-label={label}
+      style={style}
       className={className}
     >
       {children}
@@ -184,7 +205,7 @@ function ExportMenu({ totalCount, selectedCount, onPick }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={totalCount === 0 || exporting}
-        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        className="flex cursor-pointer items-center gap-1.5 rounded-full bg-neutral-900 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-white shadow-sm transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
       >
         <ExportIcon />
         {exporting ? t("carnet.export.generating") : t("carnet.export.button")}
@@ -244,7 +265,8 @@ export default function CarnetTableTab({
   onSetPriority,
   onOpenNote,
   onScheduleStore,
-  onViewOnMap,
+  preferredGpsApp = GPS_APPS.GOOGLE,
+  routeOrigin = null,
   folders,
   folderMembers,
   onToggleFolderMembership,
@@ -252,9 +274,10 @@ export default function CarnetTableTab({
   onCreateFolder,
   onExportFolder,
   onCreateRoute,
+  search,
+  onSearchChange,
 }) {
   const { t } = useLanguage();
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
   const [assigningStore, setAssigningStore] = useState(null);
@@ -379,7 +402,7 @@ export default function CarnetTableTab({
           type="button"
           onClick={handleCreateRouteClick}
           disabled={rows.length === 0}
-          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+          className="flex cursor-pointer items-center gap-1.5 rounded-full bg-neutral-900 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-white shadow-sm transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
         >
           <RouteIcon />
           {selectedIds.size > 0
@@ -393,7 +416,7 @@ export default function CarnetTableTab({
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t("carnet.table.searchPlaceholder")}
           className="w-full rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 sm:max-w-xs"
         />
@@ -484,7 +507,7 @@ export default function CarnetTableTab({
                     key={store.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, store.id)}
-                    className="cursor-grab border-b border-neutral-100 last:border-0 active:cursor-grabbing dark:border-neutral-800"
+                    className="relative cursor-grab border-b border-neutral-100 transition hover:z-10 hover:bg-amber-50/60 hover:shadow-[0_4px_14px_-4px_rgba(0,0,0,0.15)] last:border-0 active:cursor-grabbing dark:border-neutral-800 dark:hover:bg-neutral-800/60"
                   >
                     <td className="px-4 py-3">
                       <input
@@ -539,7 +562,11 @@ export default function CarnetTableTab({
                       <select
                         value={status}
                         onChange={(e) => onSetStatus(store.id, e.target.value || null)}
-                        className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium focus:outline-none focus:ring-1 focus:ring-amber-400"
+                        className={`cursor-pointer rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-400 ${
+                          status
+                            ? ""
+                            : "border-neutral-300 bg-transparent text-neutral-500 shadow-none dark:border-neutral-600 dark:text-neutral-400"
+                        }`}
                         style={
                           status
                             ? { background: STATUS_COLORS[status], color: "white", borderColor: "transparent" }
@@ -574,16 +601,18 @@ export default function CarnetTableTab({
                       </select>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <IconButton
                           onClick={() => onOpenNote(store.id)}
                           label={t("carnet.table.actionOpenNote")}
+                          color={ACTION_COLORS.note}
                         >
                           <NoteIcon />
                         </IconButton>
                         <IconButton
                           onClick={() => onScheduleStore(store)}
                           label={t("carnet.table.actionScheduleRdv")}
+                          color={ACTION_COLORS.rdv}
                         >
                           <CalendarIcon />
                         </IconButton>
@@ -591,12 +620,15 @@ export default function CarnetTableTab({
                           href={store.phone ? telHref(store.phone) : undefined}
                           disabled={!store.phone}
                           label={store.phone ? t("carnet.table.actionCall") : t("carnet.table.actionCallDisabled")}
+                          color={ACTION_COLORS.call}
                         >
                           <PhoneIcon />
                         </IconButton>
                         <IconButton
-                          onClick={() => onViewOnMap(store.id)}
-                          label={t("carnet.table.actionViewOnMap")}
+                          href={buildPreferredDirectionsUrl(preferredGpsApp, store, routeOrigin)}
+                          external
+                          label={t("carnet.table.actionGps")}
+                          color={ACTION_COLORS.gps}
                         >
                           <MapPinIcon />
                         </IconButton>

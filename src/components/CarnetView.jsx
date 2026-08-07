@@ -5,6 +5,7 @@ import CarnetFolderSidebar from "./CarnetFolderSidebar";
 import CarnetFolderNotes from "./CarnetFolderNotes";
 import CarnetAgendaTab from "./CarnetAgendaTab";
 import CarnetNotesTab from "./CarnetNotesTab";
+import CarnetVisitNoteModal from "./CarnetVisitNoteModal";
 import CarnetPerformanceTab from "./CarnetPerformanceTab";
 import EndOfDayReportModal from "./EndOfDayReportModal";
 import Toast from "./Toast";
@@ -102,6 +103,7 @@ const TAB_ICONS = { table: TableIcon, agenda: CalendarIcon, notes: NoteIcon, per
 
 export default function CarnetView({
   stores,
+  allStores,
   statuses,
   onSetStatus,
   priorities,
@@ -117,12 +119,14 @@ export default function CarnetView({
   onRemoveRouteStop,
   onClearRoute,
   onOptimizeRoute,
-  onViewOnMap,
+  onOpenStore,
   userLocation,
+  preferredGpsApp,
 }) {
   const { t, lang } = useLanguage();
   const [tab, setTab] = useState("table");
-  const [carnetSelectedStoreId, setCarnetSelectedStoreId] = useState(null);
+  const [noteModalStoreId, setNoteModalStoreId] = useState(null);
+  const [carnetSearch, setCarnetSearch] = useState("");
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimeoutRef = useRef(null);
@@ -133,13 +137,27 @@ export default function CarnetView({
   const [selectedFolderId, setSelectedFolderId] = useState("all");
 
   function handleOpenNote(storeId) {
-    setCarnetSelectedStoreId(storeId);
-    setTab("notes");
+    setNoteModalStoreId(storeId);
   }
+
+  const allBrands = useMemo(
+    () => [...new Set((allStores || stores).flatMap((s) => s.brands))].sort((a, b) => a.localeCompare(b)),
+    [allStores, stores],
+  );
+
+  const noteModalStore = noteModalStoreId ? stores.find((s) => s.id === noteModalStoreId) : null;
 
   function handleScheduleStore(store) {
     onToggleRouteStop(store);
     setTab("agenda");
+  }
+
+  // Used by the Bloc-Notes @mention badges: a brand mention filters Mon
+  // Carnet's table down to that brand by reusing its existing free-text
+  // search (which already matches against store.brands).
+  function handleFilterBrand(brand) {
+    setCarnetSearch(brand);
+    setTab("table");
   }
 
   function handleReportExported(format) {
@@ -322,7 +340,7 @@ export default function CarnetView({
         <button
           type="button"
           onClick={() => setReportModalOpen(true)}
-          className="flex shrink-0 cursor-pointer items-center justify-center gap-1.5 self-start rounded-full border border-neutral-300 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400 sm:self-auto"
+          className="flex shrink-0 cursor-pointer items-center justify-center gap-1.5 self-start rounded-full bg-neutral-900 px-3.5 py-2 text-xs font-medium uppercase tracking-wide text-white shadow-sm transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500 sm:self-auto"
         >
           <ReportIcon />
           {t("eodReport.openButton")}
@@ -358,7 +376,8 @@ export default function CarnetView({
               onSetPriority={onSetPriority}
               onOpenNote={handleOpenNote}
               onScheduleStore={handleScheduleStore}
-              onViewOnMap={onViewOnMap}
+              preferredGpsApp={preferredGpsApp}
+              routeOrigin={userLocation}
               folders={folders}
               folderMembers={folderMembers}
               onToggleFolderMembership={handleToggleFolderMembership}
@@ -366,6 +385,8 @@ export default function CarnetView({
               onCreateFolder={handleCreateFolder}
               onExportFolder={handleExportFolder}
               onCreateRoute={handleCreateRoute}
+              search={carnetSearch}
+              onSearchChange={setCarnetSearch}
             />
           </div>
         </div>
@@ -385,11 +406,9 @@ export default function CarnetView({
           {tab === "notes" && (
             <CarnetNotesTab
               stores={stores}
-              selectedStoreId={carnetSelectedStoreId}
-              onSelectStore={setCarnetSelectedStoreId}
-              statuses={statuses}
-              visitNotes={visitNotes}
-              onAddVisitNote={onAddVisitNote}
+              allBrands={allBrands}
+              onOpenStore={onOpenStore}
+              onFilterBrand={handleFilterBrand}
             />
           )}
 
@@ -410,6 +429,16 @@ export default function CarnetView({
           statuses={statuses}
           onClose={() => setReportModalOpen(false)}
           onExported={handleReportExported}
+        />
+      )}
+
+      {noteModalStore && (
+        <CarnetVisitNoteModal
+          store={noteModalStore}
+          status={statuses[noteModalStore.id]}
+          entries={visitNotes[noteModalStore.id] || []}
+          onAddVisitNote={onAddVisitNote}
+          onClose={() => setNoteModalStoreId(null)}
         />
       )}
 

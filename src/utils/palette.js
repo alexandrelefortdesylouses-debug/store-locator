@@ -39,6 +39,17 @@ export const PRIORITY_COLORS = {
 };
 export const PRIORITY_NONE_COLOR = "#d4d4d4";
 
+// Mon Carnet's per-row action buttons (Note/RDV/Appeler/GPS) — a distinct
+// saturated hue per action so they read as different commands at a glance
+// rather than a monotone icon row. Intentionally more vivid than the rest
+// of the palette since these are small circular buttons, not large surfaces.
+export const ACTION_COLORS = {
+  note: "#0284c7",
+  rdv: "#d97706",
+  call: "#16a34a",
+  gps: "#9333ea",
+};
+
 // A distinct, non-brand hue for the "zones blanches" prospecting overlay —
 // a muted teal, intentionally outside the gold/neutral/status families (and
 // away from purple/orange, per the dark-mode "no garish accents" guardrail)

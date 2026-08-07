@@ -8,6 +8,7 @@ import TagPicker from "./TagPicker";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { formatDistanceKm } from "../utils/geo";
 import { useLanguage } from "../i18n/LanguageContext";
+import { GPS_APPS, buildPreferredDirectionsUrl } from "../utils/gpsPrefs";
 
 export default function StoreDetailPanel({
   store,
@@ -25,12 +26,14 @@ export default function StoreDetailPanel({
   onSetPriority,
   tags = [],
   onSetTags,
+  preferredGpsApp = GPS_APPS.GOOGLE,
+  routeOrigin = null,
 }) {
   const { t } = useLanguage();
 
   if (!store) return null;
 
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`;
+  const directionsUrl = buildPreferredDirectionsUrl(preferredGpsApp, store, routeOrigin);
   const inRoute = routeStopIds.includes(store.id);
 
   return (

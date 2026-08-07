@@ -4,6 +4,8 @@ import { useTheme } from "../theme/ThemeContext";
 import { findWhitelistEntry, setPassword, ROLES } from "../services/authService";
 import { STATUS_COLORS } from "../utils/palette";
 import { STORE_STATUSES } from "../utils/myCard";
+import { GPS_APPS } from "../utils/gpsPrefs";
+import { geocodeAddress } from "../utils/geocode";
 
 const TABS = ["account", "preferences", "help"];
 const FAQ_STATUS_ORDER = [
@@ -40,6 +42,165 @@ function LanguageSection() {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ToggleSwitch({ checked, onChange, label }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition ${
+        checked ? "bg-neutral-900 dark:bg-amber-600" : "bg-neutral-300 dark:bg-neutral-600"
+      }`}
+    >
+      <span
+        className={`block h-5 w-5 transform rounded-full bg-white shadow transition ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
+const GPS_APP_OPTIONS = [
+  { id: GPS_APPS.WAZE, labelKey: "settingsPanel.gpsAppWaze" },
+  { id: GPS_APPS.GOOGLE, labelKey: "settingsPanel.gpsAppGoogle" },
+  { id: GPS_APPS.APPLE, labelKey: "settingsPanel.gpsAppApple" },
+];
+
+function GpsAppSelector({ value, onChange }) {
+  const { t } = useLanguage();
+  return (
+    <div className="flex gap-2">
+      {GPS_APP_OPTIONS.map((opt) => (
+        <button
+          key={opt.id}
+          type="button"
+          onClick={() => onChange(opt.id)}
+          aria-pressed={value === opt.id}
+          className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm font-medium transition ${
+            value === opt.id
+              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+              : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
+          }`}
+        >
+          {t(opt.labelKey)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Geocodes on explicit "Save" (not on every keystroke) via the shared BAN
+// helper, same API used by the admin Excel import flow.
+function DefaultAddressField({ address, onSave }) {
+  const { t } = useLanguage();
+  const [draft, setDraft] = useState(address?.label || "");
+  const [status, setStatus] = useState("idle");
+
+  async function handleSave() {
+    if (!draft.trim()) {
+      onSave(null);
+      setStatus("idle");
+      return;
+    }
+    setStatus("loading");
+    const result = await geocodeAddress(draft.trim());
+    if (!result) {
+      setStatus("error");
+      return;
+    }
+    onSave({ label: result.label, lat: result.lat, lng: result.lng });
+    setDraft(result.label);
+    setStatus("saved");
+  }
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+        {t("settingsPanel.defaultAddressLabel")}
+      </label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setStatus("idle");
+          }}
+          placeholder={t("settingsPanel.defaultAddressPlaceholder")}
+          className="w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 dark:border-neutral-600 dark:text-neutral-100"
+        />
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={status === "loading"}
+          className="shrink-0 cursor-pointer rounded-lg bg-neutral-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-amber-700 disabled:cursor-wait disabled:opacity-60 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+        >
+          {status === "loading" ? t("settingsPanel.defaultAddressSaving") : t("settingsPanel.defaultAddressSave")}
+        </button>
+      </div>
+      {status === "error" && (
+        <p className="mt-1.5 text-xs text-red-500 dark:text-red-400">
+          {t("settingsPanel.defaultAddressNotFound")}
+        </p>
+      )}
+      {status === "saved" && (
+        <p className="mt-1.5 text-xs text-green-600 dark:text-green-400">
+          {t("settingsPanel.defaultAddressSaved")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function GpsSection({
+  gpsRealtimeEnabled,
+  onSetGpsRealtimeEnabled,
+  preferredGpsApp,
+  onSetPreferredGpsApp,
+  defaultAddress,
+  onSetDefaultAddress,
+}) {
+  const { t } = useLanguage();
+  return (
+    <div className="mb-8">
+      <h3 className="mb-3 font-serif text-base text-neutral-900 dark:text-neutral-100">
+        {t("settingsPanel.gpsTitle")}
+      </h3>
+
+      <div className="mb-4 flex items-start justify-between gap-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-700 dark:bg-neutral-800">
+        <div>
+          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+            {t("settingsPanel.gpsRealtimeLabel")}
+          </p>
+          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+            {t("settingsPanel.gpsRealtimeHint")}
+          </p>
+        </div>
+        <ToggleSwitch
+          checked={gpsRealtimeEnabled}
+          onChange={onSetGpsRealtimeEnabled}
+          label={t("settingsPanel.gpsRealtimeLabel")}
+        />
+      </div>
+
+      {!gpsRealtimeEnabled && (
+        <div className="mb-4">
+          <DefaultAddressField address={defaultAddress} onSave={onSetDefaultAddress} />
+        </div>
+      )}
+
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+        {t("settingsPanel.gpsAppLabel")}
+      </p>
+      <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">{t("settingsPanel.gpsAppHint")}</p>
+      <GpsAppSelector value={preferredGpsApp} onChange={onSetPreferredGpsApp} />
     </div>
   );
 }
@@ -295,7 +456,17 @@ function FaqSection() {
   );
 }
 
-export default function SettingsPanel({ currentUser, onClose, onSignOut }) {
+export default function SettingsPanel({
+  currentUser,
+  onClose,
+  onSignOut,
+  gpsRealtimeEnabled,
+  onSetGpsRealtimeEnabled,
+  preferredGpsApp,
+  onSetPreferredGpsApp,
+  defaultAddress,
+  onSetDefaultAddress,
+}) {
   const { t } = useLanguage();
   const [tab, setTab] = useState("account");
 
@@ -338,6 +509,14 @@ export default function SettingsPanel({ currentUser, onClose, onSignOut }) {
           {tab === "account" && <AccountSection currentUser={currentUser} onSignOut={onSignOut} />}
           {tab === "preferences" && (
             <>
+              <GpsSection
+                gpsRealtimeEnabled={gpsRealtimeEnabled}
+                onSetGpsRealtimeEnabled={onSetGpsRealtimeEnabled}
+                preferredGpsApp={preferredGpsApp}
+                onSetPreferredGpsApp={onSetPreferredGpsApp}
+                defaultAddress={defaultAddress}
+                onSetDefaultAddress={onSetDefaultAddress}
+              />
               <LanguageSection />
               <DarkModeSection />
             </>

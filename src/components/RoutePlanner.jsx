@@ -4,6 +4,7 @@ import {
   optimizeRouteOrder,
   buildGoogleMapsUrls,
   buildWazeUrl,
+  buildAppleMapsUrl,
 } from "../utils/route";
 import { exportRoutePdf } from "../utils/pdfExport";
 import { formatDistanceKm } from "../utils/geo";
@@ -181,6 +182,15 @@ export default function RoutePlanner({
                     className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
                   >
                     {t("route.openWaze")}
+                  </a>
+                  <a
+                    href={buildAppleMapsUrl(optimized.order, userLocation)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={t("route.appleMapsHint")}
+                    className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
+                  >
+                    {t("route.openAppleMaps")}
                   </a>
                 </div>
               </>

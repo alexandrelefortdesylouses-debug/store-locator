@@ -47,6 +47,14 @@ import {
   getProspectFirstSeen,
   recordProspectContact,
 } from "./utils/activity";
+import {
+  getGpsRealtimeEnabled,
+  setGpsRealtimeEnabled,
+  getPreferredGpsApp,
+  setPreferredGpsApp,
+  getDefaultAddress,
+  setDefaultAddress,
+} from "./utils/gpsPrefs";
 import { getCurrentUser, signOut as authSignOut, isAdmin as checkIsAdmin } from "./services/authService";
 import { mergeWithOverrides } from "./services/storesService";
 import { useLanguage } from "./i18n/LanguageContext";
@@ -99,6 +107,9 @@ function App() {
   const [importResult, setImportResult] = useState(null);
   const [visitNotes, setVisitNotesState] = useState(() => getAllVisitNotes());
   const [prospectFirstSeen, setProspectFirstSeen] = useState(() => getProspectFirstSeen());
+  const [gpsRealtimeEnabled, setGpsRealtimeEnabledState] = useState(() => getGpsRealtimeEnabled());
+  const [preferredGpsApp, setPreferredGpsAppState] = useState(() => getPreferredGpsApp());
+  const [defaultAddress, setDefaultAddressState] = useState(() => getDefaultAddress());
 
   useEffect(() => {
     fetch("/stores.json")
@@ -307,6 +318,16 @@ function App() {
   // the whole network rather than an empty dashboard.
   const statsScope = showResults ? filteredStores : stores;
 
+  // The routing origin actually used for "start from here": live GPS when
+  // the rep has opted in (Settings > GPS & Géolocalisation), otherwise the
+  // saved default start address — never blocked entirely, since a rep
+  // without either simply gets directions with no fixed origin.
+  const routeOrigin = gpsRealtimeEnabled
+    ? userLocation
+    : defaultAddress
+      ? { lat: defaultAddress.lat, lng: defaultAddress.lng }
+      : null;
+
   function handleSelectStore(id) {
     setSelectedStoreId(id);
     setDetailOpen(true);
@@ -322,10 +343,10 @@ function App() {
     setStoresOverrideVersion((v) => v + 1);
   }
 
-  // "Voir sur la carte" action from Mon Carnet's table: leaves the Carnet
-  // workspace and drops the user back on Carte Globale with that optician's
-  // detail panel already open.
-  function handleViewOnMap(id) {
+  // Used when a store is opened from within Mon Carnet (e.g. an @mention
+  // badge in the global Bloc-Notes) — leaves the Carnet workspace and drops
+  // the user back on Carte Globale with that optician's detail panel open.
+  function handleOpenStoreFromCarnet(id) {
     setViewMode("global");
     handleSelectStore(id);
   }
@@ -382,6 +403,20 @@ function App() {
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
+  }
+
+  function handleSetGpsRealtimeEnabled(enabled) {
+    setGpsRealtimeEnabled(enabled);
+    setGpsRealtimeEnabledState(enabled);
+  }
+
+  function handleSetPreferredGpsApp(app) {
+    setPreferredGpsApp(app);
+    setPreferredGpsAppState(app);
+  }
+
+  function handleSetDefaultAddress(address) {
+    setDefaultAddressState(setDefaultAddress(address));
   }
 
   function toggleRouteStop(store) {
@@ -525,6 +560,7 @@ function App() {
         {viewMode === "carnet" ? (
           <CarnetView
             stores={myCardStores}
+            allStores={stores}
             statuses={statuses}
             onSetStatus={handleSetStatus}
             priorities={priorities}
@@ -540,8 +576,9 @@ function App() {
             onRemoveRouteStop={removeRouteStop}
             onClearRoute={clearRoute}
             onOptimizeRoute={handleRouteOptimized}
-            onViewOnMap={handleViewOnMap}
-            userLocation={userLocation}
+            onOpenStore={handleOpenStoreFromCarnet}
+            userLocation={routeOrigin}
+            preferredGpsApp={preferredGpsApp}
           />
         ) : (
           <>
@@ -671,7 +708,7 @@ function App() {
                   stops={routeStops}
                   onRemoveStop={removeRouteStop}
                   onClear={clearRoute}
-                  userLocation={userLocation}
+                  userLocation={routeOrigin}
                   onOptimize={handleRouteOptimized}
                   notes={notes}
                 />
@@ -692,6 +729,8 @@ function App() {
                   onSetPriority={handleSetPriority}
                   tags={selectedStore ? tags[selectedStore.id] || [] : []}
                   onSetTags={handleSetTags}
+                  preferredGpsApp={preferredGpsApp}
+                  routeOrigin={routeOrigin}
                 />
               </div>
             </div>
@@ -704,6 +743,12 @@ function App() {
           currentUser={currentUser}
           onClose={() => setShowSettings(false)}
           onSignOut={handleSignOut}
+          gpsRealtimeEnabled={gpsRealtimeEnabled}
+          onSetGpsRealtimeEnabled={handleSetGpsRealtimeEnabled}
+          preferredGpsApp={preferredGpsApp}
+          onSetPreferredGpsApp={handleSetPreferredGpsApp}
+          defaultAddress={defaultAddress}
+          onSetDefaultAddress={handleSetDefaultAddress}
         />
       )}
 

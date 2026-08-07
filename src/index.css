@@ -139,3 +139,15 @@ body {
 .dark .heatmap-active .leaflet-tile-pane {
   filter: brightness(0.7) saturate(0.55) sepia(0.08) hue-rotate(-8deg) contrast(0.95);
 }
+
+/* Placeholder for Mon Carnet's global Bloc-Notes contentEditable — plain
+   CSS since a placeholder attribute doesn't exist for contenteditable. */
+.notes-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #a3a3a3;
+  pointer-events: none;
+}
+
+.dark .notes-editor:empty:before {
+  color: #71717a;
+}

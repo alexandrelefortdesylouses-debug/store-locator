@@ -1,3 +1,5 @@
+import { geocodeAddress as geocodeQuery } from "./geocode";
+
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 
 function normalize(text) {
@@ -80,21 +82,6 @@ export function parseImportRows(rows, columnMap) {
       };
     })
     .filter(Boolean);
-}
-
-async function geocodeQuery(query) {
-  try {
-    const url = `https://api-adresse.data.gouv.fr/search/?${new URLSearchParams({ q: query, limit: "1" })}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const feature = data.features?.[0];
-    if (!feature) return null;
-    const [lng, lat] = feature.geometry.coordinates;
-    return { lat, lng };
-  } catch {
-    return null;
-  }
 }
 
 // Client-side geocoding via the same public French government address API

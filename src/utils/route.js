@@ -191,3 +191,18 @@ export function buildWazeUrl(order) {
   });
   return `https://waze.com/ul?${params.toString()}`;
 }
+
+// Apple Maps' web scheme also only resolves a single destination per link
+// (like buildWazeUrl above), so this links to the first stop of the route.
+// `saddr` is omitted when there's no known origin, letting Apple Maps fall
+// back to the device's current location.
+export function buildAppleMapsUrl(order, origin) {
+  const firstStop = order[0];
+  if (!firstStop) return "";
+  const params = new URLSearchParams({
+    daddr: `${firstStop.lat},${firstStop.lng}`,
+    dirflg: "d",
+  });
+  if (origin) params.set("saddr", `${origin.lat},${origin.lng}`);
+  return `https://maps.apple.com/?${params.toString()}`;
+}
