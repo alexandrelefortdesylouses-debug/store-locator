@@ -139,6 +139,115 @@ function telHref(phone) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
+function ContactIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="9" cy="10.5" r="2" />
+      <path strokeLinecap="round" d="M5.5 16c.6-1.8 2-2.5 3.5-2.5s2.9.7 3.5 2.5M14.5 9.5h4M14.5 12.5h4" />
+    </svg>
+  );
+}
+
+// Shows phone/e-mail in clear text on click rather than acting immediately
+// (no auto-dial, no auto-mailto) — "Appeler"/mailto/copy are separate,
+// deliberate actions inside the popover. Closes on an outside click, same
+// pattern as ExportMenu below.
+function ContactPopover({ store }) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function handleClickOutside(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  useEffect(() => {
+    if (!copied) return undefined;
+    const timeout = window.setTimeout(() => setCopied(false), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [copied]);
+
+  async function handleCopyEmail() {
+    try {
+      await navigator.clipboard.writeText(store.email);
+      setCopied(true);
+    } catch {
+      // Clipboard API unavailable/denied — the e-mail text is still
+      // selectable, so copying manually remains possible.
+    }
+  }
+
+  return (
+    <div ref={rootRef} className="relative shrink-0">
+      <IconButton
+        onClick={() => setOpen((v) => !v)}
+        label={t("carnet.table.actionContact")}
+        color={ACTION_COLORS.call}
+      >
+        <ContactIcon />
+      </IconButton>
+
+      {open && (
+        <div className="absolute right-0 top-full z-30 mt-1 w-72 rounded-xl border border-neutral-200 bg-white p-3.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+            {t("carnet.contact.phoneLabel")}
+          </p>
+          {store.phone ? (
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="select-all text-sm text-neutral-800 dark:text-neutral-100">{store.phone}</span>
+              <a
+                href={telHref(store.phone)}
+                className="shrink-0 cursor-pointer rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+              >
+                {t("carnet.contact.call")}
+              </a>
+            </div>
+          ) : (
+            <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
+              {t("carnet.table.actionCallDisabled")}
+            </p>
+          )}
+
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+            {t("carnet.contact.emailLabel")}
+          </p>
+          {store.email ? (
+            <div className="flex items-center justify-between gap-2">
+              <span className="select-all truncate text-sm text-neutral-800 dark:text-neutral-100">
+                {store.email}
+              </span>
+              <div className="flex shrink-0 gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  className="cursor-pointer rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+                >
+                  {copied ? t("carnet.contact.copied") : t("carnet.contact.copy")}
+                </button>
+                <a
+                  href={`mailto:${store.email}`}
+                  className="cursor-pointer rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+                >
+                  {t("carnet.contact.openMail")}
+                </a>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">{t("carnet.contact.noEmail")}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SortIndicator({ active, direction }) {
   if (!active) return <span className="ml-0.5 inline-block w-2.5 text-neutral-300 dark:text-neutral-600">↕</span>;
   return (
@@ -624,6 +733,7 @@ export default function CarnetTableTab({
                         >
                           <PhoneIcon />
                         </IconButton>
+                        <ContactPopover store={store} />
                         <IconButton
                           href={buildPreferredDirectionsUrl(preferredGpsApp, store, routeOrigin)}
                           external

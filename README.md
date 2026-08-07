@@ -1182,10 +1182,10 @@ case à cocher est active ou non — le même principe pour les deux :
   La colonne "Dernier Contact" présente dans une itération précédente a
   été retirée à la demande du client.
 - **Actions rapides**, en boutons ronds colorés (📄 Note en cyan `#0284c7`,
-  📅 RDV en ambre `#d97706`, 📞 Appeler en vert `#16a34a`, 📍 GPS en violet
-  `#9333ea` — `ACTION_COLORS` dans `src/utils/palette.js`, le dossier
-  `📁` restant sans couleur assignée par la charte et gardant son style
-  neutre en contour) :
+  📅 RDV en ambre `#d97706`, 📞 Appeler et 👤 Contact en vert `#16a34a`,
+  📍 GPS en violet `#9333ea` — `ACTION_COLORS` dans `src/utils/palette.js`,
+  le dossier `📁` restant sans couleur assignée par la charte et gardant
+  son style neutre en contour) :
   - 📄 **Note** ouvre `CarnetVisitNoteModal.jsx`, une fenêtre modale pour
     consulter/ajouter les notes de visite datées de cet opticien (voir
     "Bloc-Notes" ci-dessous pour où vivait cette UI avant).
@@ -1194,6 +1194,14 @@ case à cocher est active ou non — le même principe pour les deux :
   - 📞 **Appeler** (lien `tel:`, désactivé si l'opticien n'a pas de numéro
     renseigné — les numéros de `stores.json` ne sont pas tous au même
     format, ils sont normalisés à la volée avant de construire le lien).
+  - 👤 **Contact** ouvre une popover (`ContactPopover` dans
+    `CarnetTableTab.jsx`) affichant le téléphone et l'e-mail **en clair**,
+    sélectionnables pour copier/lire à l'écran — le clic sur ce bouton ne
+    déclenche jamais d'appel ni d'e-mail automatiquement. Le numéro est
+    accompagné d'un bouton secondaire distinct **Appeler** (`tel:`) ;
+    l'e-mail d'un bouton **Copier** (`navigator.clipboard`, avec un retour
+    "Copié !" temporaire) et d'un bouton **Écrire** (`mailto:`). Se ferme
+    au clic en dehors, même mécanisme que le menu **Exporter**.
   - 📍 **GPS** ouvre directement un nouvel onglet vers l'application de
     navigation choisie dans Paramètres > Préférences (Waze / Google Maps /
     Apple Maps par défaut), avec comme point de départ la position GPS
