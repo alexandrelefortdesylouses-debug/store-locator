@@ -1,4 +1,5 @@
 import { geocodeAddress as geocodeQuery } from "./geocode";
+import { haversineDistanceKm } from "./geo";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 
@@ -116,4 +117,47 @@ export async function geocodeImportedStores(entries, { concurrency = 5, onProgre
 
   await Promise.all(Array.from({ length: Math.min(concurrency, entries.length) }, worker));
   return results;
+}
+
+// Below this distance, two geocoded points are treated as "the same
+// address" regardless of how the name was spelled — catches re-imports of
+// the same optician under a slightly different name (typo, "Optique" vs
+// "Opticien", trailing branch number…). 30m comfortably covers geocoding
+// jitter for the same building without flagging genuine next-door
+// neighbors.
+const DUPLICATE_DISTANCE_KM = 0.03;
+
+function findPotentialDuplicate(entry, existingStores) {
+  const entryName = normalize(entry.name);
+  const entryCity = normalize(entry.city || "");
+  for (const existing of existingStores) {
+    if (
+      typeof entry.lat === "number" &&
+      typeof entry.lng === "number" &&
+      typeof existing.lat === "number" &&
+      typeof existing.lng === "number" &&
+      haversineDistanceKm(entry.lat, entry.lng, existing.lat, existing.lng) < DUPLICATE_DISTANCE_KM
+    ) {
+      return existing;
+    }
+    if (entryName && normalize(existing.name) === entryName && normalize(existing.city || "") === entryCity) {
+      return existing;
+    }
+  }
+  return null;
+}
+
+// Flags each successfully-geocoded entry that appears to already exist in
+// the network (same coordinates within ~30m, or the same normalized
+// name+city) — imported anyway (an admin re-importing a file to update
+// phone/brands for an existing optician is a legitimate use case, not a
+// mistake), but surfaced clearly so the admin can review and remove a
+// genuine accidental duplicate from the imported-stores list afterward.
+export function flagDuplicates(entries, existingStores) {
+  return entries.map((entry) => {
+    const duplicate = findPotentialDuplicate(entry, existingStores);
+    return duplicate
+      ? { ...entry, duplicateOfId: duplicate.id, duplicateOfName: duplicate.name }
+      : entry;
+  });
 }

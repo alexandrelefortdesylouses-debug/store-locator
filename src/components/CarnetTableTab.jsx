@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard";
-import { STATUS_COLORS, PRIORITY_COLORS, ACTION_COLORS } from "../utils/palette";
+import { STATUS_COLORS, PRIORITY_COLORS, ACTION_COLORS, URGENCY_COLORS } from "../utils/palette";
+import { computeUrgency, URGENCY_LEVELS, URGENCY_RANK } from "../utils/urgency";
 import { FEATURED_BRANDS } from "../utils/brands";
 import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
 import { FOLDER_COLORS } from "../utils/folders";
@@ -248,6 +249,27 @@ function ContactPopover({ store }) {
   );
 }
 
+// Composite follow-up signal (see utils/urgency.js) — a computed badge,
+// never itself editable. "Aucune" (score 0, e.g. an active client visited
+// recently, or a store with no data at all) renders as a plain dash rather
+// than a colored pill, so the eye is drawn only to rows that actually need
+// attention.
+function UrgencyBadge({ level }) {
+  const { t } = useLanguage();
+  if (level === URGENCY_LEVELS.NONE) {
+    return <span className="text-xs text-neutral-300 dark:text-neutral-600">—</span>;
+  }
+  const emoji = level === URGENCY_LEVELS.HIGH ? "🔥" : level === URGENCY_LEVELS.MEDIUM ? "⏰" : "🕐";
+  return (
+    <span
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+      style={{ background: URGENCY_COLORS[level] }}
+    >
+      {emoji} {t(`carnet.urgency.${level}`)}
+    </span>
+  );
+}
+
 function SortIndicator({ active, direction }) {
   if (!active) return <span className="ml-0.5 inline-block w-2.5 text-neutral-300 dark:text-neutral-600">↕</span>;
   return (
@@ -372,6 +394,7 @@ export default function CarnetTableTab({
   onSetStatus,
   priorities,
   onSetPriority,
+  visitNotes = {},
   onOpenNote,
   onScheduleStore,
   preferredGpsApp = GPS_APPS.GOOGLE,
@@ -429,6 +452,19 @@ export default function CarnetTableTab({
     e.dataTransfer.effectAllowed = "copy";
   }
 
+  function lastVisitDate(storeId) {
+    const entries = visitNotes[storeId];
+    return entries && entries.length > 0 ? entries[0].date : null;
+  }
+
+  function storeUrgency(store) {
+    return computeUrgency({
+      status: statuses[store.id],
+      priority: priorities[store.id],
+      lastVisitDate: lastVisitDate(store.id),
+    });
+  }
+
   const rows = useMemo(() => {
     function sortValue(store, key) {
       switch (key) {
@@ -442,6 +478,16 @@ export default function CarnetTableTab({
           return STATUS_RANK[statuses[store.id]] ?? STATUS_ORDER.length;
         case "priority":
           return PRIORITY_RANK[priorities[store.id]] ?? PRIORITY_ORDER.length;
+        case "urgency": {
+          const entries = visitNotes[store.id];
+          return URGENCY_RANK[
+            computeUrgency({
+              status: statuses[store.id],
+              priority: priorities[store.id],
+              lastVisitDate: entries && entries.length > 0 ? entries[0].date : null,
+            })
+          ];
+        }
         default:
           return "";
       }
@@ -462,7 +508,7 @@ export default function CarnetTableTab({
       if (typeof va === "number" && typeof vb === "number") return (va - vb) * direction;
       return String(va).localeCompare(String(vb)) * direction;
     });
-  }, [stores, search, statusFilter, statuses, priorities, sort]);
+  }, [stores, search, statusFilter, statuses, priorities, sort, visitNotes]);
 
   const allVisibleSelected = rows.length > 0 && rows.every((s) => selectedIds.has(s.id));
 
@@ -602,6 +648,7 @@ export default function CarnetTableTab({
                 <th className="px-4 py-3">{t("carnet.table.colBrands")}</th>
                 <SortableTh columnKey="status">{t("carnet.table.colStatus")}</SortableTh>
                 <SortableTh columnKey="priority">{t("carnet.table.colPriority")}</SortableTh>
+                <SortableTh columnKey="urgency">{t("carnet.table.colUrgency")}</SortableTh>
                 <th className="px-4 py-3">{t("carnet.table.colActions")}</th>
               </tr>
             </thead>
@@ -720,6 +767,9 @@ export default function CarnetTableTab({
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <UrgencyBadge level={storeUrgency(store)} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">

@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import CarnetTableTab from "./CarnetTableTab";
 import CarnetFolderSidebar from "./CarnetFolderSidebar";
 import CarnetFolderNotes from "./CarnetFolderNotes";
 import CarnetAgendaTab from "./CarnetAgendaTab";
+import CarnetWeekTab from "./CarnetWeekTab";
 import CarnetNotesTab from "./CarnetNotesTab";
 import CarnetVisitNoteModal from "./CarnetVisitNoteModal";
 import CarnetPerformanceTab from "./CarnetPerformanceTab";
@@ -49,7 +50,7 @@ function slugify(text) {
     .replace(/^-+|-+$/g, "") || "dossier";
 }
 
-const TABS = ["table", "agenda", "notes", "performance"];
+const TABS = ["table", "agenda", "week", "notes", "performance"];
 
 function TableIcon() {
   return (
@@ -82,6 +83,16 @@ function NoteIcon() {
   );
 }
 
+function WeekIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path strokeLinecap="round" d="M3 9h18M8 3v3M16 3v3" />
+      <path strokeLinecap="round" d="M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2" />
+    </svg>
+  );
+}
+
 function ChartIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
@@ -103,7 +114,13 @@ function ReportIcon() {
   );
 }
 
-const TAB_ICONS = { table: TableIcon, agenda: CalendarIcon, notes: NoteIcon, performance: ChartIcon };
+const TAB_ICONS = {
+  table: TableIcon,
+  agenda: CalendarIcon,
+  week: WeekIcon,
+  notes: NoteIcon,
+  performance: ChartIcon,
+};
 
 export default function CarnetView({
   stores,
@@ -126,6 +143,8 @@ export default function CarnetView({
   onOpenStore,
   userLocation,
   preferredGpsApp,
+  pendingFolderId,
+  onConsumePendingFolder,
 }) {
   const { t, lang } = useLanguage();
   const [tab, setTab] = useState("table");
@@ -151,6 +170,19 @@ export default function CarnetView({
     setCarnetSearch("");
   }
 
+  // One-shot "jump to this folder" request from the global command palette
+  // (Cmd/Ctrl+K) — applied as soon as it arrives, then immediately cleared
+  // so re-opening the palette and picking the same folder again still
+  // triggers a fresh navigation (a value that never changes wouldn't
+  // re-fire this effect).
+  useEffect(() => {
+    if (!pendingFolderId) return;
+    handleSelectFolder(pendingFolderId);
+    setTab("table");
+    onConsumePendingFolder?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFolderId]);
+
   function handleOpenNote(storeId) {
     setNoteModalStoreId(storeId);
   }
@@ -164,6 +196,16 @@ export default function CarnetView({
 
   function handleScheduleStore(store) {
     onToggleRouteStop(store);
+    setTab("agenda");
+  }
+
+  // "Envoyer vers l'Agenda" from the Semaine tab: replaces whatever route
+  // is currently active with that day's planned stores (rather than
+  // merging), since sending a specific day is meant to set up exactly that
+  // day's tour, not pile onto leftovers from a previous one.
+  function handleSendDayToAgenda(dayStores) {
+    onClearRoute();
+    onAddRouteStops(dayStores);
     setTab("agenda");
   }
 
@@ -420,6 +462,7 @@ export default function CarnetView({
               onSetStatus={onSetStatus}
               priorities={priorities}
               onSetPriority={onSetPriority}
+              visitNotes={visitNotes}
               onOpenNote={handleOpenNote}
               onScheduleStore={handleScheduleStore}
               preferredGpsApp={preferredGpsApp}
@@ -449,6 +492,8 @@ export default function CarnetView({
               onOptimize={onOptimizeRoute}
             />
           )}
+
+          {tab === "week" && <CarnetWeekTab stores={stores} onSendToAgenda={handleSendDayToAgenda} />}
 
           {tab === "notes" && (
             <CarnetNotesTab

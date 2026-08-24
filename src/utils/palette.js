@@ -50,6 +50,16 @@ export const ACTION_COLORS = {
   gps: "#9333ea",
 };
 
+// Composite "urgence" tiers (see utils/urgency.js) — deliberately a
+// different hue family from STATUS_COLORS/PRIORITY_COLORS so this computed
+// signal never gets mistaken for a manually-set field sitting next to it in
+// the same row.
+export const URGENCY_COLORS = {
+  high: "#c0392b",
+  medium: "#c17d3f",
+  low: "#6b8f5c",
+};
+
 // A distinct, non-brand hue for the "zones blanches" prospecting overlay —
 // a muted teal, intentionally outside the gold/neutral/status families (and
 // away from purple/orange, per the dark-mode "no garish accents" guardrail)

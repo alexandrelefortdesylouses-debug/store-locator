@@ -10,11 +10,16 @@ import {
 } from "../services/authService";
 import { getOverrides, upsertStores, removeOverride } from "../services/storesService";
 import { parseSpreadsheetFile } from "../utils/fileParsing";
-import { detectImportColumns, parseImportRows, geocodeImportedStores } from "../utils/adminStoreImport";
+import {
+  detectImportColumns,
+  parseImportRows,
+  geocodeImportedStores,
+  flagDuplicates,
+} from "../utils/adminStoreImport";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function AdminPanel({ currentUser, onStoresUpdated, onClose }) {
+export default function AdminPanel({ currentUser, existingStores, onStoresUpdated, onClose }) {
   const { t } = useLanguage();
   const [whitelist, setWhitelist] = useState(() => getWhitelist());
   const [newEmail, setNewEmail] = useState("");
@@ -73,11 +78,16 @@ export default function AdminPanel({ currentUser, onStoresUpdated, onClose }) {
 
       const succeeded = geocoded.filter((s) => !s.geocodeFailed);
       const failed = geocoded.filter((s) => s.geocodeFailed);
+      // Flagged for display only, not filtered out or persisted — re-
+      // importing a file to refresh phone/brands for an optician already
+      // in the network is legitimate, so these are still added as-is, just
+      // surfaced here for the admin to review.
+      const duplicates = flagDuplicates(succeeded, existingStores || []).filter((s) => s.duplicateOfId);
 
       const updated = upsertStores(succeeded);
       setOverrides(updated);
       onStoresUpdated?.();
-      setImportSummary({ addedCount: succeeded.length, totalRows: dataRows.length, failed });
+      setImportSummary({ addedCount: succeeded.length, totalRows: dataRows.length, failed, duplicates });
     } catch {
       setImportSummary({ addedCount: 0, totalRows: 0, failed: [], error: true });
     } finally {
@@ -240,6 +250,23 @@ export default function AdminPanel({ currentUser, onStoresUpdated, onClose }) {
                           {importSummary.failed.map((s, i) => (
                             <li key={i} className="text-xs text-neutral-500 dark:text-neutral-400">
                               {s.name} — {s.city || s.address}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {importSummary.duplicates?.length > 0 && (
+                      <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2.5 dark:border-amber-800 dark:bg-amber-950">
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
+                          {t("admin.duplicatesTitle", { count: importSummary.duplicates.length })}
+                        </p>
+                        <p className="mb-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+                          {t("admin.duplicatesHint")}
+                        </p>
+                        <ul className="flex flex-col gap-1">
+                          {importSummary.duplicates.map((s, i) => (
+                            <li key={i} className="text-xs text-amber-800 dark:text-amber-300">
+                              {s.name} — {t("admin.duplicatesMatch", { name: s.duplicateOfName })}
                             </li>
                           ))}
                         </ul>

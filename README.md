@@ -275,6 +275,31 @@ droite) est désactivé (`attributionControl={false}` sur `MapContainer`,
   retirée pour éviter un filtre "mort" qui ne pourrait plus jamais retourner
   de résultat.
 
+## Palette de commande globale (⌘K)
+
+Un raccourci **Ctrl+K** (**⌘K** sur Mac) ouvre depuis n'importe quel écran de
+l'app une palette de recherche/navigation (`src/components/CommandPalette.jsx`),
+dans l'esprit des palettes de commande des éditeurs de code — également
+accessible via le bouton **Rechercher** de l'en-tête, avec le raccourci
+rappelé en infobulle sur grand écran :
+
+- Recherche simultanément dans les **opticiens** du portefeuille (nom/ville,
+  jusqu'à 6 résultats) et dans les **dossiers thématiques** de Mon Carnet
+  (jusqu'à 4 résultats, lus directement depuis `localStorage` à chaque
+  ouverture plutôt que via une prop — évite de faire remonter l'état des
+  dossiers, propre à `CarnetView.jsx`, jusqu'à `App.jsx`), plus une poignée
+  de **raccourcis de navigation** fixes vers les principaux modes/onglets de
+  l'app.
+- **Entièrement navigable au clavier** : `↑`/`↓` déplace la sélection,
+  `Entrée` valide, `Échap` ferme — la souris n'est jamais nécessaire.
+- Choisir un opticien ouvre directement sa fiche détaillée ; choisir un
+  dossier bascule sur Mon Carnet et sélectionne ce dossier dans la sidebar
+  via un mécanisme de "valeur en attente" à usage unique
+  (`pendingCarnetFolderId` dans `App.jsx`, consommé puis effacé par un
+  `useEffect` dans `CarnetView.jsx`) — un choix délibéré pour connecter la
+  palette globale à un état interne à Mon Carnet sans avoir à le remonter
+  entièrement dans `App.jsx`.
+
 ## Panneau de filtres en accordéon
 
 La sidebar a été restructurée en accordéon compact façon Nike
@@ -860,6 +885,17 @@ pour un rôle Commercial (`src/components/Header.jsx`,
     est ajouté à la liste. **Cette fusion reste elle aussi propre à
     l'appareil** — ce n'est pas une mise à jour de la base de données
     partagée.
+  - **Détection de doublons potentiels** (`flagDuplicates` dans
+    `src/utils/adminStoreImport.js`) : chaque ligne fraîchement géocodée est
+    comparée aux opticiens déjà présents, soit par proximité de coordonnées
+    (moins de 30 m — `haversineDistanceKm`), soit par nom + ville identiques
+    une fois normalisés (casse, accents, espaces). Les doublons potentiels
+    sont **listés dans le résumé d'import à titre d'avertissement**, jamais
+    filtrés ni bloqués automatiquement : ré-importer un fichier pour
+    rafraîchir un opticien déjà existant (nouveau téléphone, nouvelle
+    marque…) est un usage légitime, et cette information reste purement
+    indicative — elle n'est pas ajoutée aux champs enregistrés sur
+    l'opticien.
 - Un bandeau d'avertissement rappelant la nature locale de la simulation
   est affiché en permanence en haut du panneau.
 
@@ -1282,10 +1318,25 @@ case à cocher est active ou non — le même principe pour les deux :
   un menu déroulant ("saisie rapide") — pas besoin d'ouvrir la fiche
   détaillée de l'opticien.
 - **En-têtes de colonnes cliquables** (Nom, Ville, Code Postal, Statut,
-  Priorité) trient le tableau, croissant puis décroissant au clic suivant
-  sur la même colonne (un chevron indique la colonne et le sens actifs).
-  La colonne "Dernier Contact" présente dans une itération précédente a
-  été retirée à la demande du client.
+  Priorité, Urgence) trient le tableau, croissant puis décroissant au clic
+  suivant sur la même colonne (un chevron indique la colonne et le sens
+  actifs). La colonne "Dernier Contact" présente dans une itération
+  précédente a été retirée à la demande du client.
+- **Colonne Urgence** (`src/utils/urgency.js`, `computeUrgency`) : un badge
+  calculé à la volée — 🔥 **À relancer**, ⏰ **À suivre**, 🕐 **Faible**, ou
+  aucun badge — qui combine trois signaux déjà présents dans les autres
+  colonnes plutôt que d'en ajouter un quatrième à saisir manuellement : le
+  statut CRM, la priorité commerciale, et le nombre de jours depuis la
+  dernière note de visite datée. Un score simple (poids par statut +
+  poids par priorité + pénalité de fraîcheur au-delà de 14/30/60 jours
+  sans note) est réparti en trois paliers. Un opticien **Refusé** n'a
+  jamais de badge (rien à relancer), et un opticien totalement vierge
+  (aucun statut, aucune priorité, aucune note) n'en a pas non plus — la
+  pénalité d'ancienneté ne s'applique que s'il existe une date de visite
+  réelle à laquelle se comparer, pas par défaut à un opticien jamais
+  contacté. C'est une valeur **purement dérivée, jamais stockée** : elle
+  se recalcule à chaque rendu à partir des autres champs, et disparaît
+  donc automatiquement si le statut ou la priorité change.
 - **Actions rapides**, en boutons ronds colorés (📄 Note en cyan `#0284c7`,
   📅 RDV en ambre `#d97706`, 📞 Appeler et 👤 Contact en vert `#16a34a`,
   📍 GPS en violet `#9333ea` — `ACTION_COLORS` dans `src/utils/palette.js`,
@@ -1293,7 +1344,27 @@ case à cocher est active ou non — le même principe pour les deux :
   son style neutre en contour) :
   - 📄 **Note** ouvre `CarnetVisitNoteModal.jsx`, une fenêtre modale pour
     consulter/ajouter les notes de visite datées de cet opticien (voir
-    "Bloc-Notes" ci-dessous pour où vivait cette UI avant).
+    "Bloc-Notes" ci-dessous pour où vivait cette UI avant). Deux boutons
+    additionnels à côté du champ de saisie :
+    - 🎤 **Dictée vocale** (Web Speech API, `SpeechRecognition` /
+      `webkitSpeechRecognition`) transcrit la voix directement dans le
+      champ de note, en français. Le bouton **n'apparaît pas du tout**
+      (pas juste désactivé) sur les navigateurs qui ne l'implémentent pas
+      (Firefox, Safari) — détection de fonctionnalité au montage, aucun
+      message d'erreur affiché à la place.
+    - 📷 **Photo jointe** capture ou sélectionne une image (attribut
+      `capture="environment"` pour ouvrir l'appareil photo arrière en
+      priorité sur mobile), la redimensionne côté client avant
+      enregistrement (`src/utils/photoStore.js`, `resizeImageFile` — recadrage
+      via `<canvas>`, 1280px de côté max, JPEG qualité 0.75) puis la stocke
+      dans **IndexedDB** plutôt que dans `localStorage` : une pièce jointe
+      photo dépasserait vite le quota de quelques Mo partagé par tout le
+      reste de l'app (dossiers, statuts, notes...) si elle était encodée en
+      base64 dans `localStorage` — IndexedDB isole ce volume dans son propre
+      espace de stockage par appareil. Seul l'identifiant de la photo est
+      stocké dans la note elle-même (`src/utils/activity.js`) ; la miniature
+      dans l'historique des notes charge son blob depuis IndexedDB à
+      l'affichage.
   - 📅 **RDV** ajoute l'opticien au trajet en cours et bascule sur l'onglet
     Agenda.
   - 📞 **Appeler** (lien `tel:`, désactivé si l'opticien n'a pas de numéro
@@ -1326,6 +1397,37 @@ côtés. Cet onglet affiche la liste des étapes programmées, un bouton
 **Optimiser mon trajet** (même moteur que sur la carte, voir "Optimisation
 de trajet" plus haut) et un accès direct au réglage de l'export agenda
 (`.ics`, voir plus haut) — sans avoir besoin de rouvrir la carte.
+
+### 📅 Semaine
+
+`CarnetWeekTab.jsx` + `src/utils/weekPlan.js` répartissent tout le
+portefeuille sur les 7 prochains jours, un cran au-dessus de l'Agenda qui ne
+gère qu'une seule tournée à la fois :
+
+- Un **pool "à planifier"** liste tous les opticiens du portefeuille pas
+  encore affectés à un jour ; chacun peut être glissé-déposé (même mécanisme
+  natif `dataTransfer` que la sidebar de dossiers et le tableau) sur l'une
+  des 7 colonnes-jour, ou affecté via un menu déroulant "Assigner à…" — plus
+  rapide au doigt sur tablette qu'un drag-and-drop.
+- **Répartir automatiquement** distribue en un clic tous les opticiens non
+  planifiés sur les jours restants (`autoDistribute`) : un simple tri par
+  latitude puis découpage en tranches égales entre les jours — une
+  heuristique géographique volontairement naïve (pas un vrai algorithme de
+  clustering), dans le même esprit que le repli "plus proche voisin" déjà
+  utilisé par l'optimiseur de trajet sur les grandes tournées (voir
+  "Optimisation de trajet" plus haut).
+- Chaque colonne-jour affiche une estimation de distance (même moteur
+  d'optimisation que l'Agenda, appliqué en lecture seule à titre indicatif)
+  et un bouton **Envoyer vers l'Agenda** : il remplace le trajet en cours
+  par les opticiens de ce jour et bascule directement sur l'onglet Agenda —
+  toute la mécanique d'optimisation/export déjà construite pour l'Agenda
+  (GPS, `.ics`...) est réutilisée telle quelle, sans duplication.
+- **Réinitialiser la semaine** vide toutes les affectations (les opticiens
+  retournent dans le pool), sans toucher au portefeuille lui-même.
+- Le plan de semaine est un `localStorage` **indépendant** du trajet de
+  l'Agenda — les deux coexistent, "Envoyer vers l'Agenda" les connecte
+  ponctuellement dans un seul sens (semaine → agenda du jour), jamais
+  l'inverse.
 
 ### 📝 Bloc-Notes
 
@@ -1449,6 +1551,37 @@ c'est le rôle de l'onglet Agenda & RDV et de son export `.ics`) :
     téléchargement correspondant, pour ne pas alourdir le chargement
     initial de l'app (`docx` apparaît comme un chunk séparé dans le build,
     voir `npm run build`).
+
+## Mode hors-ligne / Application installable (PWA)
+
+L'app est une **Progressive Web App** installable, via `vite-plugin-pwa`
+(`vite.config.js`) — pensé pour un commercial en zone de faible couverture
+réseau (zone rurale, cave d'un magasin...) :
+
+- **Installable** sur mobile ("Ajouter à l'écran d'accueil") et desktop,
+  avec sa propre icône (`public/pwa-icon-192.png` / `pwa-icon-512.png`,
+  recadrées à partir du même visuel de marque déjà utilisé pour le favicon
+  — aucun nouvel asset graphique commandé) et son propre thème de barre de
+  statut.
+- **App shell précaché** : le HTML/JS/CSS du build est mis en cache au
+  premier chargement (Workbox, `registerType: 'autoUpdate'` — une nouvelle
+  version déployée est récupérée et activée automatiquement en arrière-plan,
+  sans notification bloquante à confirmer). Une fois installée, l'app
+  s'ouvre même sans réseau.
+- **`stores.json` en cache "stale-while-revalidate"** : la dernière version
+  connue s'affiche instantanément (y compris hors-ligne), pendant qu'une
+  version à jour est récupérée en arrière-plan dès que le réseau revient.
+- **Tuiles de carte (OpenStreetMap / CartoCDN) en cache "cache-first"**,
+  jusqu'à 400 tuiles par thème (clair/sombre) conservées 30 jours. C'est une
+  limite **honnête** à documenter clairement : seules les zones de carte
+  **déjà consultées en ligne** restent visibles hors-ligne — ce n'est pas
+  une couverture cartographique mondiale hors-ligne, ce qu'une PWA statique
+  ne peut pas fournir sans télécharger des Go de tuiles à l'avance.
+- Comme le reste de l'app, **aucune synchronisation cloud** : le mode
+  hors-ligne permet de continuer à consulter/modifier les données déjà
+  présentes sur l'appareil (elles restent en `localStorage`/IndexedDB comme
+  décrit dans les sections précédentes), pas de récupérer des données
+  saisies sur un autre appareil pendant une coupure réseau.
 
 ## Prochaine étape (non traitée dans cette itération)
 

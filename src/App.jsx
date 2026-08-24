@@ -17,6 +17,7 @@ import ChatWidget from "./components/ChatWidget";
 import CarnetView from "./components/CarnetView";
 import LoginScreen from "./components/LoginScreen";
 import AdminPanel from "./components/AdminPanel";
+import CommandPalette from "./components/CommandPalette";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
@@ -78,6 +79,8 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
   const [search, setSearch] = useState("");
@@ -115,6 +118,20 @@ function App() {
     fetch("/stores.json")
       .then((res) => res.json())
       .then((data) => setBaseStores(data));
+  }, []);
+
+  // Global "go to" shortcut for the Cmd+K search palette — Ctrl+K on
+  // Windows/Linux, Cmd+K on macOS. Toggling (rather than only opening)
+  // lets the same shortcut close it back if pressed again.
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Layers any admin-imported opticians (Administration panel) on top of
@@ -351,6 +368,30 @@ function App() {
     handleSelectStore(id);
   }
 
+  // The command palette's quick-navigation actions — a small, fixed set of
+  // destinations, so a plain switch is clearer than threading five more
+  // one-off setter props through.
+  function handleNavigateFromPalette(target) {
+    if (target === "settings") {
+      setShowSettings(true);
+      return;
+    }
+    if (target === "stats") {
+      setShowStats(true);
+      return;
+    }
+    setViewMode(target);
+  }
+
+  // Jumping to a folder from the command palette needs Mon Carnet's own
+  // selectedFolderId, which lives in CarnetView's local state — passed down
+  // as a one-shot "pending" value that CarnetView applies and then clears,
+  // rather than lifting the whole folder-selection state up to App.jsx.
+  function handleOpenFolderFromPalette(folderId) {
+    setViewMode("carnet");
+    setPendingCarnetFolderId(folderId);
+  }
+
   function toggleBrand(brand) {
     setSelectedBrands((prev) =>
       prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
@@ -462,8 +503,8 @@ function App() {
     setPrioritiesState(setPriority(storeId, priority));
   }
 
-  function handleAddVisitNote(storeId, text) {
-    setVisitNotesState(addVisitNote(storeId, text));
+  function handleAddVisitNote(storeId, text, photoId) {
+    setVisitNotesState(addVisitNote(storeId, text, photoId));
   }
 
   function handleRouteOptimized(result) {
@@ -543,6 +584,7 @@ function App() {
         onOpenSettings={() => setShowSettings(true)}
         onOpenStats={() => setShowStats(true)}
         onOpenAdmin={() => setShowAdmin(true)}
+        onOpenSearch={() => setCommandPaletteOpen(true)}
         onSignOut={handleSignOut}
       />
 
@@ -579,6 +621,8 @@ function App() {
             onOpenStore={handleOpenStoreFromCarnet}
             userLocation={routeOrigin}
             preferredGpsApp={preferredGpsApp}
+            pendingFolderId={pendingCarnetFolderId}
+            onConsumePendingFolder={() => setPendingCarnetFolderId(null)}
           />
         ) : (
           <>
@@ -761,6 +805,7 @@ function App() {
       {showAdmin && checkIsAdmin(currentUser) && (
         <AdminPanel
           currentUser={currentUser}
+          existingStores={stores}
           onStoresUpdated={handleStoresOverrideUpdated}
           onClose={() => setShowAdmin(false)}
         />
@@ -775,6 +820,15 @@ function App() {
       )}
 
       <ImportSummaryModal result={importResult} onClose={() => setImportResult(null)} />
+
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        stores={stores}
+        onOpenStore={handleOpenStoreFromCarnet}
+        onOpenFolder={handleOpenFolderFromPalette}
+        onNavigate={handleNavigateFromPalette}
+      />
 
       <ChatWidget stores={stores} />
     </div>

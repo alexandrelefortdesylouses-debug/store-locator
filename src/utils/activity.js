@@ -21,12 +21,16 @@ export function getAllVisitNotes() {
   return readObject(VISIT_NOTES_KEY);
 }
 
-export function addVisitNote(storeId, text) {
+// photoId is optional — when set, it references a blob saved separately in
+// IndexedDB (see utils/photoStore.js), not stored here; visit notes stay in
+// localStorage as plain, small JSON.
+export function addVisitNote(storeId, text, photoId = null) {
   const all = getAllVisitNotes();
   const entry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     date: new Date().toISOString(),
     text,
+    photoId,
   };
   const updated = { ...all, [storeId]: [entry, ...(all[storeId] || [])] };
   localStorage.setItem(VISIT_NOTES_KEY, JSON.stringify(updated));

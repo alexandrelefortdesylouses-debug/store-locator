@@ -1,5 +1,14 @@
 import { useLanguage } from "../i18n/LanguageContext";
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <circle cx="11" cy="11" r="7" />
+      <path strokeLinecap="round" d="M21 21l-4.3-4.3" />
+    </svg>
+  );
+}
+
 function StatsIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
@@ -45,6 +54,7 @@ export default function Header({
   onOpenSettings,
   onOpenStats,
   onOpenAdmin,
+  onOpenSearch,
   onSignOut,
 }) {
   const { t } = useLanguage();
@@ -68,6 +78,19 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            aria-label={t("header.search")}
+            title={t("header.searchHint")}
+            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
+          >
+            <SearchIcon />
+            <span className="hidden sm:inline">{t("header.search")}</span>
+            <kbd className="hidden rounded border border-neutral-700 px-1 text-[10px] normal-case text-neutral-500 lg:inline">
+              ⌘K
+            </kbd>
+          </button>
           <button
             type="button"
             onClick={onOpenStats}

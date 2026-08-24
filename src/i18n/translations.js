@@ -2,9 +2,20 @@ export const translations = {
   fr: {
     "header.settings": "Paramètres",
     "header.storeLocator": "Store Locator",
+    "header.search": "Rechercher",
+    "header.searchHint": "Recherche globale (⌘K)",
     "header.stats": "Statistiques",
     "header.admin": "Administration",
     "header.signOut": "Se déconnecter",
+
+    "commandPalette.placeholder": "Rechercher un opticien, un dossier…",
+    "commandPalette.noResults": "Aucun résultat.",
+    "commandPalette.folderSub": "Dossier — Mon Carnet",
+    "commandPalette.actionGlobal": "Aller à Carte Globale",
+    "commandPalette.actionMyCard": "Aller à Ma Carte",
+    "commandPalette.actionCarnet": "Aller à Mon Carnet",
+    "commandPalette.actionSettings": "Ouvrir Paramètres",
+    "commandPalette.actionStats": "Ouvrir Statistiques",
 
     "login.title": "Connexion",
     "login.description":
@@ -47,6 +58,11 @@ export const translations = {
     "admin.importSummary": "{added}/{total} opticiens importés et géocodés avec succès.",
     "admin.geocodeFailedTitle": "{count} ligne non géocodée",
     "admin.geocodeFailedTitle_plural": "{count} lignes non géocodées",
+    "admin.duplicatesTitle": "{count} doublon potentiel détecté",
+    "admin.duplicatesTitle_plural": "{count} doublons potentiels détectés",
+    "admin.duplicatesHint":
+      "Adresse très proche ou nom identique à un opticien déjà présent — importé quand même (utile pour mettre à jour une fiche existante), à vous de vérifier et de supprimer ci-dessous si c'est une erreur.",
+    "admin.duplicatesMatch": "proche de « {name} »",
     "admin.importedStoresTitle": "{count} opticien importé sur cet appareil",
     "admin.importedStoresTitle_plural": "{count} opticiens importés sur cet appareil",
 
@@ -183,6 +199,7 @@ export const translations = {
 
     "carnet.tab.table": "Tableau",
     "carnet.tab.agenda": "Agenda & RDV",
+    "carnet.tab.week": "Semaine",
     "carnet.tab.notes": "Bloc-Notes",
     "carnet.tab.performance": "Performance",
 
@@ -196,6 +213,7 @@ export const translations = {
     "carnet.table.colBrands": "Marques Thélios",
     "carnet.table.colStatus": "Statut",
     "carnet.table.colPriority": "Potentiel / Priorité",
+    "carnet.table.colUrgency": "Urgence",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Ouvrir la note",
     "carnet.table.actionScheduleRdv": "Programmer un RDV",
@@ -281,6 +299,9 @@ export const translations = {
     "carnet.export.toastRouteCreated_plural": "{count} opticiens ajoutés à l'itinéraire.",
 
     "carnet.priority.none": "Non renseignée",
+    "carnet.urgency.high": "À relancer",
+    "carnet.urgency.medium": "À suivre",
+    "carnet.urgency.low": "Ok",
     "carnet.priority.high": "Élevée",
     "carnet.priority.medium": "Moyenne",
     "carnet.priority.low": "Faible",
@@ -288,8 +309,25 @@ export const translations = {
     "carnet.agenda.empty":
       "Aucun rendez-vous programmé. Ajoutez des opticiens à votre tournée depuis le Tableau ou la Carte Globale.",
 
+    "carnet.week.intro":
+      "Répartissez vos opticiens du portefeuille sur les 7 prochains jours, puis envoyez chaque journée vers l'Agenda pour l'optimiser et l'exporter.",
+    "carnet.week.autoDistribute": "Répartir automatiquement",
+    "carnet.week.reset": "Réinitialiser la semaine",
+    "carnet.week.poolTitle": "{count} opticien à planifier",
+    "carnet.week.poolTitle_plural": "{count} opticiens à planifier",
+    "carnet.week.poolEmpty": "Tous les opticiens du portefeuille sont déjà planifiés.",
+    "carnet.week.assignTo": "Assigner à…",
+    "carnet.week.dropHint": "Glissez un opticien ici",
+    "carnet.week.distanceHint": "≈ {km} (sans point de départ)",
+    "carnet.week.sendToAgenda": "Envoyer vers l'Agenda",
+    "carnet.week.empty": "Aucun opticien dans votre portefeuille pour planifier une semaine.",
+
     "carnet.notes.addPlaceholder": "Ex. Visite du 12/10 : présentation de la collection Vuarnet, très intéressés…",
     "carnet.notes.addButton": "Ajouter la note de visite",
+    "carnet.notes.voiceHint": "Dicter la note (micro)",
+    "carnet.notes.listening": "🔴 Écoute en cours…",
+    "carnet.notes.photoHint": "Joindre une photo",
+    "carnet.notes.removePhoto": "Retirer la photo",
     "carnet.notes.historyTitle": "{count} note de visite",
     "carnet.notes.historyTitle_plural": "{count} notes de visite",
     "carnet.notes.noHistory": "Aucune note de visite pour cet opticien.",
@@ -536,9 +574,20 @@ export const translations = {
   en: {
     "header.settings": "Settings",
     "header.storeLocator": "Store Locator",
+    "header.search": "Search",
+    "header.searchHint": "Global search (⌘K)",
     "header.stats": "Statistics",
     "header.admin": "Administration",
     "header.signOut": "Sign out",
+
+    "commandPalette.placeholder": "Search an optician, a folder…",
+    "commandPalette.noResults": "No results.",
+    "commandPalette.folderSub": "Folder — Mon Carnet",
+    "commandPalette.actionGlobal": "Go to Carte Globale",
+    "commandPalette.actionMyCard": "Go to Ma Carte",
+    "commandPalette.actionCarnet": "Go to Mon Carnet",
+    "commandPalette.actionSettings": "Open Settings",
+    "commandPalette.actionStats": "Open Statistics",
 
     "login.title": "Sign in",
     "login.description": "Sign in with your Thélios email address to access the Store Locator.",
@@ -580,6 +629,11 @@ export const translations = {
     "admin.importSummary": "{added}/{total} opticians imported and geocoded successfully.",
     "admin.geocodeFailedTitle": "{count} row not geocoded",
     "admin.geocodeFailedTitle_plural": "{count} rows not geocoded",
+    "admin.duplicatesTitle": "{count} potential duplicate detected",
+    "admin.duplicatesTitle_plural": "{count} potential duplicates detected",
+    "admin.duplicatesHint":
+      "Very close address or identical name to an optician already on file — imported anyway (useful for updating an existing record), review and remove below if this was a mistake.",
+    "admin.duplicatesMatch": "close to “{name}”",
     "admin.importedStoresTitle": "{count} optician imported on this device",
     "admin.importedStoresTitle_plural": "{count} opticians imported on this device",
 
@@ -714,6 +768,7 @@ export const translations = {
 
     "carnet.tab.table": "Table",
     "carnet.tab.agenda": "Agenda & Appointments",
+    "carnet.tab.week": "Week",
     "carnet.tab.notes": "Notebook",
     "carnet.tab.performance": "Performance",
 
@@ -727,6 +782,7 @@ export const translations = {
     "carnet.table.colBrands": "Thélios Brands",
     "carnet.table.colStatus": "Status",
     "carnet.table.colPriority": "Potential / Priority",
+    "carnet.table.colUrgency": "Urgency",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Open note",
     "carnet.table.actionScheduleRdv": "Schedule appointment",
@@ -812,6 +868,9 @@ export const translations = {
     "carnet.export.toastRouteCreated_plural": "{count} opticians added to the route.",
 
     "carnet.priority.none": "Not set",
+    "carnet.urgency.high": "Follow up",
+    "carnet.urgency.medium": "Keep an eye",
+    "carnet.urgency.low": "Ok",
     "carnet.priority.high": "High",
     "carnet.priority.medium": "Medium",
     "carnet.priority.low": "Low",
@@ -819,8 +878,25 @@ export const translations = {
     "carnet.agenda.empty":
       "No appointments scheduled yet. Add opticians to your route from the Table or the Global Map.",
 
+    "carnet.week.intro":
+      "Spread your portfolio's opticians across the next 7 days, then send each day to the Agenda to optimize and export it.",
+    "carnet.week.autoDistribute": "Auto-distribute",
+    "carnet.week.reset": "Reset the week",
+    "carnet.week.poolTitle": "{count} optician to plan",
+    "carnet.week.poolTitle_plural": "{count} opticians to plan",
+    "carnet.week.poolEmpty": "Every optician in the portfolio is already planned.",
+    "carnet.week.assignTo": "Assign to…",
+    "carnet.week.dropHint": "Drop an optician here",
+    "carnet.week.distanceHint": "≈ {km} (no starting point)",
+    "carnet.week.sendToAgenda": "Send to Agenda",
+    "carnet.week.empty": "No opticians in your portfolio to plan a week.",
+
     "carnet.notes.addPlaceholder": "E.g. Visit on 10/12: presented the Vuarnet collection, very interested…",
     "carnet.notes.addButton": "Add visit note",
+    "carnet.notes.voiceHint": "Dictate the note (microphone)",
+    "carnet.notes.listening": "🔴 Listening…",
+    "carnet.notes.photoHint": "Attach a photo",
+    "carnet.notes.removePhoto": "Remove photo",
     "carnet.notes.historyTitle": "{count} visit note",
     "carnet.notes.historyTitle_plural": "{count} visit notes",
     "carnet.notes.noHistory": "No visit notes for this optician yet.",
