@@ -1030,24 +1030,33 @@ client mail (Gmail/Outlook) : un panneau de **dossiers thématiques** à
 gauche, le tableau des opticiens à droite, filtré dynamiquement selon le
 dossier sélectionné.
 
-#### Dossiers thématiques
+#### Dossiers thématiques et sous-dossiers
 
 `src/components/CarnetFolderSidebar.jsx` + `src/utils/folders.js` (même
 modèle per-device `localStorage` que le reste de "Mon Carnet") :
 
 - Deux entrées fixes toujours présentes : **Tous les opticiens** (le
   portefeuille complet) et **Favoris** (les opticiens marqués ♥, tous
-  modes confondus). Puis la liste des **dossiers personnalisés** créés par
-  le commercial (ex. "Tournée Mai", "Megeve 2027") pour grouper des
-  opticiens autour d'un objectif précis, au-delà du statut/de la priorité.
+  modes confondus). Puis une **arborescence de dossiers personnalisés**
+  créée par le commercial (ex. "Secteur Alpes" > "Stations de ski") pour
+  grouper des opticiens autour d'un objectif précis, au-delà du
+  statut/de la priorité — sans limite de profondeur côté données, même si
+  l'usage courant reste un seul niveau d'imbrication.
 - Chaque entrée affiche son nombre d'opticiens entre parenthèses,
   recalculé à la volée (`countsByFolder` dans `CarnetView.jsx`) et
   limité aux opticiens toujours présents dans le portefeuille — un id
   orphelin dans un dossier (opticien retiré des favoris entre-temps) ne
-  gonfle pas artificiellement le compteur.
-- **+ Nouveau dossier** : un simple champ nom, pas de description ni
-  d'icône à la création — la couleur se choisit après coup (voir
-  ci-dessous), volontairement pour garder la création à un seul champ.
+  gonfle pas artificiellement le compteur. Le compteur d'un dossier parent
+  ne cumule pas ceux de ses sous-dossiers (chaque dossier compte ses
+  propres membres directs, comme un libellé Gmail) : c'est délibéré, pour
+  qu'un même total ne soit jamais compté deux fois entre un dossier et
+  son sous-dossier.
+- **+ Nouveau dossier** (en bas de la liste, crée un dossier racine) et
+  **+ Sous-dossier** (dans le menu "..." de n'importe quel dossier, crée
+  un enfant sous celui-là) : un simple champ nom à chaque fois, pas de
+  description ni d'icône à la création — la couleur se choisit après
+  coup. Un dossier avec des enfants affiche un chevron ▸/▾ pour
+  déplier/replier sa branche (état local, pas persisté).
 - **Couleur du dossier** : une pastille ronde devant le nom, choisie parmi
   7 couleurs prédéfinies (bleu, vert, rouge, jaune, violet, orange, gris —
   `FOLDER_COLORS` dans `utils/folders.js`, une palette volontairement
@@ -1057,41 +1066,86 @@ modèle per-device `localStorage` que le reste de "Mon Carnet") :
   par défaut.
 - **Menu "..."** (visible au survol de chaque dossier personnalisé) :
   **Renommer** (le nom devient un champ éditable directement dans la
-  sidebar, validé par Entrée ou en cliquant ailleurs), **Changer la
-  couleur** (la même palette de 7 couleurs, dans le même menu) et
-  **Supprimer** (ne supprime aucun opticien, seulement le regroupement —
-  si le dossier supprimé était sélectionné, la vue retombe automatiquement
-  sur "Tous les opticiens").
+  sidebar), **Changer la couleur**, **+ Sous-dossier**, **Monter**/
+  **Descendre** (voir "Réordonnancement" ci-dessous) et **Supprimer** —
+  qui supprime aussi récursivement tous les sous-dossiers de ce dossier
+  (jamais les opticiens eux-mêmes, seulement le regroupement). Si le
+  dossier ou l'un de ses sous-dossiers supprimés était la vue active, elle
+  retombe automatiquement sur "Tous les opticiens".
 - Le nom du dossier porte l'attribut `title` (tooltip natif du
   navigateur) : un nom trop long pour tenir dans la largeur de la sidebar
   est tronqué visuellement mais reste lisible en entier au survol.
-- **Classer un opticien dans un dossier**, trois façons :
-  - Depuis la colonne Actions du tableau, l'icône dossier ouvre
-    `FolderAssignModal.jsx`, une liste à cocher de tous les dossiers
-    existants (un opticien peut appartenir à plusieurs à la fois) avec un
-    champ "créer et ajouter" en bas.
-  - **Glisser-déposer** : une ligne du tableau est déplaçable (attribut
-    HTML `draggable`) et peut être lâchée directement sur un dossier de la
-    sidebar (API HTML5 native `dataTransfer`, pas de librairie tierce) —
-    le dossier ciblé s'illumine pendant le survol pour confirmer la
-    destination. Fonctionne au clavier/souris sur desktop ; le drag HTML5
-    n'existe pas nativement sur tactile, donc les deux autres méthodes
-    restent le chemin principal sur mobile/tablette.
-  - **Sélection multiple** : une case à cocher par ligne (+ "tout
-    sélectionner" en en-tête) fait apparaître une barre d'action au-dessus
-    du tableau ("N opticiens sélectionnés" + bouton "Ajouter à un
-    dossier"), qui ouvre la même modale en mode groupé — cliquer un
-    dossier y ajoute tous les opticiens sélectionnés d'un coup (ajout pur,
-    jamais un retrait, une case à cocher partiellement cochée dans une
-    sélection multiple n'ayant pas de sens univoque).
-- **Badges de dossier dans le tableau** : chaque ligne affiche une petite
-  pastille par dossier auquel l'opticien appartient (même couleur que
-  dans la sidebar, `title` = nom du dossier), directement à côté de son
-  nom — un repère visuel rapide même en dehors de la vue filtrée par ce
-  dossier.
+
+##### Réordonnancement libre (rangement sur-mesure)
+
+Chaque dossier a un champ `order` mutable, distinct de sa date de création
+— c'est ce qui permet de le ranger où l'on veut sans perdre sa place au
+prochain classement alphabétique :
+
+- **Glisser-déposer** : une ligne de dossier est elle-même `draggable` et
+  peut être lâchée sur un dossier frère pour se réinsérer juste devant
+  lui (réordonnancement au sein du même niveau/parent uniquement — lâcher
+  un dossier sur un dossier d'un autre niveau ne fait rien, ce n'est pas
+  une façon de re-parenter). Distingué du glisser-déposer d'un opticien
+  sur un dossier (voir plus bas) via le type de données transporté
+  (`application/x-folder-id` contre `text/plain`), donc les deux
+  cohabitent sans ambiguïté sur la même cible.
+- **Menu "..." > Monter / Descendre** : échange la position avec le
+  dossier frère précédent/suivant — l'alternative sans glisser-déposer,
+  plus fiable sur tactile.
+- **Sélecteur de tri** (`select` en haut de la sidebar) : **Ordre
+  personnalisé** (celui que Monter/Descendre et le glisser-déposer
+  modifient), **Alphabétique**, **Nombre de clients** (décroissant) ou
+  **Date de création**. Choisir Monter/Descendre ou glisser un dossier
+  bascule automatiquement le sélecteur sur "Ordre personnalisé" — un
+  rangement manuel n'aurait sinon aucun effet visible si un autre mode de
+  tri était actif.
+- Le mode de tri et l'ordre personnalisé sont sauvegardés en
+  `localStorage` (`storeLocator_mycard_folder_sort`,
+  `order`/`createdAt` sur chaque dossier) : ils sont donc bien conservés
+  d'une session à l'autre sur cet appareil — ⚠️ toujours pas partagés
+  entre appareils, comme le reste de "Mon Carnet".
+
+##### Classer un opticien dans un dossier
+
+- Depuis la colonne Actions du tableau, l'icône dossier ouvre
+  `FolderAssignModal.jsx` : une liste à cocher de **toute l'arborescence**,
+  sous-dossiers indentés sous leur parent (un opticien peut appartenir à
+  plusieurs dossiers à la fois, y compris un dossier et son sous-dossier
+  simultanément), avec un champ "créer et ajouter" en bas pour un nouveau
+  dossier racine à la volée.
+- **Glisser-déposer** : une ligne du tableau est déplaçable (attribut
+  HTML `draggable`) et peut être lâchée directement sur n'importe quel
+  dossier ou sous-dossier de la sidebar (API HTML5 native `dataTransfer`,
+  pas de librairie tierce) — le dossier ciblé s'illumine pendant le
+  survol pour confirmer la destination. Fonctionne au clavier/souris sur
+  desktop ; le drag HTML5 n'existe pas nativement sur tactile, donc la
+  modale reste le chemin principal sur mobile/tablette.
+- **Sélection multiple** : une case à cocher par ligne (+ "tout
+  sélectionner" en en-tête) fait apparaître une barre d'action au-dessus
+  du tableau ("N opticiens sélectionnés" + bouton "Ajouter à un
+  dossier"), qui ouvre la même modale en mode groupé — cliquer un
+  dossier y ajoute tous les opticiens sélectionnés d'un coup (ajout pur,
+  jamais un retrait, une case à cocher partiellement cochée dans une
+  sélection multiple n'ayant pas de sens univoque).
+
+##### Filtrage et badges cliquables
+
+- Cliquer un dossier ou sous-dossier dans la sidebar filtre le tableau sur
+  ses membres directs (et efface la recherche texte en cours, pour éviter
+  qu'un opticien tout juste classé disparaisse de la vue si l'ancien texte
+  de recherche ne le matche pas).
+- **Badges de dossier dans le tableau** : chaque ligne affiche un badge
+  nommé et **cliquable** par dossier auquel l'opticien appartient (pastille
+  de couleur + nom du dossier, même couleur que dans la sidebar),
+  directement à côté de son nom — cliquer dessus navigue vers ce dossier
+  et filtre le tableau dessus, sans repasser par la sidebar.
 - Sur mobile, la colonne de dossiers devient une rangée de puces
   défilante horizontalement au-dessus du tableau plutôt qu'une colonne
-  fixe (pas de place pour une vraie sidebar sur un petit écran).
+  fixe (pas de place pour une vraie sidebar sur un petit écran) —
+  l'indentation des sous-dossiers y est moins lisible que dans la colonne
+  verticale, mais reste fonctionnellement identique (mêmes clics, même
+  glisser-déposer).
 
 #### Notes & Mémos du dossier
 

@@ -380,7 +380,8 @@ export default function CarnetTableTab({
   folderMembers,
   onToggleFolderMembership,
   onBulkAddToFolder,
-  onCreateFolder,
+  onCreateAndAssignFolder,
+  onSelectFolder,
   onExportFolder,
   onCreateRoute,
   search,
@@ -408,7 +409,7 @@ export default function CarnetTableTab({
   }
 
   function handleCreateAndAssign(name, storeIdOrIds) {
-    onCreateFolder(name, storeIdOrIds);
+    onCreateAndAssignFolder(name, storeIdOrIds);
     setAssigningStore(null);
     setBulkAssigning(false);
     if (Array.isArray(storeIdOrIds)) setSelectedIds(new Set());
@@ -628,18 +629,29 @@ export default function CarnetTableTab({
                       />
                     </td>
                     <td className="px-4 py-3 font-serif text-neutral-900 dark:text-neutral-100">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span>{store.name}</span>
                         {storeFolders.length > 0 && (
-                          <span className="flex shrink-0 items-center gap-0.5">
-                            {storeFolders.map((f) => (
-                              <span
-                                key={f.id}
-                                title={f.name}
-                                className="h-2 w-2 rounded-full"
-                                style={{ background: FOLDER_COLORS[f.color] || FOLDER_COLORS.gray }}
-                              />
-                            ))}
+                          <span className="flex shrink-0 flex-wrap items-center gap-1">
+                            {storeFolders.map((f) => {
+                              const color = FOLDER_COLORS[f.color] || FOLDER_COLORS.gray;
+                              return (
+                                <button
+                                  key={f.id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelectFolder(f.id);
+                                  }}
+                                  title={t("carnet.folders.badgeAria", { name: f.name })}
+                                  className="flex shrink-0 cursor-pointer items-center gap-1 rounded-full border px-1.5 py-0.5 font-sans text-[10px] font-medium transition hover:brightness-95"
+                                  style={{ borderColor: color, color }}
+                                >
+                                  <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: color }} />
+                                  <span className="max-w-[90px] truncate">{f.name}</span>
+                                </button>
+                              );
+                            })}
                           </span>
                         )}
                       </div>

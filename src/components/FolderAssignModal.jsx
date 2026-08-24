@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
+import { buildFolderTree, FOLDER_SORT_MODES } from "../utils/folders";
 
 // Opened from the Actions column of Mon Carnet's table (single-store mode:
 // `store`) or from the bulk toolbar above the table when rows are checked
@@ -23,6 +24,11 @@ export default function FolderAssignModal({
   const [newFolderName, setNewFolderName] = useState("");
   const [justAdded, setJustAdded] = useState(() => new Set());
   const isBulk = Array.isArray(storeIds);
+
+  // Flattened depth-first so subfolders render indented under their parent
+  // — same tree the sidebar shows, just without its expand/collapse and
+  // drag interactivity (a straight list is all a picker needs).
+  const flatFolders = useMemo(() => buildFolderTree(folders, FOLDER_SORT_MODES.CUSTOM), [folders]);
 
   function handleFolderClick(folder) {
     if (isBulk) {
@@ -73,7 +79,7 @@ export default function FolderAssignModal({
           </p>
         ) : (
           <div className="thin-scrollbar mb-3 flex max-h-52 flex-col gap-0.5 overflow-y-auto">
-            {folders.map((folder) => {
+            {flatFolders.map(({ folder, depth }) => {
               const active = isBulk
                 ? justAdded.has(folder.id)
                 : (folderMembers[folder.id] || []).includes(store.id);
@@ -83,7 +89,8 @@ export default function FolderAssignModal({
                   type="button"
                   onClick={() => handleFolderClick(folder)}
                   aria-pressed={active}
-                  className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                  style={{ paddingLeft: `${8 + depth * 16}px` }}
+                  className="flex w-full cursor-pointer items-center gap-2 rounded-lg py-2 pr-2 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 transition ${

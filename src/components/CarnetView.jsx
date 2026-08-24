@@ -21,6 +21,10 @@ import {
   addStoresToFolder,
   getFolderNotes,
   setFolderNote,
+  reorderFolderStep,
+  reorderFolderDrop,
+  getFolderSortMode,
+  setFolderSortMode,
 } from "../utils/folders";
 import { STORE_STATUSES } from "../utils/myCard";
 import { exportFolderToPdf } from "../utils/folderExportPdf";
@@ -135,6 +139,17 @@ export default function CarnetView({
   const [folderMembers, setFolderMembers] = useState(() => getFolderMembers());
   const [folderNotes, setFolderNotes] = useState(() => getFolderNotes());
   const [selectedFolderId, setSelectedFolderId] = useState("all");
+  const [folderSortMode, setFolderSortModeState] = useState(() => getFolderSortMode());
+
+  // Folder badges in the table (and the sidebar) both need to land on the
+  // same folder with a clean slate — clearing any leftover free-text
+  // search avoids the confusing "I clicked a folder and the row I clicked
+  // it from disappeared" case when the search text doesn't happen to match
+  // that folder's other members.
+  function handleSelectFolder(folderId) {
+    setSelectedFolderId(folderId);
+    setCarnetSearch("");
+  }
 
   function handleOpenNote(storeId) {
     setNoteModalStoreId(storeId);
@@ -166,17 +181,23 @@ export default function CarnetView({
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
 
-  // storeIdOrIds is only passed when a folder is created from the per-row
-  // or bulk "assign to folder" modal (create-and-add-in-one-step); the
-  // sidebar's own "+ Nouveau dossier" creates an empty folder.
-  function handleCreateFolder(name, storeIdOrIds) {
+  // Empty folder or subfolder creation from the sidebar's "+" controls —
+  // parentId is null for a top-level folder, or another folder's id to
+  // nest it as a subfolder.
+  function handleCreateFolder(name, parentId) {
+    setFolders(createFolder(name, parentId));
+  }
+
+  // Create-and-assign-in-one-step from the per-row or bulk "assign to
+  // folder" modal — always creates a top-level folder (the modal doesn't
+  // expose choosing a parent; the sidebar is the dedicated place for
+  // building out the tree itself).
+  function handleCreateAndAssignFolder(name, storeIdOrIds) {
     const updated = createFolder(name);
     setFolders(updated);
-    if (storeIdOrIds) {
-      const newFolder = updated[updated.length - 1];
-      const ids = Array.isArray(storeIdOrIds) ? storeIdOrIds : [storeIdOrIds];
-      setFolderMembers(addStoresToFolder(newFolder.id, ids));
-    }
+    const newFolder = updated[updated.length - 1];
+    const ids = Array.isArray(storeIdOrIds) ? storeIdOrIds : [storeIdOrIds];
+    setFolderMembers(addStoresToFolder(newFolder.id, ids));
   }
 
   function handleRenameFolder(folderId, name) {
@@ -188,10 +209,31 @@ export default function CarnetView({
   }
 
   function handleDeleteFolder(folderId) {
-    setFolders(deleteFolder(folderId));
+    const updated = deleteFolder(folderId);
+    setFolders(updated);
     setFolderMembers(getFolderMembers());
     setFolderNotes(getFolderNotes());
-    if (selectedFolderId === folderId) setSelectedFolderId("all");
+    // Deleting a folder cascades to its subfolders (see deleteFolder) — if
+    // the currently-selected view was one of those subfolders, it's gone
+    // too, so fall back to "all" rather than showing an empty dead end.
+    if (selectedFolderId !== "all" && selectedFolderId !== "favorites" && !updated.some((f) => f.id === selectedFolderId)) {
+      setSelectedFolderId("all");
+    }
+  }
+
+  function handleReorderFolderStep(folderId, direction) {
+    setFolders(reorderFolderStep(folderId, direction));
+    if (folderSortMode !== "custom") handleSetFolderSortMode("custom");
+  }
+
+  function handleReorderFolderDrop(draggedId, targetId) {
+    setFolders(reorderFolderDrop(draggedId, targetId));
+    if (folderSortMode !== "custom") handleSetFolderSortMode("custom");
+  }
+
+  function handleSetFolderSortMode(mode) {
+    setFolderSortMode(mode);
+    setFolderSortModeState(mode);
   }
 
   function handleToggleFolderMembership(folderId, storeId) {
@@ -352,13 +394,17 @@ export default function CarnetView({
           <CarnetFolderSidebar
             folders={folders}
             selectedFolderId={selectedFolderId}
-            onSelectFolder={setSelectedFolderId}
+            onSelectFolder={handleSelectFolder}
             onCreateFolder={handleCreateFolder}
             onRenameFolder={handleRenameFolder}
             onChangeFolderColor={handleChangeFolderColor}
             onDeleteFolder={handleDeleteFolder}
             onDropStoreOnFolder={handleDropStoreOnFolder}
+            onReorderFolderStep={handleReorderFolderStep}
+            onReorderFolderDrop={handleReorderFolderDrop}
             countsByFolder={countsByFolder}
+            sortMode={folderSortMode}
+            onSetSortMode={handleSetFolderSortMode}
           />
           <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
             {selectedFolder && (
@@ -382,7 +428,8 @@ export default function CarnetView({
               folderMembers={folderMembers}
               onToggleFolderMembership={handleToggleFolderMembership}
               onBulkAddToFolder={handleBulkAddToFolder}
-              onCreateFolder={handleCreateFolder}
+              onCreateAndAssignFolder={handleCreateAndAssignFolder}
+              onSelectFolder={handleSelectFolder}
               onExportFolder={handleExportFolder}
               onCreateRoute={handleCreateRoute}
               search={carnetSearch}
