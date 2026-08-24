@@ -299,6 +299,17 @@ rappelé en infobulle sur grand écran :
   `useEffect` dans `CarnetView.jsx`) — un choix délibéré pour connecter la
   palette globale à un état interne à Mon Carnet sans avoir à le remonter
   entièrement dans `App.jsx`.
+- **Récents** : tant qu'aucune recherche n'est tapée, la palette affiche
+  d'abord jusqu'à 5 opticiens/dossiers récemment ouverts **depuis la
+  palette elle-même** (section "Récents", au-dessus des raccourcis de
+  navigation habituels) — pratique pour revenir en un clic sur ce qu'on
+  vient de consulter, sans retaper la même recherche
+  (`src/utils/recentSearches.js`, `localStorage`). Seuls le type et l'id
+  sont mémorisés, jamais un nom figé : le libellé affiché est
+  toujours recalculé à partir des données actuelles, donc un dossier
+  renommé entre-temps s'affiche sous son nouveau nom, et un dossier
+  depuis supprimé disparaît simplement de la liste plutôt que de pointer
+  dans le vide.
 
 ## Panneau de filtres en accordéon
 

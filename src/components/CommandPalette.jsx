@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import { getFolders } from "../utils/folders";
+import { getRecentSearches, addRecentSearch } from "../utils/recentSearches";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 function normalize(text) {
@@ -57,9 +58,37 @@ export default function CommandPalette({ open, onClose, stores, onOpenStore, onO
     [t, onNavigate],
   );
 
+  // Only type+id are persisted (see recentSearches.js) — re-resolved here
+  // against the live stores/folders lists so a rename or a since-deleted
+  // folder is never shown stale, and simply drops out if it no longer
+  // exists.
+  const recentResults = useMemo(() => {
+    if (!open) return [];
+    return getRecentSearches()
+      .map((r) => {
+        if (r.type === "store") {
+          const store = stores.find((s) => s.id === r.id);
+          return store
+            ? { type: "store", id: store.id, label: store.name, sub: store.city, run: () => onOpenStore(store.id) }
+            : null;
+        }
+        const folder = folders.find((f) => f.id === r.id);
+        return folder
+          ? {
+              type: "folder",
+              id: folder.id,
+              label: folder.name,
+              sub: t("commandPalette.folderSub"),
+              run: () => onOpenFolder(folder.id),
+            }
+          : null;
+      })
+      .filter(Boolean);
+  }, [open, stores, folders, onOpenStore, onOpenFolder, t]);
+
   const results = useMemo(() => {
     const q = normalize(query.trim());
-    if (!q) return quickActions;
+    if (!q) return [...recentResults, ...quickActions];
 
     const storeResults = stores
       .filter((s) => normalize(`${s.name} ${s.city}`).includes(q))
@@ -80,13 +109,16 @@ export default function CommandPalette({ open, onClose, stores, onOpenStore, onO
     const actionResults = quickActions.filter((a) => normalize(a.label).includes(q));
 
     return [...storeResults, ...folderResults, ...actionResults];
-  }, [query, stores, folders, quickActions, onOpenStore, onOpenFolder, t]);
+  }, [query, stores, folders, quickActions, recentResults, onOpenStore, onOpenFolder, t]);
 
   useEffect(() => {
     setHighlightIndex(0);
   }, [query]);
 
   function handleSelect(item) {
+    if (item.type === "store" || item.type === "folder") {
+      addRecentSearch(item.type, item.id);
+    }
     item.run();
     onClose();
   }
@@ -112,6 +144,11 @@ export default function CommandPalette({ open, onClose, stores, onOpenStore, onO
       if (item) handleSelect(item);
     }
   }
+
+  // Section headers ("Récents" / "Navigation") only make sense for the
+  // empty-query view where recents and quick actions sit next to each
+  // other — once a query is typed, results is a normal ranked search list.
+  const showSectionHeaders = !query.trim() && recentResults.length > 0;
 
   if (!open) return null;
 
@@ -147,29 +184,40 @@ export default function CommandPalette({ open, onClose, stores, onOpenStore, onO
             </p>
           ) : (
             results.map((item, i) => (
-              <button
-                key={`${item.type}-${item.id}`}
-                type="button"
-                onClick={() => handleSelect(item)}
-                onMouseEnter={() => setHighlightIndex(i)}
-                className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition ${
-                  i === highlightIndex ? "bg-amber-50 dark:bg-neutral-800" : ""
-                }`}
-              >
-                <span className="shrink-0 text-base">
-                  {item.type === "store" ? "👓" : item.type === "folder" ? "📁" : "→"}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-neutral-800 dark:text-neutral-100">
-                    {item.label}
+              <div key={`${item.type}-${item.id}`}>
+                {showSectionHeaders && i === 0 && (
+                  <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+                    {t("commandPalette.recentLabel")}
+                  </p>
+                )}
+                {showSectionHeaders && i === recentResults.length && (
+                  <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+                    {t("commandPalette.navLabel")}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleSelect(item)}
+                  onMouseEnter={() => setHighlightIndex(i)}
+                  className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition ${
+                    i === highlightIndex ? "bg-amber-50 dark:bg-neutral-800" : ""
+                  }`}
+                >
+                  <span className="shrink-0 text-base">
+                    {item.type === "store" ? "👓" : item.type === "folder" ? "📁" : "→"}
                   </span>
-                  {item.sub && (
-                    <span className="block truncate text-xs text-neutral-400 dark:text-neutral-500">
-                      {item.sub}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-neutral-800 dark:text-neutral-100">
+                      {item.label}
                     </span>
-                  )}
-                </span>
-              </button>
+                    {item.sub && (
+                      <span className="block truncate text-xs text-neutral-400 dark:text-neutral-500">
+                        {item.sub}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              </div>
             ))
           )}
         </div>
