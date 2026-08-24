@@ -535,28 +535,38 @@ permet d'ajouter un opticien au trajet — **sans limite de nombre d'arrêts**.
 Le panneau flottant `src/components/RoutePlanner.jsx` (bas de la carte)
 permet ensuite de :
 
-0. **Choisir le point de départ**, via un sélecteur à deux options bien
-   visible en tête du panneau dès qu'il y a au moins 2 arrêts — **Ma
-   position actuelle (GPS)** ou **Adresse personnalisée (Domicile/Agence)**
-   (l'adresse par défaut enregistrée dans Paramètres > Préférences, voir
-   "Rubrique Paramètres" plus haut). C'est un choix **propre à ce trajet** :
-   il démarre pré-réglé sur le réglage GPS temps réel des Paramètres, mais
-   peut être basculé pour cette tournée précise sans toucher au réglage
-   global.
+0. **Choisir le point de départ**, via un menu déroulant à trois options
+   bien visible en tête du panneau dès qu'il y a au moins 2 arrêts —
+   **📍 Ma position actuelle (GPS)**, **🏠 Mon domicile** (l'adresse par
+   défaut enregistrée dans Paramètres > Préférences, voir "Rubrique
+   Paramètres" plus haut) ou **👓 Sélectionner un opticien spécifique**
+   (une recherche inline parmi les opticiens de "Mon Carnet" — nom et
+   ville — pour démarrer le trajet depuis n'importe lequel d'entre eux,
+   pas seulement les arrêts déjà sélectionnés). C'est un choix **propre à
+   ce trajet** : il démarre pré-réglé sur le réglage GPS temps réel des
+   Paramètres, mais peut être basculé pour cette tournée précise sans
+   toucher au réglage global.
    - Choisir (ou déjà avoir) "Ma position actuelle" déclenche
      automatiquement une localisation fraîche (`navigator.geolocation`,
      même mécanisme que le bouton "Me localiser" de la carte) dès qu'un
      trajet existe — pas besoin de penser à cliquer les deux boutons
      séparément.
-   - Tant que cette position n'est pas encore connue, **Optimiser mon
-     trajet** reste désactivé (libellé "Localisation en cours…") : ça
-     évite d'exporter silencieusement un lien sans point de départ pendant
-     que la géolocalisation est encore en cours.
+   - Si l'opticien choisi comme point de départ fait aussi partie des
+     arrêts du trajet, il est retiré des étapes à visiter (2 à N) pour
+     l'optimisation et les liens d'export — sinon le trajet renverrait le
+     rep à l'endroit même d'où il part.
+   - Tant que le point choisi n'est pas encore résolu (position GPS encore
+     en cours de récupération, domicile non enregistré, ou aucun opticien
+     encore sélectionné en mode recherche), **Optimiser mon trajet** reste
+     désactivé ("Point de départ requis") : ça évite d'exporter
+     silencieusement un lien sans point de départ.
    - Si la géolocalisation échoue (refusée par l'utilisateur, non
      supportée par le navigateur, timeout — "désactivée dans l'appareil"),
-     le panneau **bascule automatiquement sur l'adresse par défaut** si une
-     est enregistrée (avec une notification explicite), ou affiche un
-     message clair si aucune des deux origines n'est disponible.
+     le panneau **bascule automatiquement sur le domicile** si un est
+     enregistré (avec une notification explicite) ; sinon un message
+     invite à choisir le domicile (Paramètres) ou un opticien de départ
+     manuellement — impossible de deviner automatiquement *lequel*
+     opticien choisir à la place.
 1. **Optimiser mon trajet** (`optimizeRouteOrder` dans `src/utils/route.js`) :
    calcule l'ordre qui minimise la distance totale à vol d'oiseau, en
    partant de l'origine choisie ci-dessus. Pour rester rapide quel que soit

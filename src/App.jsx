@@ -714,6 +714,7 @@ function App() {
                   geoError={geoError}
                   gpsRealtimeEnabled={gpsRealtimeEnabled}
                   defaultAddress={defaultAddress}
+                  portfolioStores={myCardStores}
                   onOptimize={handleRouteOptimized}
                   notes={notes}
                 />

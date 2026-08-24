@@ -13,7 +13,24 @@ import Toast from "./Toast";
 
 const TOAST_DURATION_MS = 3500;
 const ORIGIN_GPS = "gps";
-const ORIGIN_CUSTOM = "custom";
+const ORIGIN_HOME = "home";
+const ORIGIN_STORE = "store";
+
+const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
+function normalize(text) {
+  return String(text ?? "")
+    .normalize("NFD")
+    .replace(DIACRITICS_REGEX, "")
+    .toLowerCase();
+}
+
+function optionRowClass(active) {
+  return `flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition ${
+    active
+      ? "bg-amber-50 font-medium text-amber-800 dark:bg-neutral-800 dark:text-amber-400"
+      : "text-neutral-700 hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800"
+  }`;
+}
 
 function DownloadIcon() {
   return (
@@ -23,50 +40,157 @@ function DownloadIcon() {
   );
 }
 
-// The two-option origin toggle asked for explicitly: "Ma position actuelle
-// (GPS)" vs "Adresse personnalisée" — a per-trip choice made right here in
-// the route panel, independent of (though seeded from) the app-wide
-// default in Paramètres > Préférences. Picking GPS actively requests a
-// fresh position via onLocateMe rather than waiting for the user to also
-// remember to hit the map's separate "Me localiser" button.
-function OriginToggle({ choice, onChoose, geoLoading, hasDefaultAddress, defaultAddressLabel }) {
+// The three-option starting-point dropdown asked for explicitly: live GPS,
+// the saved home/agency address, or a specific optician from the
+// portfolio (searched inline). A per-trip choice made right here in the
+// route panel, independent of (though seeded from) the app-wide default
+// in Paramètres > Préférences. Closes on an outside click, same pattern
+// as CarnetTableTab's ExportMenu.
+function OriginSelector({
+  choice,
+  onChooseGps,
+  onChooseHome,
+  onChooseStore,
+  geoLoading,
+  hasDefaultAddress,
+  originStore,
+  portfolioStores,
+}) {
   const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [searchMode, setSearchMode] = useState(false);
+  const [query, setQuery] = useState("");
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function handleClickOutside(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) {
+        setOpen(false);
+        setSearchMode(false);
+        setQuery("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  const currentLabel =
+    choice === ORIGIN_GPS
+      ? geoLoading
+        ? t("route.originGpsLocating")
+        : t("route.originGps")
+      : choice === ORIGIN_HOME
+        ? t("route.originHome")
+        : originStore
+          ? t("route.originStorePrefix", { name: originStore.name })
+          : t("route.originStore");
+
+  const q = normalize(query.trim());
+  const results = (
+    q
+      ? portfolioStores.filter((s) => normalize(s.name).includes(q) || normalize(s.city).includes(q))
+      : portfolioStores
+  ).slice(0, 8);
+
   return (
-    <div className="mb-3">
+    <div ref={rootRef} className="relative mb-3">
       <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
         {t("route.originLabel")}
       </p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => onChoose(ORIGIN_GPS)}
-          aria-pressed={choice === ORIGIN_GPS}
-          className={`flex-1 cursor-pointer rounded-full border px-3 py-2 text-xs font-medium transition ${
-            choice === ORIGIN_GPS
-              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
-              : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
-          }`}
-        >
-          {choice === ORIGIN_GPS && geoLoading ? t("route.originGpsLocating") : t("route.originGps")}
-        </button>
-        <button
-          type="button"
-          onClick={() => onChoose(ORIGIN_CUSTOM)}
-          aria-pressed={choice === ORIGIN_CUSTOM}
-          title={defaultAddressLabel || undefined}
-          className={`flex-1 cursor-pointer rounded-full border px-3 py-2 text-xs font-medium transition ${
-            choice === ORIGIN_CUSTOM
-              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
-              : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
-          }`}
-        >
-          {t("route.originCustom")}
-        </button>
-      </div>
-      {choice === ORIGIN_CUSTOM && !hasDefaultAddress && (
-        <p className="mt-1.5 text-[11px] text-amber-700 dark:text-amber-400">
-          {t("route.originCustomMissing")}
-        </p>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-full border border-neutral-300 bg-white px-3.5 py-2 text-left text-xs font-medium text-neutral-700 transition hover:border-amber-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:border-amber-500"
+      >
+        <span className="truncate">{currentLabel}</span>
+        <span className="shrink-0 text-neutral-400">▾</span>
+      </button>
+
+      {open && (
+        <div className="thin-scrollbar absolute z-20 mt-1 w-full rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+          {!searchMode ? (
+            <div className="flex flex-col">
+              <button
+                type="button"
+                onClick={() => {
+                  onChooseGps();
+                  setOpen(false);
+                }}
+                aria-pressed={choice === ORIGIN_GPS}
+                className={optionRowClass(choice === ORIGIN_GPS)}
+              >
+                {t("route.originGps")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onChooseHome();
+                  setOpen(false);
+                }}
+                aria-pressed={choice === ORIGIN_HOME}
+                className={optionRowClass(choice === ORIGIN_HOME)}
+              >
+                {t("route.originHome")}
+              </button>
+              {!hasDefaultAddress && (
+                <p className="px-2.5 pb-1.5 text-[11px] text-neutral-400 dark:text-neutral-500">
+                  {t("route.originHomeMissing")}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setSearchMode(true)}
+                aria-pressed={choice === ORIGIN_STORE}
+                className={optionRowClass(choice === ORIGIN_STORE)}
+              >
+                {t("route.originStore")}
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <input
+                autoFocus
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("route.originStoreSearchPlaceholder")}
+                className="mb-1 rounded-lg border border-neutral-300 bg-transparent px-2.5 py-1.5 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-neutral-600 dark:text-neutral-100"
+              />
+              <div className="thin-scrollbar max-h-48 overflow-y-auto">
+                {results.length === 0 ? (
+                  <p className="px-2.5 py-2 text-xs text-neutral-400 dark:text-neutral-500">
+                    {t("route.originStoreNoResults")}
+                  </p>
+                ) : (
+                  results.map((store) => (
+                    <button
+                      key={store.id}
+                      type="button"
+                      onClick={() => {
+                        onChooseStore(store.id);
+                        setOpen(false);
+                        setSearchMode(false);
+                        setQuery("");
+                      }}
+                      className="flex w-full cursor-pointer flex-col items-start rounded-lg px-2.5 py-1.5 text-left transition hover:bg-amber-50 dark:hover:bg-neutral-800"
+                    >
+                      <span className="text-sm text-neutral-800 dark:text-neutral-100">{store.name}</span>
+                      <span className="text-[11px] text-neutral-400 dark:text-neutral-500">{store.city}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchMode(false)}
+                className="mt-1 cursor-pointer rounded-lg px-2.5 py-1.5 text-left text-xs text-amber-700 transition hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-neutral-800"
+              >
+                {t("route.originStoreBack")}
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -82,11 +206,13 @@ export default function RoutePlanner({
   geoError,
   gpsRealtimeEnabled,
   defaultAddress,
+  portfolioStores = [],
   onOptimize,
   notes = {},
 }) {
   const { t, lang } = useLanguage();
-  const [originChoice, setOriginChoice] = useState(() => (gpsRealtimeEnabled ? ORIGIN_GPS : ORIGIN_CUSTOM));
+  const [originChoice, setOriginChoice] = useState(() => (gpsRealtimeEnabled ? ORIGIN_GPS : ORIGIN_HOME));
+  const [originStoreId, setOriginStoreId] = useState(null);
   const [optimized, setOptimized] = useState(null);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [icsModalOpen, setIcsModalOpen] = useState(false);
@@ -106,11 +232,26 @@ export default function RoutePlanner({
     showToast(t("ics.toastSuccess"));
   }
 
+  function handleChooseGps() {
+    setOriginChoice(ORIGIN_GPS);
+    setOriginStoreId(null);
+  }
+
+  function handleChooseHome() {
+    setOriginChoice(ORIGIN_HOME);
+    setOriginStoreId(null);
+  }
+
+  function handleChooseStore(storeId) {
+    setOriginChoice(ORIGIN_STORE);
+    setOriginStoreId(storeId);
+  }
+
   useEffect(() => {
     setOptimized(null);
     onOptimize?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stops, originChoice]);
+  }, [stops, originChoice, originStoreId]);
 
   // Choosing (or already being on) "Ma position actuelle" actively
   // requests a fresh position as soon as there's a route to plan, rather
@@ -124,14 +265,17 @@ export default function RoutePlanner({
   }, [originChoice, stops.length > 0]);
 
   // "Si la géolocalisation est désactivée ... bascule automatiquement sur
-  // l'Option B" — a fresh geolocation failure (permission denied, no
-  // browser support, timeout) while GPS is the selected origin falls back
-  // to the saved default address automatically, so the export links never
-  // silently end up with no origin at all.
+  // l'Option B ou C" — a fresh geolocation failure (permission denied, no
+  // browser support, timeout) while GPS is selected falls back to the
+  // saved home address automatically, so the export links never silently
+  // end up with no origin at all. Falling back to a *specific optician*
+  // (Option C) can't be automatic — there's no sensible default pick —
+  // so that path only gets an explanatory message pointing at the manual
+  // picker.
   useEffect(() => {
     if (geoError && geoError !== lastGeoErrorRef.current && originChoice === ORIGIN_GPS) {
       if (defaultAddress) {
-        setOriginChoice(ORIGIN_CUSTOM);
+        setOriginChoice(ORIGIN_HOME);
         showToast(t("route.originAutoFallback"));
       } else {
         showToast(t("route.originGpsUnavailable"));
@@ -141,22 +285,42 @@ export default function RoutePlanner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geoError]);
 
+  const originStore = originStoreId ? portfolioStores.find((s) => s.id === originStoreId) || null : null;
+
   const effectiveOrigin =
     originChoice === ORIGIN_GPS
       ? liveLocation
-      : defaultAddress
-        ? { lat: defaultAddress.lat, lng: defaultAddress.lng }
-        : null;
+      : originChoice === ORIGIN_HOME
+        ? defaultAddress
+          ? { lat: defaultAddress.lat, lng: defaultAddress.lng }
+          : null
+        : originStore
+          ? { lat: originStore.lat, lng: originStore.lng }
+          : null;
 
-  // True while GPS is the selected origin but no coordinates are in hand
-  // yet (still locating, or failed with no default address to fall back
-  // to) — optimizing or exporting now would silently drop the very
-  // origin the rep just asked for, so those actions stay blocked until
+  // True whenever the chosen origin isn't actually resolvable yet (GPS
+  // still locating or failed with no fallback, home chosen with no saved
+  // address, or a specific optician chosen but not yet picked) —
+  // optimizing or exporting now would silently drop the very origin the
+  // rep just asked for, so those actions stay blocked until
   // effectiveOrigin actually resolves.
-  const originPending = originChoice === ORIGIN_GPS && !liveLocation;
+  const originPending =
+    (originChoice === ORIGIN_GPS && !liveLocation) ||
+    (originChoice === ORIGIN_HOME && !defaultAddress) ||
+    (originChoice === ORIGIN_STORE && !originStore);
+
+  // If the optician picked as the starting point is also one of the
+  // route's own stops, treating it as both origin and destination would
+  // send the rep back to a place they're starting from — excluded from
+  // the points actually optimized/exported, same idea for both.
+  const planningStops =
+    originChoice === ORIGIN_STORE && originStoreId
+      ? stops.filter((s) => s.id !== originStoreId)
+      : stops;
+  const originIsOnlyStop = originChoice === ORIGIN_STORE && stops.length > 0 && planningStops.length === 0;
 
   function handleOptimize() {
-    const result = optimizeRouteOrder(stops, effectiveOrigin);
+    const result = optimizeRouteOrder(planningStops, effectiveOrigin);
     setOptimized(result);
     onOptimize?.(result);
   }
@@ -172,7 +336,7 @@ export default function RoutePlanner({
         day: "numeric",
       });
       await exportRoutePdf({
-        stops,
+        stops: planningStops,
         order: optimized?.order,
         userLocation: effectiveOrigin,
         notes,
@@ -238,18 +402,25 @@ export default function RoutePlanner({
       </ul>
 
       {stops.length >= 2 && (
-        <OriginToggle
+        <OriginSelector
           choice={originChoice}
-          onChoose={setOriginChoice}
+          onChooseGps={handleChooseGps}
+          onChooseHome={handleChooseHome}
+          onChooseStore={handleChooseStore}
           geoLoading={geoLoading}
           hasDefaultAddress={Boolean(defaultAddress)}
-          defaultAddressLabel={defaultAddress?.label}
+          originStore={originStore}
+          portfolioStores={portfolioStores}
         />
       )}
 
       {stops.length < 2 ? (
         <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
           {t("route.needTwo")}
+        </p>
+      ) : originIsOnlyStop ? (
+        <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
+          {t("route.originStoreIsOnlyStop")}
         </p>
       ) : !optimized ? (
         <div className="mb-3">
@@ -259,7 +430,11 @@ export default function RoutePlanner({
             disabled={originPending}
             className="w-full cursor-pointer rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 disabled:cursor-wait disabled:opacity-60 dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-neutral-950"
           >
-            {originPending ? t("route.originGpsLocating") : t("route.optimize")}
+            {originPending
+              ? originChoice === ORIGIN_GPS && geoLoading
+                ? t("route.originGpsLocating")
+                : t("route.originPendingButton")
+              : t("route.optimize")}
           </button>
           {originPending && (
             <p className="mt-1 text-[11px] text-neutral-400 dark:text-neutral-500">
