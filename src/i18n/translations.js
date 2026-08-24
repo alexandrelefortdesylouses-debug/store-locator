@@ -375,6 +375,17 @@ export const translations = {
     "route.addToRoute": "Ajouter au trajet",
     "route.removeFromRoute": "Retirer du trajet",
     "route.selectedCount": "{count} sélectionné(s)",
+    "route.originLabel": "Point de départ",
+    "route.originGps": "Ma position actuelle (GPS)",
+    "route.originGpsLocating": "Localisation en cours…",
+    "route.originCustom": "Adresse personnalisée (Domicile/Agence)",
+    "route.originCustomMissing":
+      "Aucune adresse par défaut enregistrée — définissez-en une dans Paramètres > Préférences.",
+    "route.originAutoFallback":
+      "Position GPS indisponible, basculé sur votre adresse de départ par défaut.",
+    "route.originGpsUnavailable":
+      "Position GPS indisponible et aucune adresse par défaut enregistrée.",
+    "route.originWaitingHint": "En attente de votre position GPS avant de calculer l'itinéraire…",
     "route.optimize": "Optimiser mon trajet",
     "route.clear": "Vider",
     "route.openGoogleMaps": "Ouvrir dans Google Maps",
@@ -887,6 +898,16 @@ export const translations = {
     "route.addToRoute": "Add to route",
     "route.removeFromRoute": "Remove from route",
     "route.selectedCount": "{count} selected",
+    "route.originLabel": "Starting point",
+    "route.originGps": "My current position (GPS)",
+    "route.originGpsLocating": "Locating…",
+    "route.originCustom": "Custom address (Home/Agency)",
+    "route.originCustomMissing":
+      "No default address on file — set one in Settings > Preferences.",
+    "route.originAutoFallback":
+      "GPS position unavailable, switched to your default starting address.",
+    "route.originGpsUnavailable": "GPS position unavailable and no default address on file.",
+    "route.originWaitingHint": "Waiting for your GPS position before computing the route…",
     "route.optimize": "Optimize my route",
     "route.clear": "Clear",
     "route.openGoogleMaps": "Open in Google Maps",

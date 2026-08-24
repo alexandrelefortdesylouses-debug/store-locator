@@ -12,6 +12,8 @@ import IcsExportModal from "./IcsExportModal";
 import Toast from "./Toast";
 
 const TOAST_DURATION_MS = 3500;
+const ORIGIN_GPS = "gps";
+const ORIGIN_CUSTOM = "custom";
 
 function DownloadIcon() {
   return (
@@ -21,37 +23,140 @@ function DownloadIcon() {
   );
 }
 
+// The two-option origin toggle asked for explicitly: "Ma position actuelle
+// (GPS)" vs "Adresse personnalisée" — a per-trip choice made right here in
+// the route panel, independent of (though seeded from) the app-wide
+// default in Paramètres > Préférences. Picking GPS actively requests a
+// fresh position via onLocateMe rather than waiting for the user to also
+// remember to hit the map's separate "Me localiser" button.
+function OriginToggle({ choice, onChoose, geoLoading, hasDefaultAddress, defaultAddressLabel }) {
+  const { t } = useLanguage();
+  return (
+    <div className="mb-3">
+      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+        {t("route.originLabel")}
+      </p>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onChoose(ORIGIN_GPS)}
+          aria-pressed={choice === ORIGIN_GPS}
+          className={`flex-1 cursor-pointer rounded-full border px-3 py-2 text-xs font-medium transition ${
+            choice === ORIGIN_GPS
+              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+              : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
+          }`}
+        >
+          {choice === ORIGIN_GPS && geoLoading ? t("route.originGpsLocating") : t("route.originGps")}
+        </button>
+        <button
+          type="button"
+          onClick={() => onChoose(ORIGIN_CUSTOM)}
+          aria-pressed={choice === ORIGIN_CUSTOM}
+          title={defaultAddressLabel || undefined}
+          className={`flex-1 cursor-pointer rounded-full border px-3 py-2 text-xs font-medium transition ${
+            choice === ORIGIN_CUSTOM
+              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+              : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
+          }`}
+        >
+          {t("route.originCustom")}
+        </button>
+      </div>
+      {choice === ORIGIN_CUSTOM && !hasDefaultAddress && (
+        <p className="mt-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+          {t("route.originCustomMissing")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function RoutePlanner({
   stops,
   onRemoveStop,
   onClear,
-  userLocation,
+  liveLocation,
+  onLocateMe,
+  geoLoading,
+  geoError,
+  gpsRealtimeEnabled,
+  defaultAddress,
   onOptimize,
   notes = {},
 }) {
   const { t, lang } = useLanguage();
+  const [originChoice, setOriginChoice] = useState(() => (gpsRealtimeEnabled ? ORIGIN_GPS : ORIGIN_CUSTOM));
   const [optimized, setOptimized] = useState(null);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [icsModalOpen, setIcsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimeoutRef = useRef(null);
+  const lastGeoErrorRef = useRef(null);
 
   useEffect(() => () => window.clearTimeout(toastTimeoutRef.current), []);
 
-  function handleIcsExported() {
+  function showToast(message) {
     window.clearTimeout(toastTimeoutRef.current);
-    setToastMessage(t("ics.toastSuccess"));
+    setToastMessage(message);
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }
+
+  function handleIcsExported() {
+    showToast(t("ics.toastSuccess"));
   }
 
   useEffect(() => {
     setOptimized(null);
     onOptimize?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stops]);
+  }, [stops, originChoice]);
+
+  // Choosing (or already being on) "Ma position actuelle" actively
+  // requests a fresh position as soon as there's a route to plan, rather
+  // than silently exporting with no origin if the rep never separately
+  // pressed the map's own "Me localiser" button.
+  useEffect(() => {
+    if (originChoice === ORIGIN_GPS && stops.length > 0 && !liveLocation && !geoLoading && !geoError) {
+      onLocateMe();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originChoice, stops.length > 0]);
+
+  // "Si la géolocalisation est désactivée ... bascule automatiquement sur
+  // l'Option B" — a fresh geolocation failure (permission denied, no
+  // browser support, timeout) while GPS is the selected origin falls back
+  // to the saved default address automatically, so the export links never
+  // silently end up with no origin at all.
+  useEffect(() => {
+    if (geoError && geoError !== lastGeoErrorRef.current && originChoice === ORIGIN_GPS) {
+      if (defaultAddress) {
+        setOriginChoice(ORIGIN_CUSTOM);
+        showToast(t("route.originAutoFallback"));
+      } else {
+        showToast(t("route.originGpsUnavailable"));
+      }
+    }
+    lastGeoErrorRef.current = geoError;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geoError]);
+
+  const effectiveOrigin =
+    originChoice === ORIGIN_GPS
+      ? liveLocation
+      : defaultAddress
+        ? { lat: defaultAddress.lat, lng: defaultAddress.lng }
+        : null;
+
+  // True while GPS is the selected origin but no coordinates are in hand
+  // yet (still locating, or failed with no default address to fall back
+  // to) — optimizing or exporting now would silently drop the very
+  // origin the rep just asked for, so those actions stay blocked until
+  // effectiveOrigin actually resolves.
+  const originPending = originChoice === ORIGIN_GPS && !liveLocation;
 
   function handleOptimize() {
-    const result = optimizeRouteOrder(stops, userLocation);
+    const result = optimizeRouteOrder(stops, effectiveOrigin);
     setOptimized(result);
     onOptimize?.(result);
   }
@@ -69,7 +174,7 @@ export default function RoutePlanner({
       await exportRoutePdf({
         stops,
         order: optimized?.order,
-        userLocation,
+        userLocation: effectiveOrigin,
         notes,
         labels: {
           title: t("route.pdfTitle"),
@@ -132,18 +237,36 @@ export default function RoutePlanner({
         ))}
       </ul>
 
+      {stops.length >= 2 && (
+        <OriginToggle
+          choice={originChoice}
+          onChoose={setOriginChoice}
+          geoLoading={geoLoading}
+          hasDefaultAddress={Boolean(defaultAddress)}
+          defaultAddressLabel={defaultAddress?.label}
+        />
+      )}
+
       {stops.length < 2 ? (
         <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
           {t("route.needTwo")}
         </p>
       ) : !optimized ? (
-        <button
-          type="button"
-          onClick={handleOptimize}
-          className="mb-3 w-full cursor-pointer rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-neutral-950"
-        >
-          {t("route.optimize")}
-        </button>
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={handleOptimize}
+            disabled={originPending}
+            className="w-full cursor-pointer rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-amber-700 disabled:cursor-wait disabled:opacity-60 dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-neutral-950"
+          >
+            {originPending ? t("route.originGpsLocating") : t("route.optimize")}
+          </button>
+          {originPending && (
+            <p className="mt-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+              {t("route.originWaitingHint")}
+            </p>
+          )}
+        </div>
       ) : (
         <div className="mb-3 flex flex-col gap-2">
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -152,9 +275,9 @@ export default function RoutePlanner({
             })}
           </p>
           {(() => {
-            const googleUrls = buildGoogleMapsUrls(optimized.order, userLocation);
+            const googleUrls = buildGoogleMapsUrls(optimized.order, effectiveOrigin);
             const wazeUrls = buildWazeUrls(optimized.order);
-            const appleUrl = buildAppleMapsUrl(optimized.order, userLocation);
+            const appleUrl = buildAppleMapsUrl(optimized.order, effectiveOrigin);
             return (
               <div className="flex flex-col gap-3">
                 <div>

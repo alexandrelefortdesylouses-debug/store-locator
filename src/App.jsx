@@ -708,7 +708,12 @@ function App() {
                   stops={routeStops}
                   onRemoveStop={removeRouteStop}
                   onClear={clearRoute}
-                  userLocation={routeOrigin}
+                  liveLocation={userLocation}
+                  onLocateMe={handleLocateMe}
+                  geoLoading={geoLoading}
+                  geoError={geoError}
+                  gpsRealtimeEnabled={gpsRealtimeEnabled}
+                  defaultAddress={defaultAddress}
                   onOptimize={handleRouteOptimized}
                   notes={notes}
                 />

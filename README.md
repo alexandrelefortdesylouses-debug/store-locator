@@ -535,11 +535,33 @@ permet d'ajouter un opticien au trajet — **sans limite de nombre d'arrêts**.
 Le panneau flottant `src/components/RoutePlanner.jsx` (bas de la carte)
 permet ensuite de :
 
+0. **Choisir le point de départ**, via un sélecteur à deux options bien
+   visible en tête du panneau dès qu'il y a au moins 2 arrêts — **Ma
+   position actuelle (GPS)** ou **Adresse personnalisée (Domicile/Agence)**
+   (l'adresse par défaut enregistrée dans Paramètres > Préférences, voir
+   "Rubrique Paramètres" plus haut). C'est un choix **propre à ce trajet** :
+   il démarre pré-réglé sur le réglage GPS temps réel des Paramètres, mais
+   peut être basculé pour cette tournée précise sans toucher au réglage
+   global.
+   - Choisir (ou déjà avoir) "Ma position actuelle" déclenche
+     automatiquement une localisation fraîche (`navigator.geolocation`,
+     même mécanisme que le bouton "Me localiser" de la carte) dès qu'un
+     trajet existe — pas besoin de penser à cliquer les deux boutons
+     séparément.
+   - Tant que cette position n'est pas encore connue, **Optimiser mon
+     trajet** reste désactivé (libellé "Localisation en cours…") : ça
+     évite d'exporter silencieusement un lien sans point de départ pendant
+     que la géolocalisation est encore en cours.
+   - Si la géolocalisation échoue (refusée par l'utilisateur, non
+     supportée par le navigateur, timeout — "désactivée dans l'appareil"),
+     le panneau **bascule automatiquement sur l'adresse par défaut** si une
+     est enregistrée (avec une notification explicite), ou affiche un
+     message clair si aucune des deux origines n'est disponible.
 1. **Optimiser mon trajet** (`optimizeRouteOrder` dans `src/utils/route.js`) :
    calcule l'ordre qui minimise la distance totale à vol d'oiseau, en
-   partant de l'origine résolue pour le trajet (voir ci-dessous). Pour
-   rester rapide quel que soit le nombre d'arrêts, deux stratégies sont
-   utilisées selon la taille du trajet :
+   partant de l'origine choisie ci-dessus. Pour rester rapide quel que soit
+   le nombre d'arrêts, deux stratégies sont utilisées selon la taille du
+   trajet :
    - **≤ 7 arrêts** : recherche exhaustive par force brute (jusqu'à 5 040
      permutations), qui garantit l'ordre optimal.
    - **> 7 arrêts** : construction par plus proche voisin, puis
@@ -547,13 +569,10 @@ permet ensuite de :
      pas garanti optimal, mais c'est une heuristique standard pour ce type
      de problème (voyageur de commerce) qui reste rapide même pour des
      tournées de plusieurs dizaines d'arrêts.
-
-   L'**origine du trajet** utilisée à la fois pour l'optimisation et pour
-   les trois liens d'export ci-dessous suit exactement le réglage GPS &
-   Géolocalisation des Paramètres (voir "Rubrique Paramètres" plus haut) :
-   la position GPS réelle du visiteur si l'accès temps réel est autorisé,
-   sinon l'adresse de départ par défaut enregistrée (Domicile/Agence) —
-   jamais un simple "sans origine" tant que l'une des deux est disponible.
+   Changer le point de départ après un premier calcul relance
+   automatiquement l'optimisation au prochain clic (le résultat affiché est
+   invalidé pour éviter d'exporter un ordre calculé depuis une autre
+   origine que celle affichée).
 2. **Ouvrir dans Google Maps** : lien(s) d'itinéraire multi-étapes
    (`origin`/`waypoints`/`destination`), l'origine étant systématiquement
    incluse en premier point. Google Maps limite chaque lien à 25 points
