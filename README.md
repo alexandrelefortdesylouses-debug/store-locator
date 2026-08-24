@@ -537,8 +537,8 @@ permet ensuite de :
 
 1. **Optimiser mon trajet** (`optimizeRouteOrder` dans `src/utils/route.js`) :
    calcule l'ordre qui minimise la distance totale à vol d'oiseau, en
-   partant de la position géolocalisée du visiteur si elle est disponible.
-   Pour rester rapide quel que soit le nombre d'arrêts, deux stratégies sont
+   partant de l'origine résolue pour le trajet (voir ci-dessous). Pour
+   rester rapide quel que soit le nombre d'arrêts, deux stratégies sont
    utilisées selon la taille du trajet :
    - **≤ 7 arrêts** : recherche exhaustive par force brute (jusqu'à 5 040
      permutations), qui garantit l'ordre optimal.
@@ -547,16 +547,38 @@ permet ensuite de :
      pas garanti optimal, mais c'est une heuristique standard pour ce type
      de problème (voyageur de commerce) qui reste rapide même pour des
      tournées de plusieurs dizaines d'arrêts.
+
+   L'**origine du trajet** utilisée à la fois pour l'optimisation et pour
+   les trois liens d'export ci-dessous suit exactement le réglage GPS &
+   Géolocalisation des Paramètres (voir "Rubrique Paramètres" plus haut) :
+   la position GPS réelle du visiteur si l'accès temps réel est autorisé,
+   sinon l'adresse de départ par défaut enregistrée (Domicile/Agence) —
+   jamais un simple "sans origine" tant que l'une des deux est disponible.
 2. **Ouvrir dans Google Maps** : lien(s) d'itinéraire multi-étapes
-   (`origin`/`waypoints`/`destination`). Google Maps limite chaque lien à 25
-   points (origine + jusqu'à 23 étapes + destination) : au-delà,
+   (`origin`/`waypoints`/`destination`), l'origine étant systématiquement
+   incluse en premier point. Google Maps limite chaque lien à 25 points
+   (origine + jusqu'à 23 étapes + destination) : au-delà,
    `buildGoogleMapsUrls` découpe automatiquement le trajet en plusieurs
    tronçons consécutifs (chaque tronçon repart du dernier point du
    précédent), à ouvrir les uns après les autres — le nombre d'opticiens
    dans la tournée reste donc illimité.
-3. **Ouvrir dans Waze** : Waze ne supportant pas les itinéraires
-   multi-étapes via lien, ce bouton pointe uniquement vers le premier arrêt
-   de l'itinéraire optimisé.
+3. **Ouvrir dans Apple Maps** : lien unique couvrant **tous les arrêts**
+   dans l'ordre optimisé, en chaînant les destinations avec le séparateur
+   `+to:` du schéma d'URL Apple Maps (`daddr=A+to:B+to:C…`), et l'origine
+   résolue passée en `saddr`. Construit à la main plutôt qu'avec
+   `URLSearchParams` (`buildAppleMapsUrl` dans `utils/route.js`) : ce
+   dernier ré-encoderait le `+` littéral du séparateur en `%2B`, qu'Apple
+   Maps n'interprète pas de la même façon.
+4. **Ouvrir dans Waze** : Waze n'a — contrairement à Google Maps et Apple
+   Maps — ni paramètre d'origine, ni itinéraire multi-étapes dans son
+   schéma d'URL public ; la navigation part toujours de la position
+   actuelle du téléphone, quel que soit le réglage GPS de l'app. Pour
+   couvrir malgré tout tous les arrêts, `buildWazeUrls` génère **un lien
+   par arrêt** (même principe que le découpage en tronçons de Google Maps
+   ci-dessus, appliqué ici parce que la limite de Waze est de 1 point par
+   lien plutôt que 25) : le rep ouvre chaque lien à son tour, dans l'ordre
+   optimisé. Cette limite technique de Waze est rappelée explicitement
+   dans l'interface, au-dessus des boutons.
 
 Les arrêts sélectionnés s'affichent sur la carte avec des marqueurs numérotés
 et un tracé en pointillés (numérotés par ordre de sélection avant

@@ -3,7 +3,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import {
   optimizeRouteOrder,
   buildGoogleMapsUrls,
-  buildWazeUrl,
+  buildWazeUrls,
   buildAppleMapsUrl,
 } from "../utils/route";
 import { exportRoutePdf } from "../utils/pdfExport";
@@ -152,48 +152,67 @@ export default function RoutePlanner({
             })}
           </p>
           {(() => {
-            const mapsUrls = buildGoogleMapsUrls(optimized.order, userLocation);
+            const googleUrls = buildGoogleMapsUrls(optimized.order, userLocation);
+            const wazeUrls = buildWazeUrls(optimized.order);
+            const appleUrl = buildAppleMapsUrl(optimized.order, userLocation);
             return (
-              <>
-                {mapsUrls.length > 1 && (
-                  <p className="text-[11px] italic text-neutral-400 dark:text-neutral-500">
-                    {t("route.splitHint", { count: mapsUrls.length })}
+              <div className="flex flex-col gap-3">
+                <div>
+                  {googleUrls.length > 1 && (
+                    <p className="mb-1 text-[11px] italic text-neutral-400 dark:text-neutral-500">
+                      {t("route.splitHint", { count: googleUrls.length })}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {googleUrls.map((url, i) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 rounded-full bg-neutral-900 px-3 py-2.5 text-center text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+                      >
+                        {googleUrls.length > 1
+                          ? t("route.openGoogleMapsLeg", { n: i + 1, total: googleUrls.length })
+                          : t("route.openGoogleMaps")}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-1 text-[11px] italic text-neutral-400 dark:text-neutral-500" title={t("route.wazeHint")}>
+                    {t("route.wazeHint")}
                   </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {mapsUrls.map((url, i) => (
-                    <a
-                      key={url}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 rounded-full bg-neutral-900 px-3 py-2.5 text-center text-xs font-medium text-white transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
-                    >
-                      {mapsUrls.length > 1
-                        ? t("route.openGoogleMapsLeg", { n: i + 1, total: mapsUrls.length })
-                        : t("route.openGoogleMaps")}
-                    </a>
-                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {wazeUrls.map((url, i) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
+                      >
+                        {wazeUrls.length > 1
+                          ? t("route.openWazeLeg", { n: i + 1, total: wazeUrls.length })
+                          : t("route.openWaze")}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
                   <a
-                    href={buildWazeUrl(optimized.order)}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={t("route.wazeHint")}
-                    className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
-                  >
-                    {t("route.openWaze")}
-                  </a>
-                  <a
-                    href={buildAppleMapsUrl(optimized.order, userLocation)}
+                    href={appleUrl}
                     target="_blank"
                     rel="noreferrer"
                     title={t("route.appleMapsHint")}
-                    className="flex-1 rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
+                    className="block w-full rounded-full border border-neutral-300 px-3 py-2.5 text-center text-xs font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
                   >
                     {t("route.openAppleMaps")}
                   </a>
                 </div>
-              </>
+              </div>
             );
           })()}
         </div>

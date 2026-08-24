@@ -180,8 +180,13 @@ export function buildGoogleMapsUrls(order, origin) {
   return urls;
 }
 
-// Waze's URL scheme only supports a single destination, so this links to the
-// first stop of the optimized route.
+// Waze's public URL scheme (https://waze.com/ul) only ever resolves a
+// single destination, and always navigates from wherever the device
+// actually is right now — there is no supported way to pass an origin
+// (real or the saved default address), unlike Google Maps/Apple Maps
+// below. Used as-is for single-store links (one destination is exactly
+// what those need); buildWazeUrls below works around the limitation for
+// multi-stop tours.
 export function buildWazeUrl(order) {
   const firstStop = order[0];
   if (!firstStop) return "";
@@ -192,17 +197,30 @@ export function buildWazeUrl(order) {
   return `https://waze.com/ul?${params.toString()}`;
 }
 
-// Apple Maps' web scheme also only resolves a single destination per link
-// (like buildWazeUrl above), so this links to the first stop of the route.
-// `saddr` is omitted when there's no known origin, letting Apple Maps fall
-// back to the device's current location.
+// Waze has no multi-stop URL parameter to fall back on, so a full tour is
+// covered by opening one single-destination Waze link per stop in order
+// instead — the same "chain of legs" idea buildGoogleMapsUrls uses once a
+// tour is too long for one Google Maps link, just applied to every stop
+// here since Waze's per-link limit is 1 rather than 25. Each leg still
+// starts from the device's live location (see buildWazeUrl above), not
+// the previous stop or any saved origin.
+export function buildWazeUrls(order) {
+  return order.map((store) => buildWazeUrl([store])).filter(Boolean);
+}
+
+// Apple Maps' URL scheme supports a full multi-stop tour by chaining
+// destinations in `daddr` with literal `+to:` separators (documented in
+// Apple's "Maps Links" reference, e.g. `daddr=A+to:B+to:C`) — unlike
+// Waze, so the whole optimized order is encoded in one link, with `saddr`
+// carrying the real origin (device GPS or the saved default address).
+// Built by hand rather than via URLSearchParams: coordinates need no
+// percent-encoding, and URLSearchParams would escape the separators'
+// literal "+" to "%2B", which Apple's parser doesn't treat the same way.
+// `saddr` is omitted when there's no known origin, letting Apple Maps
+// fall back to the device's current location.
 export function buildAppleMapsUrl(order, origin) {
-  const firstStop = order[0];
-  if (!firstStop) return "";
-  const params = new URLSearchParams({
-    daddr: `${firstStop.lat},${firstStop.lng}`,
-    dirflg: "d",
-  });
-  if (origin) params.set("saddr", `${origin.lat},${origin.lng}`);
-  return `https://maps.apple.com/?${params.toString()}`;
+  if (order.length === 0) return "";
+  const daddr = order.map((store) => `${store.lat},${store.lng}`).join("+to:");
+  const saddr = origin ? `&saddr=${origin.lat},${origin.lng}` : "";
+  return `https://maps.apple.com/?daddr=${daddr}${saddr}&dirflg=d`;
 }

@@ -382,9 +382,11 @@ export const translations = {
     "route.splitHint":
       "Trajet découpé en {count} tronçons (limite Google Maps par requête).",
     "route.openWaze": "Ouvrir dans Waze",
-    "route.wazeHint": "Waze : 1er arrêt uniquement",
+    "route.openWazeLeg": "Waze — étape {n}/{total}",
+    "route.wazeHint":
+      "Waze : un lien par étape, toujours depuis votre position actuelle — Waze ne permet pas de définir un autre point de départ.",
     "route.openAppleMaps": "Ouvrir dans Apple Maps",
-    "route.appleMapsHint": "Apple Maps : 1er arrêt uniquement",
+    "route.appleMapsHint": "Apple Maps : itinéraire complet, avec toutes les étapes dans l'ordre.",
     "route.totalDistance": "≈ {km} au total (à vol d'oiseau)",
     "route.needTwo": "Sélectionnez au moins 2 opticiens pour optimiser",
     "route.close": "Fermer le planificateur de trajet",
@@ -891,9 +893,11 @@ export const translations = {
     "route.openGoogleMapsLeg": "Google Maps — leg {n}/{total}",
     "route.splitHint": "Route split into {count} legs (Google Maps per-request limit).",
     "route.openWaze": "Open in Waze",
-    "route.wazeHint": "Waze: 1st stop only",
+    "route.openWazeLeg": "Waze — stop {n}/{total}",
+    "route.wazeHint":
+      "Waze: one link per stop, always from your current position — Waze doesn't support setting a different starting point.",
     "route.openAppleMaps": "Open in Apple Maps",
-    "route.appleMapsHint": "Apple Maps: 1st stop only",
+    "route.appleMapsHint": "Apple Maps: full route, with every stop in order.",
     "route.totalDistance": "≈ {km} total (as the crow flies)",
     "route.needTwo": "Select at least 2 opticians to optimize",
     "route.close": "Close route planner",
