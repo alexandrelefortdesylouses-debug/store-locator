@@ -16,6 +16,8 @@ import {
   renameFolder,
   setFolderColor,
   deleteFolder,
+  snapshotFolderState,
+  restoreFolderSnapshot,
   getFolderMembers,
   addStoreToFolder,
   removeStoreFromFolder,
@@ -32,6 +34,10 @@ import { exportFolderToPdf } from "../utils/folderExportPdf";
 import { exportFolderToXlsx } from "../utils/folderExportXlsx";
 
 const TOAST_DURATION_MS = 3500;
+// Undo toasts stay up longer than a plain confirmation toast — the rep
+// needs a beat to notice the destructive action, read the message, and
+// decide to click "Annuler" before it's gone for good.
+const UNDO_TOAST_DURATION_MS = 7000;
 
 const EXPORT_STATUS_ORDER = [
   STORE_STATUSES.ACTIVE_CLIENT,
@@ -219,7 +225,7 @@ export default function CarnetView({
 
   function handleReportExported(format) {
     window.clearTimeout(toastTimeoutRef.current);
-    setToastMessage(format === "pdf" ? t("eodReport.toastSuccessPdf") : t("eodReport.toastSuccessDocx"));
+    setToastMessage({ text: format === "pdf" ? t("eodReport.toastSuccessPdf") : t("eodReport.toastSuccessDocx") });
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
 
@@ -251,6 +257,10 @@ export default function CarnetView({
   }
 
   function handleDeleteFolder(folderId) {
+    const deletedFolder = folders.find((f) => f.id === folderId);
+    const previousSelectedFolderId = selectedFolderId;
+    const snapshot = snapshotFolderState();
+
     const updated = deleteFolder(folderId);
     setFolders(updated);
     setFolderMembers(getFolderMembers());
@@ -261,6 +271,22 @@ export default function CarnetView({
     if (selectedFolderId !== "all" && selectedFolderId !== "favorites" && !updated.some((f) => f.id === selectedFolderId)) {
       setSelectedFolderId("all");
     }
+
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage({
+      text: t("carnet.folders.deletedToast", { name: deletedFolder?.name || "" }),
+      actionLabel: t("carnet.folders.undoDelete"),
+      onAction: () => {
+        window.clearTimeout(toastTimeoutRef.current);
+        restoreFolderSnapshot(snapshot);
+        setFolders(getFolders());
+        setFolderMembers(getFolderMembers());
+        setFolderNotes(getFolderNotes());
+        setSelectedFolderId(previousSelectedFolderId);
+        setToastMessage(null);
+      },
+    });
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), UNDO_TOAST_DURATION_MS);
   }
 
   function handleReorderFolderStep(folderId, direction) {
@@ -383,7 +409,7 @@ export default function CarnetView({
       await exportFolderToXlsx({ title: currentViewLabel, notes, entries, statuses, labels });
     }
     window.clearTimeout(toastTimeoutRef.current);
-    setToastMessage(t("carnet.export.toastSuccess"));
+    setToastMessage({ text: t("carnet.export.toastSuccess") });
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
 
@@ -391,7 +417,7 @@ export default function CarnetView({
     onAddRouteStops(entries);
     setTab("agenda");
     window.clearTimeout(toastTimeoutRef.current);
-    setToastMessage(t("carnet.export.toastRouteCreated", { count: entries.length }));
+    setToastMessage({ text: t("carnet.export.toastRouteCreated", { count: entries.length }) });
     toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }
 
@@ -534,7 +560,11 @@ export default function CarnetView({
         />
       )}
 
-      <Toast message={toastMessage} />
+      <Toast
+        message={toastMessage?.text}
+        actionLabel={toastMessage?.actionLabel}
+        onAction={toastMessage?.onAction}
+      />
     </div>
   );
 }

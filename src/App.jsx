@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Header from "./components/Header";
 import ViewModeToggle from "./components/ViewModeToggle";
 import Sidebar from "./components/Sidebar";
@@ -18,6 +18,7 @@ import CarnetView from "./components/CarnetView";
 import LoginScreen from "./components/LoginScreen";
 import AdminPanel from "./components/AdminPanel";
 import CommandPalette from "./components/CommandPalette";
+import Toast from "./components/Toast";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
 import { getStoreType } from "./utils/storeType";
@@ -33,6 +34,7 @@ import {
   getPortfolio,
   addToPortfolio,
   resetPortfolio,
+  restorePortfolio,
   getNotes,
   setNote,
   getStatuses,
@@ -63,6 +65,9 @@ import { useTheme } from "./theme/ThemeContext";
 
 const DIACRITICS_REGEX = new RegExp("[\\u0300-\\u036f]", "g");
 const NEAR_ME_LIMIT = 30;
+// Same rationale as CarnetView's UNDO_TOAST_DURATION_MS: an undo toast stays
+// up longer than a plain confirmation so there's a real window to react.
+const UNDO_TOAST_DURATION_MS = 7000;
 
 function normalize(text) {
   return text.normalize("NFD").replace(DIACRITICS_REGEX, "").toLowerCase();
@@ -100,6 +105,8 @@ function App() {
   const [viewMode, setViewMode] = useState("global");
   const [favoriteIds, setFavoriteIds] = useState(() => getFavorites());
   const [portfolioIds, setPortfolioIds] = useState(() => getPortfolio());
+  const [toastMessage, setToastMessage] = useState(null);
+  const toastTimeoutRef = useRef(null);
   const [notes, setNotes] = useState(() => getNotes());
   const [statuses, setStatuses] = useState(() => getStatuses());
   const [tags, setTagsState] = useState(() => getTags());
@@ -512,7 +519,20 @@ function App() {
   }
 
   function handleResetPortfolio() {
+    const previousIds = portfolioIds;
     setPortfolioIds(resetPortfolio());
+
+    window.clearTimeout(toastTimeoutRef.current);
+    setToastMessage({
+      text: t("myCard.resetToast"),
+      actionLabel: t("myCard.undoReset"),
+      onAction: () => {
+        window.clearTimeout(toastTimeoutRef.current);
+        setPortfolioIds(restorePortfolio(previousIds));
+        setToastMessage(null);
+      },
+    });
+    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), UNDO_TOAST_DURATION_MS);
   }
 
   async function handleImportFile(file) {
@@ -828,6 +848,12 @@ function App() {
         onOpenStore={handleOpenStoreFromCarnet}
         onOpenFolder={handleOpenFolderFromPalette}
         onNavigate={handleNavigateFromPalette}
+      />
+
+      <Toast
+        message={toastMessage?.text}
+        actionLabel={toastMessage?.actionLabel}
+        onAction={toastMessage?.onAction}
       />
 
       <ChatWidget stores={stores} />

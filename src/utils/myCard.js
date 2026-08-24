@@ -85,6 +85,14 @@ export function resetPortfolio() {
   return [];
 }
 
+// Puts back a previously-captured portfolio id list — used by the "Annuler"
+// undo toast right after resetPortfolio(), so a reset is never a one-way
+// door within the few seconds the toast is visible.
+export function restorePortfolio(ids) {
+  localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(ids));
+  return ids;
+}
+
 export function getNotes() {
   return readObject(NOTES_KEY);
 }

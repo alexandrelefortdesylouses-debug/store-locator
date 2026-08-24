@@ -100,6 +100,23 @@ export function getFolders() {
   return readFolders();
 }
 
+// Captures folders + members + notes together so a destructive action that
+// touches all three (deleteFolder's cascade) can be undone as a single
+// atomic restore, rather than trying to replay the cascade in reverse.
+export function snapshotFolderState() {
+  return { folders: readFolders(), members: readMembers(), notes: readNotes() };
+}
+
+// Overwrites current folders/members/notes with a prior snapshot — used
+// only by the "Annuler" undo toast right after a delete, so a wholesale
+// overwrite (rather than a merge) is safe: nothing else could have
+// legitimately changed this state in the few seconds the toast was up.
+export function restoreFolderSnapshot(snapshot) {
+  writeFolders(snapshot.folders);
+  writeMembers(snapshot.members);
+  writeNotes(snapshot.notes);
+}
+
 export function createFolder(name, parentId = null) {
   const trimmed = String(name ?? "").trim();
   if (!trimmed) return readFolders();

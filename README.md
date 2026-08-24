@@ -1091,12 +1091,42 @@ fichier `.xlsx` ou `.csv` et tente de rapprocher chaque ligne avec la base
 Le bouton **Réinitialiser le portefeuille importé** vide uniquement les
 opticiens issus de l'import (les favoris ajoutés manuellement ne sont pas
 concernés) ; réimporter un fichier après reprend simplement le processus.
+L'action est immédiate (pas de confirmation bloquante), mais réversible
+pendant quelques secondes via le bouton **Annuler** du toast qui apparaît
+juste après (voir "Annuler une action destructrice" ci-dessous).
 
 La bibliothèque d'import est chargée par un `import()` dynamique déclenché
 uniquement au moment de l'import d'un `.xlsx`, pour ne pas alourdir le
 chargement initial de l'app pour les visiteurs qui n'utilisent jamais cette
 fonctionnalité (elle apparaît comme un fichier séparé dans le build, voir
 `npm run build`).
+
+## Annuler une action destructrice (toast Annuler)
+
+Deux actions de l'app suppriment des données sans boîte de confirmation
+bloquante — **Réinitialiser le portefeuille importé** (ci-dessus) et
+**Supprimer un dossier** (cascade sur ses sous-dossiers, voir "Mon Carnet"
+ci-dessous). Toutes deux affichent, juste après l'action, un toast avec un
+bouton **Annuler** (`src/components/Toast.jsx`, étendu pour porter un
+bouton d'action optionnel en plus du message) :
+
+- Le bouton reste actif **7 secondes** — plus long que les toasts de
+  simple confirmation (export réussi, etc., 3,5s) puisqu'il faut le temps
+  de remarquer l'action, lire le message, et décider de cliquer.
+- **Réinitialiser le portefeuille** : l'undo restaure exactement la liste
+  d'ids de portefeuille capturée juste avant le reset
+  (`restorePortfolio` dans `src/utils/myCard.js`).
+- **Supprimer un dossier** : l'undo restaure d'un coup l'état complet
+  dossiers + appartenances + notes de dossier capturé juste avant la
+  suppression (`snapshotFolderState`/`restoreFolderSnapshot` dans
+  `src/utils/folders.js`) — un rollback global plutôt qu'une tentative de
+  rejouer la cascade en sens inverse, plus simple et plus sûr vu que rien
+  d'autre n'est censé modifier cet état pendant les quelques secondes où
+  le toast reste affiché.
+- Passé le délai, ou après un clic sur **Annuler**, le toast disparaît et
+  l'action redevient définitive (comme avant l'ajout de cette
+  fonctionnalité) — ce n'est pas un historique multi-niveaux, seulement un
+  filet de rattrapage immédiat sur la dernière action destructrice.
 
 ## Mon Carnet
 
@@ -1158,7 +1188,10 @@ modèle per-device `localStorage` que le reste de "Mon Carnet") :
   qui supprime aussi récursivement tous les sous-dossiers de ce dossier
   (jamais les opticiens eux-mêmes, seulement le regroupement). Si le
   dossier ou l'un de ses sous-dossiers supprimés était la vue active, elle
-  retombe automatiquement sur "Tous les opticiens".
+  retombe automatiquement sur "Tous les opticiens". Aucune boîte de
+  confirmation ne bloque le clic, mais la suppression reste réversible
+  quelques secondes via le toast **Annuler** qui apparaît juste après
+  (voir "Annuler une action destructrice" ci-dessous).
 - Le nom du dossier porte l'attribut `title` (tooltip natif du
   navigateur) : un nom trop long pour tenir dans la largeur de la sidebar
   est tronqué visuellement mais reste lisible en entier au survol.
