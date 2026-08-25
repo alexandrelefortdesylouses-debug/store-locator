@@ -1087,13 +1087,14 @@ unique par opticien, distincte de l'historique des notes de visite datées
 de Mon Carnet (`src/utils/activity.js`) : pas un journal qui s'accumule,
 juste une date que le commercial déplace librement au fil de l'eau.
 
-Cette date est reprise dans le Tableau de "Mon Carnet" sous une colonne
-dédiée **Dernière visite**, triable comme les autres colonnes (clic sur
-l'en-tête, croissant puis décroissant). Volontairement **aucune couleur ni
-badge** n'accompagne cette colonne ou les marqueurs de la carte — juste la
-date en texte simple, sans alerte automatique basée sur l'ancienneté (à la
-différence du score d'urgence de la colonne suivante, qui reste, lui, basé
-sur les notes de visite datées et non sur cette date manuelle).
+Cette date **n'apparaît volontairement que sur la fiche détaillée** — pas
+de colonne dédiée dans le Tableau de "Mon Carnet", pour garder ce tableau
+concentré sur les colonnes à forte densité d'information (statut, priorité,
+urgence) plutôt que d'y dupliquer un champ déjà consultable en un clic sur
+la ligne. Comme partout ailleurs dans l'app, **aucune couleur ni badge**
+n'accompagne cette date ou les marqueurs de la carte — le score d'urgence
+du Tableau (voir "Mon Carnet" plus bas) reste, lui, basé sur les notes de
+visite datées et non sur cette date manuelle.
 
 ### Import de portefeuille (.xlsx / .csv)
 
@@ -1348,9 +1349,13 @@ prochain classement alphabétique :
   de recherche ne le matche pas).
 - **Badges de dossier dans le tableau** : chaque ligne affiche un badge
   nommé et **cliquable** par dossier auquel l'opticien appartient (pastille
-  de couleur + nom du dossier, même couleur que dans la sidebar),
-  directement à côté de son nom — cliquer dessus navigue vers ce dossier
-  et filtre le tableau dessus, sans repasser par la sidebar.
+  de couleur + nom du dossier, même couleur que dans la sidebar), **empilé
+  verticalement sous son nom** (colonne Nom en `flex-col`, pas en ligne) —
+  un choix délibéré pour qu'une ligne avec plusieurs badges ou des noms de
+  dossier longs s'étende proprement en hauteur dans sa propre cellule, sans
+  jamais déborder ni chevaucher la colonne Ville voisine. Cliquer un badge
+  navigue vers ce dossier et filtre le tableau dessus, sans repasser par
+  la sidebar.
 - Sur mobile, la colonne de dossiers devient une rangée de puces
   défilante horizontalement au-dessus du tableau plutôt qu'une colonne
   fixe (pas de place pour une vraie sidebar sur un petit écran) —
@@ -1435,17 +1440,23 @@ case à cocher est active ou non — le même principe pour les deux :
   la carte), via le composant partagé `PrioritySelector.jsx` — dont les
   boutons grandissent aussi avec le niveau de priorité, en plus de changer
   de couleur.
-- **Code Postal / Dép.** : extrait de l'adresse (`getStoreZip`/
-  `getStoreDeptCode` dans `src/utils/postalCode.js`, déjà utilisés pour les
-  filtres géographiques), pour trier ou repérer un secteur d'un coup d'œil.
+- **Ville** inclut le département entre parenthèses directement dans la
+  même colonne (`getStoreDeptCode` dans `src/utils/postalCode.js`, déjà
+  utilisé pour les filtres géographiques), ex. "Angoulême (16)" — une
+  colonne "Code Postal / Dép." séparée existait dans une itération
+  précédente ; elle a été fusionnée ici à la demande du client pour
+  désencombrer le tableau. Le code postal complet reste disponible dans les
+  exports PDF/Excel (voir "Notes & Mémos du dossier" plus haut).
 - **Statut** et **Priorité** sont modifiables directement dans la ligne via
   un menu déroulant ("saisie rapide") — pas besoin d'ouvrir la fiche
   détaillée de l'opticien.
-- **En-têtes de colonnes cliquables** (Nom, Ville, Code Postal, Statut,
-  Priorité, Urgence) trient le tableau, croissant puis décroissant au clic
-  suivant sur la même colonne (un chevron indique la colonne et le sens
-  actifs). La colonne "Dernier Contact" présente dans une itération
-  précédente a été retirée à la demande du client.
+- **En-têtes de colonnes cliquables** (Nom, Ville, Statut, Priorité,
+  Urgence) trient le tableau, croissant puis décroissant au clic suivant
+  sur la même colonne (un chevron indique la colonne et le sens actifs).
+  Les colonnes "Dernier Contact", "Code Postal / Dép." et "Dernière visite"
+  présentes dans des itérations précédentes ont toutes été retirées à la
+  demande du client, pour garder le tableau concentré sur les colonnes à
+  forte densité d'information.
 - **Colonne Urgence** (`src/utils/urgency.js`, `computeUrgency`) : un badge
   calculé à la volée — 🔥 **À relancer**, ⏰ **À suivre**, 🕐 **Faible**, ou
   aucun badge — qui combine trois signaux déjà présents dans les autres

@@ -4,7 +4,7 @@ import { STORE_STATUSES, PRIORITY_LEVELS, PRIORITY_STARS } from "../utils/myCard
 import { STATUS_COLORS, PRIORITY_COLORS, ACTION_COLORS, URGENCY_COLORS } from "../utils/palette";
 import { computeUrgency, URGENCY_LEVELS, URGENCY_RANK } from "../utils/urgency";
 import { FEATURED_BRANDS } from "../utils/brands";
-import { getStoreZip, getStoreDeptCode } from "../utils/postalCode";
+import { getStoreDeptCode } from "../utils/postalCode";
 import { FOLDER_COLORS } from "../utils/folders";
 import { GPS_APPS, buildPreferredDirectionsUrl } from "../utils/gpsPrefs";
 import FolderAssignModal from "./FolderAssignModal";
@@ -395,7 +395,6 @@ export default function CarnetTableTab({
   priorities,
   onSetPriority,
   visitNotes = {},
-  visitDates = {},
   onOpenNote,
   onScheduleStore,
   preferredGpsApp = GPS_APPS.GOOGLE,
@@ -411,7 +410,7 @@ export default function CarnetTableTab({
   search,
   onSearchChange,
 }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
   const [assigningStore, setAssigningStore] = useState(null);
@@ -473,14 +472,10 @@ export default function CarnetTableTab({
           return store.name;
         case "city":
           return store.city;
-        case "postalCode":
-          return getStoreZip(store) || "";
         case "status":
           return STATUS_RANK[statuses[store.id]] ?? STATUS_ORDER.length;
         case "priority":
           return PRIORITY_RANK[priorities[store.id]] ?? PRIORITY_ORDER.length;
-        case "visitDate":
-          return visitDates[store.id] || "";
         case "urgency": {
           const entries = visitNotes[store.id];
           return URGENCY_RANK[
@@ -511,7 +506,7 @@ export default function CarnetTableTab({
       if (typeof va === "number" && typeof vb === "number") return (va - vb) * direction;
       return String(va).localeCompare(String(vb)) * direction;
     });
-  }, [stores, search, statusFilter, statuses, priorities, sort, visitNotes, visitDates]);
+  }, [stores, search, statusFilter, statuses, priorities, sort, visitNotes]);
 
   const allVisibleSelected = rows.length > 0 && rows.every((s) => selectedIds.has(s.id));
 
@@ -647,11 +642,9 @@ export default function CarnetTableTab({
                 </th>
                 <SortableTh columnKey="name">{t("carnet.table.colName")}</SortableTh>
                 <SortableTh columnKey="city">{t("carnet.table.colCity")}</SortableTh>
-                <SortableTh columnKey="postalCode">{t("carnet.table.colPostal")}</SortableTh>
                 <th className="px-4 py-3">{t("carnet.table.colBrands")}</th>
                 <SortableTh columnKey="status">{t("carnet.table.colStatus")}</SortableTh>
                 <SortableTh columnKey="priority">{t("carnet.table.colPriority")}</SortableTh>
-                <SortableTh columnKey="visitDate">{t("carnet.table.colVisitDate")}</SortableTh>
                 <SortableTh columnKey="urgency">{t("carnet.table.colUrgency")}</SortableTh>
                 <th className="px-4 py-3">{t("carnet.table.colActions")}</th>
               </tr>
@@ -660,7 +653,6 @@ export default function CarnetTableTab({
               {rows.map((store) => {
                 const status = statuses[store.id] || "";
                 const priority = priorities[store.id] || "";
-                const zip = getStoreZip(store);
                 const deptCode = getStoreDeptCode(store);
                 const storeFolders = folders.filter((f) => (folderMembers[f.id] || []).includes(store.id));
                 return (
@@ -680,10 +672,10 @@ export default function CarnetTableTab({
                       />
                     </td>
                     <td className="px-4 py-3 font-serif text-neutral-900 dark:text-neutral-100">
-                      <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="flex flex-col items-start gap-1">
                         <span>{store.name}</span>
                         {storeFolders.length > 0 && (
-                          <span className="flex shrink-0 flex-wrap items-center gap-1">
+                          <span className="flex flex-wrap items-center gap-1">
                             {storeFolders.map((f) => {
                               const color = FOLDER_COLORS[f.color] || FOLDER_COLORS.gray;
                               return (
@@ -707,9 +699,8 @@ export default function CarnetTableTab({
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{store.city}</td>
-                    <td className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400">
-                      {zip ? (deptCode ? `${zip} (${deptCode})` : zip) : "—"}
+                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
+                      {deptCode ? `${store.city} (${deptCode})` : store.city}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex max-w-[220px] flex-wrap gap-1">
@@ -771,14 +762,6 @@ export default function CarnetTableTab({
                           </option>
                         ))}
                       </select>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-                      {visitDates[store.id]
-                        ? new Date(visitDates[store.id]).toLocaleDateString(
-                            lang === "en" ? "en-US" : "fr-FR",
-                            { day: "2-digit", month: "short", year: "numeric" },
-                          )
-                        : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <UrgencyBadge level={storeUrgency(store)} />

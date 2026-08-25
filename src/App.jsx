@@ -693,7 +693,6 @@ function App() {
             onSetPriority={handleSetPriority}
             visitNotes={visitNotes}
             onAddVisitNote={handleAddVisitNote}
-            visitDates={visitDates}
             prospectFirstSeen={prospectFirstSeen}
             favoriteIds={favoriteIds}
             routeStops={routeStops}
