@@ -49,13 +49,14 @@ npm run preview
   d'erreur) en anglais. Les données des opticiens (noms, adresses,
   marques) restent inchangées — seule
   l'interface est traduite. Voir la section dédiée plus bas.
-- **Logo officiel** en en-tête (`public/logo-thelios.jpg`), sur un socle clair
-  arrondi pour rester lisible malgré son fond crème opaque sur l'en-tête sombre.
-  Le fichier est recadré au plus près du bloc-marque (wordmark + signature
-  "LVMH Eyewear Excellence") — la version fournie par le client avait une
-  large marge crème inutilisée autour du texte, ce qui produisait un socle
-  démesuré et mal proportionné dans l'en-tête ; le recadrage ne change rien
-  au design du logo lui-même.
+- **Monogramme "T"** en en-tête et sur l'écran de connexion (`public/pwa-icon-512.png`),
+  sur un socle clair arrondi pour rester lisible sur l'en-tête sombre. Ce
+  pictogramme est le même recadrage du "T" que celui déjà utilisé pour le
+  favicon (voir plus bas) — même graisse/police et même couleur que le
+  wordmark complet "THĒLIOS" (`public/logo-thelios.jpg`, toujours présent
+  dans `public/` mais plus affiché nulle part dans l'app), juste réduit à
+  sa seule initiale pour un rendu plus discret et compact dans la barre de
+  navigation.
 - **Géolocalisation "Autour de moi"** : bouton cible en haut à droite de la
   carte qui centre la vue sur la position du visiteur et affiche les 30
   opticiens les plus proches, triés par distance (badge "X km" sur chaque

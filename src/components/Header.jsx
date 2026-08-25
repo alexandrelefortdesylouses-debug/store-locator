@@ -65,9 +65,9 @@ export default function Header({
       <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-5 md:px-8">
         <div className="overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
           <img
-            src="/logo-thelios.jpg"
-            alt="Thélios — LVMH Eyewear"
-            className="block h-9 w-auto sm:h-11"
+            src="/pwa-icon-512.png"
+            alt="Thélios"
+            className="block h-9 w-9 sm:h-11 sm:w-11"
           />
         </div>
 
