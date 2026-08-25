@@ -451,8 +451,6 @@ export const translations = {
     "map.whiteZones": "Zones blanches",
     "map.whiteZonesAria": "Basculer les zones blanches (opportunités de prospection)",
     "map.whiteZoneTooltip": "{count} opticiens concurrents · 0 Thélios",
-    "map.lastVisitTooltip": "Dernière visite il y a {days} jour",
-    "map.lastVisitTooltip_plural": "Dernière visite il y a {days} jours",
 
     "geo.unsupported":
       "La géolocalisation n'est pas prise en charge par votre navigateur.",
@@ -1070,8 +1068,6 @@ export const translations = {
     "map.whiteZones": "White zones",
     "map.whiteZonesAria": "Toggle white zones (prospecting opportunities)",
     "map.whiteZoneTooltip": "{count} competitor opticians · 0 Thélios",
-    "map.lastVisitTooltip": "Last visit {days} day ago",
-    "map.lastVisitTooltip_plural": "Last visit {days} days ago",
 
     "geo.unsupported": "Geolocation is not supported by your browser.",
     "geo.denied":
