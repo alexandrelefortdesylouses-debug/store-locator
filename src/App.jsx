@@ -24,6 +24,7 @@ import OnboardingTour from "./components/OnboardingTour";
 import { getAppointmentTimes, setAppointmentTime, clearAppointmentTime } from "./utils/appointmentTimes";
 import { hasSeenOnboarding, markOnboardingSeen } from "./utils/onboarding";
 import { parseVCard } from "./utils/vcardImport";
+import { applySampleFilter } from "./utils/sampleMode";
 import Toast from "./components/Toast";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
@@ -96,6 +97,10 @@ function App() {
   const [addStoreModalOpen, setAddStoreModalOpen] = useState(false);
   const [addStoreInitialValues, setAddStoreInitialValues] = useState(undefined);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  // "Version Beta" hidden sample/demo mode — deliberately not persisted to
+  // localStorage, so it never silently carries over into a later session;
+  // toggled fresh each time from the discreet bottom-left trigger.
+  const [sampleMode, setSampleMode] = useState(false);
   const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
@@ -168,10 +173,19 @@ function App() {
   // Layers any admin-imported opticians (Administration panel) on top of
   // the static dataset — see services/storesService.js for why this is a
   // per-device merge, not a real shared database update.
-  const stores = useMemo(
+  const mergedStores = useMemo(
     () => mergeWithOverrides(baseStores),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [baseStores, storesOverrideVersion],
+  );
+
+  // "Version Beta" sample mode narrows the entire app down to this single
+  // derivation — every filter, map view, and Mon Carnet list downstream
+  // just keeps consuming `stores` as usual, so none of that code needs to
+  // change to respect the restriction.
+  const stores = useMemo(
+    () => (sampleMode ? applySampleFilter(mergedStores) : mergedStores),
+    [mergedStores, sampleMode],
   );
 
   const myCardStores = useMemo(
@@ -952,6 +966,21 @@ function App() {
       />
 
       <ChatWidget stores={stores} />
+
+      {/* Hidden "Version Beta" sample-mode trigger — intentionally
+          unlabeled beyond this plain text, no icon or button styling, so
+          it reads as an incidental build tag rather than a control. */}
+      <button
+        type="button"
+        onClick={() => setSampleMode((v) => !v)}
+        className={`fixed bottom-1 left-2 z-[50] cursor-pointer bg-transparent text-[10px] transition ${
+          sampleMode
+            ? "text-amber-600 opacity-70 dark:text-amber-400"
+            : "text-neutral-400 opacity-40 hover:opacity-60 dark:text-neutral-600"
+        }`}
+      >
+        {t("app.betaTrigger")}
+      </button>
     </div>
   );
 }

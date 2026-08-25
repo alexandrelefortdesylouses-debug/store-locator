@@ -8,6 +8,8 @@ export const translations = {
     "header.admin": "Administration",
     "header.signOut": "Se déconnecter",
 
+    "app.betaTrigger": "Version Beta",
+
     "onboarding.welcome.title": "Bienvenue sur le Store Locator Thélios",
     "onboarding.welcome.body":
       "Un outil pour retrouver le réseau d'opticiens partenaires et gérer votre activité commerciale sur le terrain. Petite visite en 4 étapes.",
@@ -629,6 +631,8 @@ export const translations = {
     "header.stats": "Statistics",
     "header.admin": "Administration",
     "header.signOut": "Sign out",
+
+    "app.betaTrigger": "Version Beta",
 
     "onboarding.welcome.title": "Welcome to the Thélios Store Locator",
     "onboarding.welcome.body":

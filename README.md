@@ -1747,6 +1747,37 @@ réseau (zone rurale, cave d'un magasin...) :
   décrit dans les sections précédentes), pas de récupérer des données
   saisies sur un autre appareil pendant une coupure réseau.
 
+## Mode "Version Beta" (échantillon caché)
+
+Un déclencheur discret — le texte "Version Beta", tout en bas à gauche de
+l'écran, volontairement minuscule et peu contrasté pour ne pas ressembler à
+un vrai contrôle — bascule l'app dans un mode "échantillon" restreint,
+pensé pour des démonstrations rapides sans avoir à faire défiler
+l'intégralité du réseau (`src/utils/sampleMode.js`) :
+
+- **Restrictions appliquées** : uniquement les opticiens du département 75
+  (Paris), et parmi leurs marques, seules **Vuarnet**, **Maui Jim** et
+  **Julbo** sont conservées — un opticien qui ne porterait plus aucune de
+  ces trois marques après filtrage est retiré entièrement de l'échantillon
+  (une fiche avec une liste de marques vide n'aurait pas de sens dans une
+  démo censée présenter justement ces trois marques).
+- **Un seul point d'injection** : le filtre s'applique à la dérivation
+  `stores` dans `App.jsx`, juste après la fusion des overrides Admin
+  (`mergeWithOverrides`) et avant tout le reste de l'app. Carte Globale, Ma
+  Carte, Mon Carnet, les filtres région/département/ville/marque de la
+  sidebar, les zones blanches — tout continue de consommer `stores` sans
+  la moindre modification, et se retrouve donc automatiquement restreint en
+  cascade : région/département ne proposent plus qu'Île-de-France/75,
+  Marques ne propose plus que les trois marques autorisées, etc.
+- **Bascule fluide et sans effet de bord** : un simple `useState` React,
+  volontairement **non persisté** en `localStorage` — il repart toujours à
+  "désactivé" au rechargement de la page, pour qu'un mode caché ne survive
+  jamais silencieusement d'une session à l'autre. Portefeuille, favoris,
+  dossiers et statuts de "Ma Carte"/"Mon Carnet" ne sont ni lus ni modifiés
+  par le filtre : un opticien du portefeuille hors du département 75
+  disparaît simplement de la vue tant que le mode est actif, puis
+  réapparaît intact dès qu'on repasse en version complète.
+
 ## Prochaine étape (non traitée dans cette itération)
 
 Le système de connexion, de rôles (Admin / Commercial) et le panneau
