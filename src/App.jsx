@@ -740,17 +740,16 @@ function App() {
                   whiteZones={whiteZones}
                 />
 
-                {viewMode === "mycard" && (
-                  <TodayAgendaWidget
-                    routeStops={routeStops}
-                    appointmentTimes={appointmentTimes}
-                    preferredGpsApp={preferredGpsApp}
-                    routeOrigin={routeOrigin}
-                    onOpenStore={handleSelectStore}
-                  />
-                )}
-
                 <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
+                  {viewMode === "mycard" && (
+                    <TodayAgendaWidget
+                      routeStops={routeStops}
+                      appointmentTimes={appointmentTimes}
+                      preferredGpsApp={preferredGpsApp}
+                      routeOrigin={routeOrigin}
+                      onOpenStore={handleSelectStore}
+                    />
+                  )}
                   <HeatmapToggle
                     active={heatmapActive}
                     onToggle={() => setHeatmapActive((v) => !v)}

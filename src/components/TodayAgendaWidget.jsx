@@ -25,7 +25,16 @@ function GpsIcon() {
   );
 }
 
-// A compact "today's RDV" summary, overlaid on the map in "Ma Carte" only.
+// A compact "today's RDV" summary, overlaid on the map in "Ma Carte" only —
+// rendered by App.jsx as the first item in the top-right toggle-button
+// stack (Heatmap/Zones blanches/Ma position), deliberately *not* top-left,
+// since that corner is where Leaflet's own zoom +/- control lives; sharing
+// that stack also means it inherits the same >=16px edge margin and
+// inter-item spacing as its neighbors for free, instead of needing its own
+// positioning rules to keep in sync. This component itself stays
+// position-agnostic (`relative`, not `absolute`) — its popover just hangs
+// below and right-aligns to whichever button it's rendered next to.
+//
 // Deliberately reads from `routeStops` (App.jsx's live Agenda tour) rather
 // than a separate date-aware source — routeStops is already documented
 // elsewhere (CarnetWeekTab.jsx) as "today's tour", and "Envoyer vers
@@ -56,12 +65,12 @@ export default function TodayAgendaWidget({
     timedStops.find((entry) => timeToMinutes(entry.time.start) >= nowMinutes) || timedStops[0] || null;
 
   return (
-    <div className="pointer-events-none absolute left-4 top-4 z-[400] flex flex-col items-start gap-2">
+    <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={timedStops.length === 0}
-        className="pointer-events-auto flex max-w-[16rem] cursor-pointer items-center gap-2 rounded-full border border-neutral-200 bg-white/95 px-3.5 py-2 text-left text-xs font-medium text-neutral-700 shadow-lg backdrop-blur transition hover:border-amber-400 disabled:cursor-default disabled:hover:border-neutral-200 dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200 dark:disabled:hover:border-neutral-700"
+        className="flex max-w-[calc(100vw-2rem)] cursor-pointer items-center gap-2 rounded-full border border-neutral-200 bg-white/95 px-3.5 py-2 text-left text-xs font-medium text-neutral-700 shadow-lg backdrop-blur transition hover:border-amber-400 disabled:cursor-default disabled:hover:border-neutral-200 dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200 dark:disabled:hover:border-neutral-700 sm:max-w-[16rem]"
       >
         <ClockIcon />
         <span className="truncate">
@@ -72,7 +81,7 @@ export default function TodayAgendaWidget({
       </button>
 
       {open && timedStops.length > 0 && (
-        <div className="pointer-events-auto w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-neutral-200 bg-white/95 shadow-2xl backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
+        <div className="absolute right-0 top-full z-[450] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-neutral-200 bg-white/95 shadow-2xl backdrop-blur dark:border-neutral-700 dark:bg-neutral-900/95">
           <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-2.5 dark:border-neutral-700">
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               {t("todayAgenda.listTitle", { count: timedStops.length })}

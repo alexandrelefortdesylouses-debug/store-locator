@@ -1010,10 +1010,17 @@ bascule entre deux vues :
 
 ### Widget "RDV du jour"
 
-En haut à gauche de la carte, uniquement sur "Ma Carte"
+En haut à droite de la carte, uniquement sur "Ma Carte"
 (`src/components/TodayAgendaWidget.jsx`), un résumé compact des rendez-vous
 du jour reste visible en permanence, sans avoir à quitter la carte pour
-Mon Carnet :
+Mon Carnet — délibérément **pas** en haut à gauche, coin déjà occupé par les
+boutons de zoom natifs de Leaflet (`+`/`-`) : le widget est rendu comme le
+premier élément de la même pile verticale que les boutons Heatmap / Zones
+blanches / Ma position, en haut à droite, héritant ainsi de la même marge
+(16px, `right-4 top-4`) et du même espacement (`gap-2`) sans règle de
+positionnement à lui — son popover s'ouvre vers le bas, aligné sur son bord
+droit, et reste borné à la largeur de l'écran (`max-w-[calc(100vw-2rem)]`)
+sur mobile comme sur desktop :
 
 - **Source des données** : le trajet actuellement chargé dans l'onglet
   Agenda & RDV (`routeStops`), filtré aux opticiens ayant un horaire fixé
