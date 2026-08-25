@@ -54,33 +54,44 @@ function cell(row, columnMap, key) {
   return index !== undefined ? String(row[index] ?? "").trim() : "";
 }
 
-// Parses uploaded rows (see fileParsing.js) into plain store-shaped objects
-// (no id/coordinates yet — see geocodeImportedStores below), one per row
-// with a usable name.
+// Shared assembly step for both the spreadsheet import (one row per call,
+// see parseImportRows below) and the manual "add an optician" form in Ma
+// Carte (one call, see AddStoreModal.jsx) — builds the same plain
+// store-shaped object (no id/coordinates yet) either path eventually feeds
+// into geocodeImportedStores.
+export function buildStoreEntry({ name, address, city, postal, brandsRaw, phone, email, website }) {
+  const brands = brandsRaw ? brandsRaw.split(/[,;/]/).map((b) => b.trim()).filter(Boolean) : [];
+  const fullAddress = address || [postal, city].filter(Boolean).join(" ");
+
+  return {
+    name,
+    address: fullAddress ? `${fullAddress}${city && !fullAddress.includes(city) ? `, ${city}` : ""}` : city,
+    city,
+    country: "France",
+    brands,
+    phone: phone || undefined,
+    email: email || undefined,
+    website: website || undefined,
+  };
+}
+
+// Parses uploaded rows (see fileParsing.js) into plain store-shaped objects,
+// one per row with a usable name.
 export function parseImportRows(rows, columnMap) {
   return rows
     .map((row) => {
       const name = cell(row, columnMap, "name");
       if (!name) return null;
-      const address = cell(row, columnMap, "address");
-      const city = cell(row, columnMap, "city");
-      const postal = cell(row, columnMap, "postal");
-      const brandsRaw = cell(row, columnMap, "brands");
-      const brands = brandsRaw
-        ? brandsRaw.split(/[,;/]/).map((b) => b.trim()).filter(Boolean)
-        : [];
-      const fullAddress = address || [postal, city].filter(Boolean).join(" ");
-
-      return {
+      return buildStoreEntry({
         name,
-        address: fullAddress ? `${fullAddress}${city && !fullAddress.includes(city) ? `, ${city}` : ""}` : city,
-        city,
-        country: "France",
-        brands,
-        phone: cell(row, columnMap, "phone") || undefined,
-        email: cell(row, columnMap, "email") || undefined,
-        website: cell(row, columnMap, "website") || undefined,
-      };
+        address: cell(row, columnMap, "address"),
+        city: cell(row, columnMap, "city"),
+        postal: cell(row, columnMap, "postal"),
+        brandsRaw: cell(row, columnMap, "brands"),
+        phone: cell(row, columnMap, "phone"),
+        email: cell(row, columnMap, "email"),
+        website: cell(row, columnMap, "website"),
+      });
     })
     .filter(Boolean);
 }

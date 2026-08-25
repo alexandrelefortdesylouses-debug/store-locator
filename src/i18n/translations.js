@@ -366,6 +366,26 @@ export const translations = {
     "myCard.resetPortfolio": "Réinitialiser le portefeuille importé",
     "myCard.resetToast": "Portefeuille réinitialisé.",
     "myCard.undoReset": "Annuler",
+    "myCard.addStoreButton": "Ajouter un opticien",
+
+    "addStore.title": "Ajouter un opticien",
+    "addStore.hint":
+      "Pour un opticien absent de la base — l'adresse est géocodée automatiquement, puis l'opticien est ajouté directement à votre portefeuille sur cet appareil.",
+    "addStore.fieldName": "Nom de l'opticien *",
+    "addStore.fieldAddress": "Adresse",
+    "addStore.fieldCity": "Ville *",
+    "addStore.fieldPostal": "Code postal",
+    "addStore.fieldBrands": "Marques distribuées",
+    "addStore.fieldBrandsPlaceholder": "Séparées par une virgule",
+    "addStore.fieldPhone": "Téléphone",
+    "addStore.fieldEmail": "E-mail",
+    "addStore.fieldWebsite": "Site web",
+    "addStore.submit": "Ajouter à mon portefeuille",
+    "addStore.geocoding": "Géocodage…",
+    "addStore.geocodeFailed": "Adresse introuvable — vérifiez la ville et le code postal.",
+    "addStore.duplicateWarning": "Un opticien proche existe peut-être déjà : « {name} ». Ajouter quand même ?",
+    "addStore.duplicateCancel": "Annuler",
+    "addStore.duplicateConfirm": "Ajouter quand même",
     "myCard.importSummaryTitle": "Résumé de l'import",
     "myCard.importSummaryCount": "{matched}/{total} opticiens identifiés et ajoutés à votre carte",
     "myCard.importSummaryHint":
@@ -418,6 +438,18 @@ export const translations = {
 
     "route.addToRoute": "Ajouter au trajet",
     "route.removeFromRoute": "Retirer du trajet",
+
+    "appointment.addTime": "Horaire",
+    "appointment.save": "Valider l'horaire",
+    "appointment.cancel": "Annuler",
+    "appointment.clear": "Retirer l'horaire",
+
+    "todayAgenda.none": "Aucun RDV aujourd'hui",
+    "todayAgenda.next": "Prochain RDV : {time} — {name}",
+    "todayAgenda.listTitle": "{count} RDV aujourd'hui",
+    "todayAgenda.listTitle_plural": "{count} RDV aujourd'hui",
+    "todayAgenda.directionsAria": "Itinéraire vers {name}",
+
     "route.selectedCount": "{count} sélectionné(s)",
     "route.originLabel": "Point de départ",
     "route.originGps": "📍 Ma position actuelle (GPS)",
@@ -553,18 +585,6 @@ export const translations = {
     "storeDetail.brands": "Marques distribuées",
     "storeDetail.hours": "Horaires d'ouverture",
     "storeDetail.directions": "Itinéraire",
-
-    "reviews.title": "Avis clients ({count})",
-    "reviews.none": "Aucun avis pour cet opticien pour le moment.",
-    "reviews.leaveReview": "Laisser un avis",
-    "reviews.namePlaceholder": "Votre nom",
-    "reviews.ratingLabel": "Note :",
-    "reviews.commentPlaceholder": "Votre commentaire",
-    "reviews.codePlaceholder": "Code secret pour publier",
-    "reviews.submit": "Publier l'avis",
-    "reviews.errorMissingFields":
-      "Merci de renseigner votre nom et votre commentaire.",
-    "reviews.errorWrongCode": "Code secret incorrect.",
 
     "settings.close": "Fermer",
 
@@ -941,6 +961,26 @@ export const translations = {
     "myCard.resetPortfolio": "Reset imported portfolio",
     "myCard.resetToast": "Portfolio reset.",
     "myCard.undoReset": "Undo",
+    "myCard.addStoreButton": "Add an optician",
+
+    "addStore.title": "Add an optician",
+    "addStore.hint":
+      "For an optician missing from the base — the address is geocoded automatically, then the optician is added straight to your portfolio on this device.",
+    "addStore.fieldName": "Optician name *",
+    "addStore.fieldAddress": "Address",
+    "addStore.fieldCity": "City *",
+    "addStore.fieldPostal": "Postal code",
+    "addStore.fieldBrands": "Brands carried",
+    "addStore.fieldBrandsPlaceholder": "Comma-separated",
+    "addStore.fieldPhone": "Phone",
+    "addStore.fieldEmail": "Email",
+    "addStore.fieldWebsite": "Website",
+    "addStore.submit": "Add to my portfolio",
+    "addStore.geocoding": "Geocoding…",
+    "addStore.geocodeFailed": "Address not found — check the city and postal code.",
+    "addStore.duplicateWarning": "A nearby optician may already exist: \"{name}\". Add anyway?",
+    "addStore.duplicateCancel": "Cancel",
+    "addStore.duplicateConfirm": "Add anyway",
     "myCard.importSummaryTitle": "Import summary",
     "myCard.importSummaryCount": "{matched}/{total} opticians identified and added to your map",
     "myCard.importSummaryHint":
@@ -992,6 +1032,18 @@ export const translations = {
 
     "route.addToRoute": "Add to route",
     "route.removeFromRoute": "Remove from route",
+
+    "appointment.addTime": "Time",
+    "appointment.save": "Confirm time",
+    "appointment.cancel": "Cancel",
+    "appointment.clear": "Remove time",
+
+    "todayAgenda.none": "No appointments today",
+    "todayAgenda.next": "Next: {time} — {name}",
+    "todayAgenda.listTitle": "{count} appointment today",
+    "todayAgenda.listTitle_plural": "{count} appointments today",
+    "todayAgenda.directionsAria": "Directions to {name}",
+
     "route.selectedCount": "{count} selected",
     "route.originLabel": "Starting point",
     "route.originGps": "📍 My current position (GPS)",
@@ -1125,17 +1177,6 @@ export const translations = {
     "storeDetail.brands": "Brands carried",
     "storeDetail.hours": "Opening hours",
     "storeDetail.directions": "Directions",
-
-    "reviews.title": "Customer reviews ({count})",
-    "reviews.none": "No reviews for this optician yet.",
-    "reviews.leaveReview": "Leave a review",
-    "reviews.namePlaceholder": "Your name",
-    "reviews.ratingLabel": "Rating:",
-    "reviews.commentPlaceholder": "Your comment",
-    "reviews.codePlaceholder": "Secret code to publish",
-    "reviews.submit": "Submit review",
-    "reviews.errorMissingFields": "Please fill in your name and comment.",
-    "reviews.errorWrongCode": "Incorrect secret code.",
 
     "settings.close": "Close",
 

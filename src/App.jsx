@@ -18,6 +18,9 @@ import CarnetView from "./components/CarnetView";
 import LoginScreen from "./components/LoginScreen";
 import AdminPanel from "./components/AdminPanel";
 import CommandPalette from "./components/CommandPalette";
+import AddStoreModal from "./components/AddStoreModal";
+import TodayAgendaWidget from "./components/TodayAgendaWidget";
+import { getAppointmentTimes, setAppointmentTime, clearAppointmentTime } from "./utils/appointmentTimes";
 import Toast from "./components/Toast";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
@@ -85,6 +88,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [addStoreModalOpen, setAddStoreModalOpen] = useState(false);
   const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
@@ -116,6 +120,7 @@ function App() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [visitNotes, setVisitNotesState] = useState(() => getAllVisitNotes());
+  const [appointmentTimes, setAppointmentTimesState] = useState(() => getAppointmentTimes());
   const [prospectFirstSeen, setProspectFirstSeen] = useState(() => getProspectFirstSeen());
   const [gpsRealtimeEnabled, setGpsRealtimeEnabledState] = useState(() => getGpsRealtimeEnabled());
   const [preferredGpsApp, setPreferredGpsAppState] = useState(() => getPreferredGpsApp());
@@ -367,6 +372,15 @@ function App() {
     setStoresOverrideVersion((v) => v + 1);
   }
 
+  // AddStoreModal (Ma Carte) already geocoded and persisted the new store
+  // as an override by the time this fires — this just drops it straight
+  // into the rep's own portfolio, since a rep manually adding an optician
+  // is doing so because they want to track it, not just add it to the
+  // shared network.
+  function handleStoreAdded(storeId) {
+    setPortfolioIds(addToPortfolio([storeId]));
+  }
+
   // Used when a store is opened from within Mon Carnet (e.g. an @mention
   // badge in the global Bloc-Notes) — leaves the Carnet workspace and drops
   // the user back on Carte Globale with that optician's detail panel open.
@@ -518,6 +532,14 @@ function App() {
     setRouteOrder(result?.order || null);
   }
 
+  function handleSetAppointmentTime(storeId, start, end) {
+    setAppointmentTimesState(setAppointmentTime(storeId, start, end));
+  }
+
+  function handleClearAppointmentTime(storeId) {
+    setAppointmentTimesState(clearAppointmentTime(storeId));
+  }
+
   function handleResetPortfolio() {
     const previousIds = portfolioIds;
     setPortfolioIds(resetPortfolio());
@@ -638,6 +660,9 @@ function App() {
             onRemoveRouteStop={removeRouteStop}
             onClearRoute={clearRoute}
             onOptimizeRoute={handleRouteOptimized}
+            appointmentTimes={appointmentTimes}
+            onSetAppointmentTime={handleSetAppointmentTime}
+            onClearAppointmentTime={handleClearAppointmentTime}
             onOpenStore={handleOpenStoreFromCarnet}
             userLocation={routeOrigin}
             preferredGpsApp={preferredGpsApp}
@@ -658,6 +683,7 @@ function App() {
                 importing={importing}
                 onImportFile={handleImportFile}
                 onResetPortfolio={handleResetPortfolio}
+                onOpenAddStore={() => setAddStoreModalOpen(true)}
                 myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
                 favoriteIds={favoriteIds}
                 onToggleFavorite={handleToggleFavorite}
@@ -713,6 +739,16 @@ function App() {
                   whiteZonesActive={whiteZonesActive}
                   whiteZones={whiteZones}
                 />
+
+                {viewMode === "mycard" && (
+                  <TodayAgendaWidget
+                    routeStops={routeStops}
+                    appointmentTimes={appointmentTimes}
+                    preferredGpsApp={preferredGpsApp}
+                    routeOrigin={routeOrigin}
+                    onOpenStore={handleSelectStore}
+                  />
+                )}
 
                 <div className="absolute right-4 top-4 z-[400] flex flex-col items-end gap-2">
                   <HeatmapToggle
@@ -848,6 +884,14 @@ function App() {
         onOpenStore={handleOpenStoreFromCarnet}
         onOpenFolder={handleOpenFolderFromPalette}
         onNavigate={handleNavigateFromPalette}
+      />
+
+      <AddStoreModal
+        open={addStoreModalOpen}
+        onClose={() => setAddStoreModalOpen(false)}
+        stores={stores}
+        onStoresUpdated={handleStoresOverrideUpdated}
+        onAdded={handleStoreAdded}
       />
 
       <Toast

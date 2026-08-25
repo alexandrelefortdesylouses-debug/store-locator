@@ -146,6 +146,9 @@ export default function CarnetView({
   onRemoveRouteStop,
   onClearRoute,
   onOptimizeRoute,
+  appointmentTimes,
+  onSetAppointmentTime,
+  onClearAppointmentTime,
   onOpenStore,
   userLocation,
   preferredGpsApp,
@@ -516,10 +519,21 @@ export default function CarnetView({
               onRemoveStop={onRemoveRouteStop}
               onClear={onClearRoute}
               onOptimize={onOptimizeRoute}
+              appointmentTimes={appointmentTimes}
+              onSetAppointmentTime={onSetAppointmentTime}
+              onClearAppointmentTime={onClearAppointmentTime}
             />
           )}
 
-          {tab === "week" && <CarnetWeekTab stores={stores} onSendToAgenda={handleSendDayToAgenda} />}
+          {tab === "week" && (
+            <CarnetWeekTab
+              stores={stores}
+              onSendToAgenda={handleSendDayToAgenda}
+              appointmentTimes={appointmentTimes}
+              onSetAppointmentTime={onSetAppointmentTime}
+              onClearAppointmentTime={onClearAppointmentTime}
+            />
+          )}
 
           {tab === "notes" && (
             <CarnetNotesTab

@@ -2,11 +2,22 @@ import { useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { optimizeRouteOrder } from "../utils/route";
 import IcsExportModal from "./IcsExportModal";
+import AppointmentTimeBadge from "./AppointmentTimeBadge";
 import Toast from "./Toast";
 
 const TOAST_DURATION_MS = 3500;
 
-export default function CarnetAgendaTab({ stops, order, userLocation, onRemoveStop, onClear, onOptimize }) {
+export default function CarnetAgendaTab({
+  stops,
+  order,
+  userLocation,
+  onRemoveStop,
+  onClear,
+  onOptimize,
+  appointmentTimes = {},
+  onSetAppointmentTime,
+  onClearAppointmentTime,
+}) {
   const { t } = useLanguage();
   const [icsModalOpen, setIcsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
@@ -67,14 +78,22 @@ export default function CarnetAgendaTab({ stops, order, userLocation, onRemoveSt
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => onRemoveStop(store.id)}
-              className="shrink-0 cursor-pointer rounded-full p-1.5 text-neutral-400 hover:text-red-500 dark:text-neutral-500 dark:hover:text-red-400"
-              aria-label={t("route.removeFromRoute")}
-            >
-              ✕
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <AppointmentTimeBadge
+                start={appointmentTimes[store.id]?.start}
+                end={appointmentTimes[store.id]?.end}
+                onSave={(start, end) => onSetAppointmentTime(store.id, start, end)}
+                onClear={() => onClearAppointmentTime(store.id)}
+              />
+              <button
+                type="button"
+                onClick={() => onRemoveStop(store.id)}
+                className="shrink-0 cursor-pointer rounded-full p-1.5 text-neutral-400 hover:text-red-500 dark:text-neutral-500 dark:hover:text-red-400"
+                aria-label={t("route.removeFromRoute")}
+              >
+                ✕
+              </button>
+            </div>
           </li>
         ))}
       </ol>

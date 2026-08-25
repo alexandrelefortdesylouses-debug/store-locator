@@ -27,6 +27,7 @@ export default function Sidebar({
   importing,
   onImportFile,
   onResetPortfolio,
+  onOpenAddStore,
   myCardEmptyMessage,
   favoriteIds,
   onToggleFavorite,
@@ -118,6 +119,7 @@ export default function Sidebar({
                 importing={importing}
                 onImportFile={onImportFile}
                 onReset={onResetPortfolio}
+                onOpenAddStore={onOpenAddStore}
                 selectedStatuses={selectedStatuses}
                 onToggleStatus={onToggleStatus}
               />

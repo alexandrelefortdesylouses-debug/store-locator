@@ -37,8 +37,8 @@ npm run preview
   marque sélectionnée — ou en cliquant sur **Mode libre** pour afficher
   l'ensemble des opticiens sans filtre.
 - **Fiche opticien** : un panneau détaillé s'ouvre au clic sur un opticien (dans
-  la liste ou sur la carte), avec ville/pays, marques distribuées, horaires,
-  bouton d'itinéraire (Google Maps) et la section avis clients.
+  la liste ou sur la carte), avec ville/pays, marques distribuées, horaires
+  et bouton d'itinéraire (Google Maps).
 - **Marques mises en avant** : dans le filtre par marque, une section
   "Marques Thélios" distingue Barton Perreira et Vuarnet du reste des marques.
   Sur la carte, les opticiens qui distribuent l'une de ces deux marques
@@ -373,24 +373,6 @@ Le chatbot (`src/utils/chatbot.js`) répond aussi dans la langue active
 (templates de réponse séparés par langue), sans dépendre d'un service de
 traduction externe. Pour ajouter une langue, dupliquer un bloc dans
 `translations.js` et l'ajouter au sélecteur dans `SettingsPanel.jsx`.
-
-## Avis clients et code secret
-
-Chaque fiche opticien affiche une section d'avis clients. Le formulaire
-d'ajout d'avis est protégé par un code secret (par défaut : `1234`).
-
-- Les avis sont enregistrés dans le `localStorage` du navigateur (par magasin).
-- Le code est stocké dans le `localStorage` de l'appareil (`getSecretCode`,
-  `src/utils/storage.js`) : il est donc propre à chaque navigateur/appareil
-  utilisé pour administrer le site.
-- Il n'existe plus d'écran pour le modifier depuis l'interface — la section
-  correspondante a été retirée de Paramètres (voir "Rubrique Paramètres"
-  plus bas) à la demande explicite du client. Le code reste modifiable
-  directement dans le `localStorage` de l'appareil si besoin
-  (`storeLocator_secretCode`).
-
-> Pour une mise en production réelle avec des avis partagés entre tous les
-> visiteurs, il faudra remplacer le stockage `localStorage` par une API/backend.
 
 ## Assistant Thélios (chatbot)
 
@@ -819,7 +801,7 @@ ce qui met à jour instantanément toutes les classes `bg-neutral-*` /
 ## Connexion, rôles & Administration
 
 > ⚠️ **Simulation locale, pas un vrai système de comptes.** Comme pour "Ma
-> Carte" et le code secret des avis, l'app n'a pas de backend : la
+> Carte", l'app n'a pas de backend : la
 > whitelist, les rôles et la session sont stockés dans le `localStorage` de
 > cet appareil/navigateur uniquement. Un administrateur qui ajoute un
 > e-mail ou change un rôle sur son poste ne rend pas ce changement visible
@@ -984,9 +966,6 @@ onglets (`src/components/SettingsPanel.jsx`) :
     l'en-tête (voir "Mode sombre" plus haut) pour désencombrer la barre
     supérieure, qui accumulait déjà Statistiques/Administration/
     Paramètres/Déconnexion.
-  - Le changement de code secret des avis a été retiré de cet onglet (voir
-    "Avis clients et code secret" plus haut) — Mon Compte et Préférences
-    ne couvrent plus que l'identité et l'apparence de l'app.
 - **Aide & FAQ** : une dizaine de questions/réponses couvrant l'usage
   global de l'app, avec un focus explicite sur l'import/export
   (`settingsPanel.faqGuide.*` dans `src/i18n/translations.js`) :
@@ -1022,12 +1001,37 @@ bascule entre deux vues :
   la vue active.
 
 > ⚠️ **"Ma Carte" n'est pas un vrai système de comptes multi-utilisateurs.**
-> L'app n'a pas de backend : comme le code secret des avis, tout est stocké
-> dans le `localStorage` de cet appareil/navigateur. "Ma Carte" désigne donc
+> L'app n'a pas de backend : tout est stocké dans le `localStorage` de cet
+> appareil/navigateur. "Ma Carte" désigne donc
 > l'utilisateur de CET appareil, pas un compte synchronisé entre plusieurs
 > postes. Un vrai système de comptes (avec authentification et données
 > partagées entre appareils) nécessiterait un backend — c'est le point déjà
 > noté plus bas comme non traité dans cette itération.
+
+### Widget "RDV du jour"
+
+En haut à gauche de la carte, uniquement sur "Ma Carte"
+(`src/components/TodayAgendaWidget.jsx`), un résumé compact des rendez-vous
+du jour reste visible en permanence, sans avoir à quitter la carte pour
+Mon Carnet :
+
+- **Source des données** : le trajet actuellement chargé dans l'onglet
+  Agenda & RDV (`routeStops`), filtré aux opticiens ayant un horaire fixé
+  (voir "Créneau horaire par étape" dans "Mon Carnet" plus bas) — un arrêt
+  sans horaire compte comme une visite prévue, pas encore comme un RDV
+  daté. Ce choix réutilise `routeStops`, déjà documenté ailleurs comme
+  représentant "la tournée du jour" : envoyer une journée de la Semaine vers
+  l'Agenda (voir "Envoyer vers l'Agenda") alimente donc directement ce
+  widget, sans mécanisme de date séparé à maintenir en double.
+- **Aucun RDV** : le widget affiche simplement "Aucun RDV aujourd'hui".
+- **Au moins un RDV** : affiche "Prochain RDV : *heure* — *nom*" — le
+  premier RDV dont l'heure de début n'est pas encore passée, ou le premier
+  de la journée si tous sont déjà passés.
+- **Clic sur le widget** : ouvre un volet listant tous les RDV du jour,
+  triés chronologiquement, chacun avec son heure, son adresse, un accès
+  direct à sa fiche opticien (ouvre `StoreDetailPanel`) et un bouton
+  itinéraire GPS (même logique de préférence Waze/Google Maps/Apple Maps
+  que le reste de l'app, voir "Rubrique Paramètres").
 
 ### Favoris et notes privées
 
@@ -1111,6 +1115,32 @@ uniquement au moment de l'import d'un `.xlsx`, pour ne pas alourdir le
 chargement initial de l'app pour les visiteurs qui n'utilisent jamais cette
 fonctionnalité (elle apparaît comme un fichier séparé dans le build, voir
 `npm run build`).
+
+### Ajouter un opticien manuellement
+
+Pour un opticien absent de `stores.json` (repéré sur le terrain, pas encore
+dans la base), le bouton **+ Ajouter un opticien** ouvre
+`AddStoreModal.jsx` — l'équivalent d'une ligne unique de l'import Excel/CSV
+de l'Administration, mais accessible directement depuis "Ma Carte" sans
+attendre qu'un administrateur fasse un import :
+
+- Un formulaire simple (nom, adresse, ville, code postal, marques,
+  téléphone, e-mail, site web) réutilise **exactement le même pipeline**
+  que l'import Admin (`buildStoreEntry`, `geocodeImportedStores`,
+  `upsertStores` dans `src/utils/adminStoreImport.js`) : géocodage côté
+  client via la Base Adresse Nationale, puis stockage comme override local
+  (voir "Panneau d'Administration" plus haut) — un opticien ajouté ici a
+  exactement le même statut technique qu'un opticien importé par un admin.
+- L'opticien créé est **ajouté directement au portefeuille** de l'utilisateur
+  courant, puisque l'intérêt d'un ajout manuel est justement de le suivre
+  tout de suite.
+- **Détection de doublon** (même heuristique que l'import Admin — coordonnées
+  à moins de 30m ou nom+ville identiques) : si un opticien proche existe
+  déjà, une confirmation explicite est demandée ("Ajouter quand même ?")
+  avant de créer l'entrée, plutôt que de l'ajouter silencieusement comme le
+  fait l'import en lot (une seule fiche saisie à la main mérite cette
+  confirmation ; un import de 50 lignes ne peut pas se permettre d'interrompre
+  l'utilisateur ligne par ligne).
 
 ## Annuler une action destructrice (toast Annuler)
 
@@ -1442,6 +1472,19 @@ côtés. Cet onglet affiche la liste des étapes programmées, un bouton
 de trajet" plus haut) et un accès direct au réglage de l'export agenda
 (`.ics`, voir plus haut) — sans avoir besoin de rouvrir la carte.
 
+- **Créneau horaire par étape** (`AppointmentTimeBadge.jsx`,
+  `src/utils/appointmentTimes.js`) : chaque étape affiche un badge 🕐
+  "09h30 – 10h30" une fois un horaire fixé, ou un bouton discret **+
+  Horaire** tant qu'aucun n'existe — le même contrôle sert à la fois de
+  formulaire de création (premier réglage) et d'édition (réglage suivant),
+  sans modale séparée, dans le même esprit que les menus de statut/priorité
+  déjà en ligne dans le Tableau. L'heure de début et de fin se choisissent
+  via les sélecteurs natifs du navigateur (`<input type="time">`). Cette
+  heure est stockée par opticien (pas par étape) dans un `localStorage`
+  dédié, propre à l'appareil, et **partagée avec l'onglet Semaine** (voir
+  ci-dessous) : fixer un horaire dans un onglet le fait apparaître
+  identique dans l'autre pour le même opticien.
+
 ### 📅 Semaine
 
 `CarnetWeekTab.jsx` + `src/utils/weekPlan.js` répartissent tout le
@@ -1466,6 +1509,14 @@ gère qu'une seule tournée à la fois :
   par les opticiens de ce jour et bascule directement sur l'onglet Agenda —
   toute la mécanique d'optimisation/export déjà construite pour l'Agenda
   (GPS, `.ics`...) est réutilisée telle quelle, sans duplication.
+- **Créneaux horaires dans chaque colonne** : le même badge/bouton **+
+  Horaire** que dans l'Agenda (voir ci-dessus) permet de fixer un horaire
+  directement sur un opticien d'un jour donné — la colonne se réorganise
+  alors automatiquement en ordre chronologique (les opticiens sans horaire
+  restent regroupés à la fin, dans leur ordre d'ajout) : la case du jour
+  devient une vraie mini-planification par heure plutôt qu'un simple sac
+  d'opticiens. **Envoyer vers l'Agenda** transmet cet ordre chronologique
+  tel quel à l'onglet Agenda.
 - **Réinitialiser la semaine** vide toutes les affectations (les opticiens
   retournent dans le pool), sans toucher au portefeuille lui-même.
 - Le plan de semaine est un `localStorage` **indépendant** du trajet de
@@ -1640,9 +1691,8 @@ réelle multi-utilisateurs :
   `src/services/storesService.js` par une implémentation branchée sur un
   vrai backend (Supabase, Firebase, ou autre) — c'est le point de bascule
   prévu pour ça, aucun autre fichier n'a besoin d'être modifié.
-- Idem pour les avis clients (`src/utils/storage.js`) et "Ma Carte"
-  (`src/utils/myCard.js`, `src/utils/activity.js`) : mêmes limites de
-  stockage local par appareil, pour les mêmes raisons.
+- Idem pour "Ma Carte" (`src/utils/myCard.js`, `src/utils/activity.js`) :
+  mêmes limites de stockage local par appareil, pour les mêmes raisons.
 - Idem pour les préférences GPS/Géolocalisation (`src/utils/gpsPrefs.js`)
   et le Bloc-Notes global de "Mon Carnet" (`src/utils/globalNote.js`) : la
   "sauvegarde automatique" du Bloc-Notes en particulier est un auto-save

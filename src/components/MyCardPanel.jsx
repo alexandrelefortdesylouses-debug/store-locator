@@ -10,12 +10,21 @@ function ImportIcon() {
   );
 }
 
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
 export default function MyCardPanel({
   portfolioCount,
   favoritesCount,
   importing,
   onImportFile,
   onReset,
+  onOpenAddStore,
   selectedStatuses,
   onToggleStatus,
 }) {
@@ -56,6 +65,17 @@ export default function MyCardPanel({
         <ImportIcon />
         {importing ? t("myCard.importing") : t("myCard.importButton")}
       </button>
+
+      {onOpenAddStore && (
+        <button
+          type="button"
+          onClick={onOpenAddStore}
+          className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          <PlusIcon />
+          {t("myCard.addStoreButton")}
+        </button>
+      )}
 
       {portfolioCount > 0 && (
         <button

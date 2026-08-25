@@ -1,5 +1,4 @@
 import { Fragment } from "react";
-import ReviewSection from "./ReviewSection";
 import FavoriteButton from "./FavoriteButton";
 import StoreNotes from "./StoreNotes";
 import StatusSelector from "./StatusSelector";
@@ -187,8 +186,6 @@ export default function StoreDetailPanel({
         {onSetNote && (
           <StoreNotes value={note} onChange={(text) => onSetNote(store.id, text)} />
         )}
-
-        <ReviewSection storeId={store.id} />
       </div>
     </div>
   );
