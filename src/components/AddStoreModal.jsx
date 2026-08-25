@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import { upsertStores } from "../services/storesService";
@@ -18,12 +18,27 @@ const LABEL_CLASS = "flex flex-col gap-1 text-xs text-neutral-500 dark:text-neut
 // upsertStores) so a manually-added optician behaves identically to one
 // added via Admin — same "local override layered on stores.json" caveat,
 // same id scheme.
-export default function AddStoreModal({ open, onClose, stores, onStoresUpdated, onAdded }) {
+export default function AddStoreModal({ open, onClose, stores, initialValues, onStoresUpdated, onAdded }) {
   const { t } = useLanguage();
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState("idle"); // idle | geocoding | confirmDuplicate
   const [pendingEntry, setPendingEntry] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+
+  // Re-seeds the form every time the modal opens — from a blank slate by
+  // default, or pre-filled when opened with `initialValues` (e.g. a parsed
+  // vCard from "Importer une fiche contact"). The form component itself
+  // stays mounted between opens (App.jsx never unmounts it), so this can't
+  // just be a `useState` initializer.
+  useEffect(() => {
+    if (open) {
+      setForm({ ...EMPTY_FORM, ...initialValues });
+      setStatus("idle");
+      setPendingEntry(null);
+      setErrorMessage(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const brandOptions = useMemo(() => [...new Set((stores || []).flatMap((s) => s.brands))].sort(), [stores]);
 

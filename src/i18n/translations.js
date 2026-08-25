@@ -8,6 +8,25 @@ export const translations = {
     "header.admin": "Administration",
     "header.signOut": "Se déconnecter",
 
+    "onboarding.welcome.title": "Bienvenue sur le Store Locator Thélios",
+    "onboarding.welcome.body":
+      "Un outil pour retrouver le réseau d'opticiens partenaires et gérer votre activité commerciale sur le terrain. Petite visite en 4 étapes.",
+    "onboarding.globalMap.title": "Carte Globale",
+    "onboarding.globalMap.body":
+      "L'intégralité du réseau d'opticiens partenaires Thélios, avec recherche, filtres par région/marque, et itinéraires.",
+    "onboarding.myCard.title": "Ma Carte",
+    "onboarding.myCard.body":
+      "Votre portefeuille personnel : importez vos clients, ajoutez des favoris, et retrouvez vos rendez-vous du jour d'un coup d'œil.",
+    "onboarding.carnet.title": "Mon Carnet",
+    "onboarding.carnet.body":
+      "Votre CRM terrain : statuts, priorités, dossiers thématiques, agenda, planification de la semaine et rapports de fin de journée.",
+    "onboarding.palette.title": "Recherche rapide",
+    "onboarding.palette.body":
+      "Appuyez sur Ctrl+K (⌘K sur Mac) à tout moment pour retrouver un opticien ou un dossier en un instant.",
+    "onboarding.skip": "Passer",
+    "onboarding.next": "Suivant",
+    "onboarding.finish": "Terminer",
+
     "commandPalette.placeholder": "Rechercher un opticien, un dossier…",
     "commandPalette.noResults": "Aucun résultat.",
     "commandPalette.folderSub": "Dossier — Mon Carnet",
@@ -114,6 +133,7 @@ export const translations = {
     "account.errorGeneric": "Impossible de mettre à jour le mot de passe.",
     "account.success": "Mot de passe mis à jour.",
     "account.save": "Enregistrer",
+    "settingsPanel.replayOnboarding": "Revoir la visite guidée",
     "settingsPanel.faqStatusTitle": "Statuts & codes couleurs",
     "settingsPanel.faqStatusDesc.active_client": "L'opticien fait partie de vos clients actifs Thélios.",
     "settingsPanel.faqStatusDesc.prospect": "Un contact a été établi, la relation reste à développer.",
@@ -367,6 +387,7 @@ export const translations = {
     "myCard.resetToast": "Portefeuille réinitialisé.",
     "myCard.undoReset": "Annuler",
     "myCard.addStoreButton": "Ajouter un opticien",
+    "myCard.importVCardButton": "Importer une fiche contact (.vcf)",
 
     "addStore.title": "Ajouter un opticien",
     "addStore.hint":
@@ -443,6 +464,7 @@ export const translations = {
     "appointment.save": "Valider l'horaire",
     "appointment.cancel": "Annuler",
     "appointment.clear": "Retirer l'horaire",
+    "appointment.addToCalendar": "Ajouter au calendrier (.ics)",
 
     "todayAgenda.none": "Aucun RDV aujourd'hui",
     "todayAgenda.next": "Prochain RDV : {time} — {name}",
@@ -606,6 +628,25 @@ export const translations = {
     "header.admin": "Administration",
     "header.signOut": "Sign out",
 
+    "onboarding.welcome.title": "Welcome to the Thélios Store Locator",
+    "onboarding.welcome.body":
+      "A tool to find the partner optician network and manage your field sales activity. A quick 4-step tour.",
+    "onboarding.globalMap.title": "Carte Globale",
+    "onboarding.globalMap.body":
+      "The entire Thélios partner optician network, with search, region/brand filters, and directions.",
+    "onboarding.myCard.title": "Ma Carte",
+    "onboarding.myCard.body":
+      "Your personal portfolio: import your clients, add favorites, and check today's appointments at a glance.",
+    "onboarding.carnet.title": "Mon Carnet",
+    "onboarding.carnet.body":
+      "Your field CRM: statuses, priorities, thematic folders, agenda, weekly planning, and end-of-day reports.",
+    "onboarding.palette.title": "Quick search",
+    "onboarding.palette.body":
+      "Press Ctrl+K (⌘K on Mac) any time to jump to an optician or a folder instantly.",
+    "onboarding.skip": "Skip",
+    "onboarding.next": "Next",
+    "onboarding.finish": "Finish",
+
     "commandPalette.placeholder": "Search an optician, a folder…",
     "commandPalette.noResults": "No results.",
     "commandPalette.folderSub": "Folder — Mon Carnet",
@@ -711,6 +752,7 @@ export const translations = {
     "account.errorGeneric": "Couldn't update the password.",
     "account.success": "Password updated.",
     "account.save": "Save",
+    "settingsPanel.replayOnboarding": "Replay the guided tour",
     "settingsPanel.faqStatusTitle": "Statuses & color codes",
     "settingsPanel.faqStatusDesc.active_client": "This optician is one of your active Thélios clients.",
     "settingsPanel.faqStatusDesc.prospect": "Contact has been made, the relationship is still to be developed.",
@@ -962,6 +1004,7 @@ export const translations = {
     "myCard.resetToast": "Portfolio reset.",
     "myCard.undoReset": "Undo",
     "myCard.addStoreButton": "Add an optician",
+    "myCard.importVCardButton": "Import a contact card (.vcf)",
 
     "addStore.title": "Add an optician",
     "addStore.hint":
@@ -1037,6 +1080,7 @@ export const translations = {
     "appointment.save": "Confirm time",
     "appointment.cancel": "Cancel",
     "appointment.clear": "Remove time",
+    "appointment.addToCalendar": "Add to calendar (.ics)",
 
     "todayAgenda.none": "No appointments today",
     "todayAgenda.next": "Next: {time} — {name}",

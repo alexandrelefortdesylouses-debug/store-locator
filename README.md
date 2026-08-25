@@ -1148,6 +1148,30 @@ attendre qu'un administrateur fasse un import :
   fait l'import en lot (une seule fiche saisie à la main mérite cette
   confirmation ; un import de 50 lignes ne peut pas se permettre d'interrompre
   l'utilisateur ligne par ligne).
+- **Importer une fiche contact (.vcf)** : à côté du bouton précédent, ce
+  bouton lit un fichier vCard (partagé par un collègue, exporté depuis un
+  répertoire de contacts) et ouvre le même formulaire, **pré-rempli**
+  (`src/utils/vcardImport.js` — lecture minimale des champs `FN`/`TEL`/
+  `EMAIL`/`ADR`, pas une implémentation RFC 6350 complète). Une vCard ne
+  contient jamais de marques ni de coordonnées géographiques fiables, donc
+  rien n'est ajouté automatiquement : le formulaire reste à valider (et
+  compléter) avant le géocodage, exactement comme un ajout manuel classique.
+
+## Visite guidée de première utilisation
+
+Après la première connexion sur un appareil (`src/utils/onboarding.js`,
+drapeau `localStorage` propre à l'appareil), `OnboardingTour.jsx` affiche
+automatiquement une courte présentation en 5 étapes (Bienvenue → Carte
+Globale → Ma Carte → Mon Carnet → palette ⌘K) sous forme de modale centrée
+avec points de progression, **Suivant**/**Passer**/**Terminer** — pas de
+bibliothèque de tour guidé avec surbrillance des éléments réels de
+l'interface : plus simple à maintenir correctement à mesure que l'app évolue
+sur ses trois modes (Carte Globale/Ma Carte/Mon Carnet) très différents.
+Elle ne se réaffiche plus ensuite (le drapeau est posé dès qu'on la termine
+ou qu'on clique **Passer**), mais reste accessible à tout moment via
+**Paramètres > Aide & FAQ > Revoir la visite guidée**, sans que cela
+n'efface le drapeau — la revoir manuellement ne relance pas l'affichage
+automatique au prochain chargement.
 
 ## Annuler une action destructrice (toast Annuler)
 
@@ -1491,6 +1515,14 @@ de trajet" plus haut) et un accès direct au réglage de l'export agenda
   dédié, propre à l'appareil, et **partagée avec l'onglet Semaine** (voir
   ci-dessous) : fixer un horaire dans un onglet le fait apparaître
   identique dans l'autre pour le même opticien.
+- **Ajouter au calendrier (.ics)** : une fois un horaire fixé, une icône 📅
+  à côté du badge télécharge un fichier `.ics` pour **ce seul rendez-vous**
+  (réutilise `buildIcsCalendar`/`downloadIcsFile`, déjà utilisés par
+  l'export de tournée complète ci-dessous) — utile pour ajouter un RDV
+  précis à son calendrier personnel sans passer par l'export de toute la
+  journée. Dans l'Agenda, la date utilisée est celle du jour (l'onglet
+  représentant "la tournée du jour") ; dans la Semaine, c'est la date du
+  jour de la colonne concernée.
 
 ### 📅 Semaine
 

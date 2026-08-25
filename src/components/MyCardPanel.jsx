@@ -18,6 +18,16 @@ function PlusIcon() {
   );
 }
 
+function ContactCardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="9" cy="11" r="2" />
+      <path strokeLinecap="round" d="M6 16c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5M15 10h4M15 14h4" />
+    </svg>
+  );
+}
+
 export default function MyCardPanel({
   portfolioCount,
   favoritesCount,
@@ -25,11 +35,13 @@ export default function MyCardPanel({
   onImportFile,
   onReset,
   onOpenAddStore,
+  onImportVCard,
   selectedStatuses,
   onToggleStatus,
 }) {
   const { t } = useLanguage();
   const inputRef = useRef(null);
+  const vcardInputRef = useRef(null);
 
   return (
     <div className="mb-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
@@ -75,6 +87,30 @@ export default function MyCardPanel({
           <PlusIcon />
           {t("myCard.addStoreButton")}
         </button>
+      )}
+
+      {onImportVCard && (
+        <>
+          <input
+            ref={vcardInputRef}
+            type="file"
+            accept=".vcf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onImportVCard(file);
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => vcardInputRef.current?.click()}
+            className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+          >
+            <ContactCardIcon />
+            {t("myCard.importVCardButton")}
+          </button>
+        </>
       )}
 
       {portfolioCount > 0 && (

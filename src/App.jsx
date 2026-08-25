@@ -20,7 +20,10 @@ import AdminPanel from "./components/AdminPanel";
 import CommandPalette from "./components/CommandPalette";
 import AddStoreModal from "./components/AddStoreModal";
 import TodayAgendaWidget from "./components/TodayAgendaWidget";
+import OnboardingTour from "./components/OnboardingTour";
 import { getAppointmentTimes, setAppointmentTime, clearAppointmentTime } from "./utils/appointmentTimes";
+import { hasSeenOnboarding, markOnboardingSeen } from "./utils/onboarding";
+import { parseVCard } from "./utils/vcardImport";
 import Toast from "./components/Toast";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
@@ -89,6 +92,8 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [addStoreModalOpen, setAddStoreModalOpen] = useState(false);
+  const [addStoreInitialValues, setAddStoreInitialValues] = useState(undefined);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");
@@ -131,6 +136,17 @@ function App() {
       .then((res) => res.json())
       .then((data) => setBaseStores(data));
   }, []);
+
+  // First-run guided tour: opens once per device, right after there's a
+  // signed-in user, unless it's already been seen (or replayed manually
+  // from Paramètres > Aide & FAQ, which opens it without touching this
+  // flag). Runs on every mount with an active session, not just a fresh
+  // login, so a rep who reloads mid-tour still sees it resume from the top.
+  useEffect(() => {
+    if (currentUser && !hasSeenOnboarding()) {
+      setOnboardingOpen(true);
+    }
+  }, [currentUser]);
 
   // Global "go to" shortcut for the Cmd+K search palette — Ctrl+K on
   // Windows/Linux, Cmd+K on macOS. Toggling (rather than only opening)
@@ -379,6 +395,25 @@ function App() {
   // shared network.
   function handleStoreAdded(storeId) {
     setPortfolioIds(addToPortfolio([storeId]));
+  }
+
+  // "Importer une fiche contact (.vcf)" in Ma Carte: parses the vCard
+  // client-side and opens the same AddStoreModal used for a from-scratch
+  // manual add, pre-filled — a vCard never carries brands or a real geocode,
+  // so the rep still reviews/completes the form before it's actually
+  // submitted, rather than being silently added.
+  function handleImportVCard(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAddStoreInitialValues(parseVCard(String(reader.result)));
+      setAddStoreModalOpen(true);
+    };
+    reader.readAsText(file);
+  }
+
+  function handleCloseOnboarding() {
+    markOnboardingSeen();
+    setOnboardingOpen(false);
   }
 
   // Used when a store is opened from within Mon Carnet (e.g. an @mention
@@ -683,7 +718,11 @@ function App() {
                 importing={importing}
                 onImportFile={handleImportFile}
                 onResetPortfolio={handleResetPortfolio}
-                onOpenAddStore={() => setAddStoreModalOpen(true)}
+                onOpenAddStore={() => {
+                  setAddStoreInitialValues(undefined);
+                  setAddStoreModalOpen(true);
+                }}
+                onImportVCard={handleImportVCard}
                 myCardEmptyMessage={myCardIsEmpty ? t("myCard.emptyPortfolio") : undefined}
                 favoriteIds={favoriteIds}
                 onToggleFavorite={handleToggleFavorite}
@@ -854,6 +893,7 @@ function App() {
           onSetPreferredGpsApp={handleSetPreferredGpsApp}
           defaultAddress={defaultAddress}
           onSetDefaultAddress={handleSetDefaultAddress}
+          onReplayOnboarding={() => setOnboardingOpen(true)}
         />
       )}
 
@@ -889,9 +929,12 @@ function App() {
         open={addStoreModalOpen}
         onClose={() => setAddStoreModalOpen(false)}
         stores={stores}
+        initialValues={addStoreInitialValues}
         onStoresUpdated={handleStoresOverrideUpdated}
         onAdded={handleStoreAdded}
       />
+
+      <OnboardingTour open={onboardingOpen} onClose={handleCloseOnboarding} />
 
       <Toast
         message={toastMessage?.text}

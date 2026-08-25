@@ -137,6 +137,8 @@ function DayColumn({
                 <AppointmentTimeBadge
                   start={time?.start}
                   end={time?.end}
+                  store={store}
+                  date={dayKey}
                   onSave={(start, end) => onSetAppointmentTime(store.id, start, end)}
                   onClear={() => onClearAppointmentTime(store.id)}
                 />

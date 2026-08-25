@@ -395,7 +395,7 @@ function AccountSection({ currentUser, onSignOut }) {
   );
 }
 
-function FaqSection() {
+function FaqSection({ onReplayOnboarding }) {
   const { t } = useLanguage();
   const faqItems = [
     "importFormat",
@@ -412,6 +412,16 @@ function FaqSection() {
 
   return (
     <div>
+      {onReplayOnboarding && (
+        <button
+          type="button"
+          onClick={onReplayOnboarding}
+          className="mb-8 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-200 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          {t("settingsPanel.replayOnboarding")}
+        </button>
+      )}
+
       <h3 className="mb-3 font-serif text-base text-neutral-900 dark:text-neutral-100">
         {t("settingsPanel.faqStatusTitle")}
       </h3>
@@ -466,6 +476,7 @@ export default function SettingsPanel({
   onSetPreferredGpsApp,
   defaultAddress,
   onSetDefaultAddress,
+  onReplayOnboarding,
 }) {
   const { t } = useLanguage();
   const [tab, setTab] = useState("account");
@@ -521,7 +532,7 @@ export default function SettingsPanel({
               <DarkModeSection />
             </>
           )}
-          {tab === "help" && <FaqSection />}
+          {tab === "help" && <FaqSection onReplayOnboarding={onReplayOnboarding} />}
         </div>
       </div>
     </div>

@@ -82,6 +82,7 @@ export default function CarnetAgendaTab({
               <AppointmentTimeBadge
                 start={appointmentTimes[store.id]?.start}
                 end={appointmentTimes[store.id]?.end}
+                store={store}
                 onSave={(start, end) => onSetAppointmentTime(store.id, start, end)}
                 onClear={() => onClearAppointmentTime(store.id)}
               />

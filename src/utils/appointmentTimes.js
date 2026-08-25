@@ -48,3 +48,16 @@ export function timeToMinutes(hhmm) {
   if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
   return h * 60 + m;
 }
+
+// Today's date as a local YYYY-MM-DD key — built from local getters rather
+// than `toISOString().slice(0, 10)` (which is UTC-based and can land on the
+// wrong calendar day near midnight in France's timezone) or than a
+// `Date.parse`/regex approach, matching the same local-date convention
+// IcsExportModal already uses for its date picker's default value.
+export function todayDateKey() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
