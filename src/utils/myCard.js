@@ -1,6 +1,6 @@
 // "Ma Carte" is a per-device personal workspace, not a real multi-user
 // account system (this app has no backend) — everything here lives in this
-// browser's localStorage only, same as the existing secret-code/review data.
+// browser's localStorage only.
 const FAVORITES_KEY = "storeLocator_mycard_favorites";
 const PORTFOLIO_KEY = "storeLocator_mycard_portfolio";
 const NOTES_KEY = "storeLocator_mycard_notes";
@@ -8,6 +8,7 @@ const STATUSES_KEY = "storeLocator_mycard_statuses";
 const TAGS_KEY = "storeLocator_mycard_tags";
 const PRIORITIES_KEY = "storeLocator_mycard_priorities";
 const REP_NAME_KEY = "storeLocator_mycard_repname";
+const VISIT_DATES_KEY = "storeLocator_mycard_visitdates";
 
 export const STORE_STATUSES = {
   ACTIVE_CLIENT: "active_client",
@@ -91,6 +92,28 @@ export function resetPortfolio() {
 export function restorePortfolio(ids) {
   localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(ids));
   return ids;
+}
+
+// A single freely-editable visit date per store — past or future, set/
+// cleared directly from a date picker on the store's fiche (StoreDetailPanel),
+// and shown/sortable as its own column in Mon Carnet's Tableau. Deliberately
+// separate from the dated visit-note history in utils/activity.js: this is
+// one plain date value the rep can move around by hand, not an
+// append-only log of past visits.
+export function getVisitDates() {
+  return readObject(VISIT_DATES_KEY);
+}
+
+export function setVisitDate(storeId, date) {
+  const dates = getVisitDates();
+  const updated = { ...dates };
+  if (date) {
+    updated[storeId] = date;
+  } else {
+    delete updated[storeId];
+  }
+  localStorage.setItem(VISIT_DATES_KEY, JSON.stringify(updated));
+  return updated;
 }
 
 export function getNotes() {

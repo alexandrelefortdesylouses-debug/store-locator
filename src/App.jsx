@@ -49,6 +49,8 @@ import {
   setTags,
   getPriorities,
   setPriority,
+  getVisitDates,
+  setVisitDate,
 } from "./utils/myCard";
 import {
   getAllVisitNotes,
@@ -120,6 +122,7 @@ function App() {
   const [statuses, setStatuses] = useState(() => getStatuses());
   const [tags, setTagsState] = useState(() => getTags());
   const [priorities, setPrioritiesState] = useState(() => getPriorities());
+  const [visitDates, setVisitDatesState] = useState(() => getVisitDates());
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [whiteZonesActive, setWhiteZonesActive] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -559,6 +562,10 @@ function App() {
     setPrioritiesState(setPriority(storeId, priority));
   }
 
+  function handleSetVisitDate(storeId, date) {
+    setVisitDatesState(setVisitDate(storeId, date));
+  }
+
   function handleAddVisitNote(storeId, text, photoId) {
     setVisitNotesState(addVisitNote(storeId, text, photoId));
   }
@@ -686,6 +693,7 @@ function App() {
             onSetPriority={handleSetPriority}
             visitNotes={visitNotes}
             onAddVisitNote={handleAddVisitNote}
+            visitDates={visitDates}
             prospectFirstSeen={prospectFirstSeen}
             favoriteIds={favoriteIds}
             routeStops={routeStops}
@@ -873,6 +881,8 @@ function App() {
                   onSetPriority={handleSetPriority}
                   tags={selectedStore ? tags[selectedStore.id] || [] : []}
                   onSetTags={handleSetTags}
+                  visitDate={selectedStore ? visitDates[selectedStore.id] || null : null}
+                  onSetVisitDate={handleSetVisitDate}
                   preferredGpsApp={preferredGpsApp}
                   routeOrigin={routeOrigin}
                 />

@@ -137,6 +137,7 @@ export default function CarnetView({
   onSetPriority,
   visitNotes,
   onAddVisitNote,
+  visitDates,
   prospectFirstSeen,
   favoriteIds,
   routeStops,
@@ -492,6 +493,7 @@ export default function CarnetView({
               priorities={priorities}
               onSetPriority={onSetPriority}
               visitNotes={visitNotes}
+              visitDates={visitDates}
               onOpenNote={handleOpenNote}
               onScheduleStore={handleScheduleStore}
               preferredGpsApp={preferredGpsApp}

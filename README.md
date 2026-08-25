@@ -1076,6 +1076,25 @@ Ces deux informations sont reflétées visuellement à trois endroits :
 3. Un filtre "Filtrer par statut" dans le panneau "Ma Carte", pour n'afficher
    que les opticiens d'un ou plusieurs statuts donnés.
 
+### Date de visite
+
+Toujours dans la fiche détaillée (accessible aussi bien depuis "Carte
+Globale" que "Ma Carte"), un sélecteur de date (`<input type="date">`)
+permet de fixer ou modifier une **date de visite** sur l'opticien —
+passée ou à venir, librement éditable, avec un bouton ✕ pour l'effacer
+(`src/utils/myCard.js`, `getVisitDates`/`setVisitDate`). C'est une valeur
+unique par opticien, distincte de l'historique des notes de visite datées
+de Mon Carnet (`src/utils/activity.js`) : pas un journal qui s'accumule,
+juste une date que le commercial déplace librement au fil de l'eau.
+
+Cette date est reprise dans le Tableau de "Mon Carnet" sous une colonne
+dédiée **Dernière visite**, triable comme les autres colonnes (clic sur
+l'en-tête, croissant puis décroissant). Volontairement **aucune couleur ni
+badge** n'accompagne cette colonne ou les marqueurs de la carte — juste la
+date en texte simple, sans alerte automatique basée sur l'ancienneté (à la
+différence du score d'urgence de la colonne suivante, qui reste, lui, basé
+sur les notes de visite datées et non sur cette date manuelle).
+
 ### Import de portefeuille (.xlsx / .csv)
 
 Dans "Ma Carte", le bouton **Importer mon portefeuille clients** accepte un

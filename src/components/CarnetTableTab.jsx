@@ -395,6 +395,7 @@ export default function CarnetTableTab({
   priorities,
   onSetPriority,
   visitNotes = {},
+  visitDates = {},
   onOpenNote,
   onScheduleStore,
   preferredGpsApp = GPS_APPS.GOOGLE,
@@ -410,7 +411,7 @@ export default function CarnetTableTab({
   search,
   onSearchChange,
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
   const [assigningStore, setAssigningStore] = useState(null);
@@ -478,6 +479,8 @@ export default function CarnetTableTab({
           return STATUS_RANK[statuses[store.id]] ?? STATUS_ORDER.length;
         case "priority":
           return PRIORITY_RANK[priorities[store.id]] ?? PRIORITY_ORDER.length;
+        case "visitDate":
+          return visitDates[store.id] || "";
         case "urgency": {
           const entries = visitNotes[store.id];
           return URGENCY_RANK[
@@ -508,7 +511,7 @@ export default function CarnetTableTab({
       if (typeof va === "number" && typeof vb === "number") return (va - vb) * direction;
       return String(va).localeCompare(String(vb)) * direction;
     });
-  }, [stores, search, statusFilter, statuses, priorities, sort, visitNotes]);
+  }, [stores, search, statusFilter, statuses, priorities, sort, visitNotes, visitDates]);
 
   const allVisibleSelected = rows.length > 0 && rows.every((s) => selectedIds.has(s.id));
 
@@ -648,6 +651,7 @@ export default function CarnetTableTab({
                 <th className="px-4 py-3">{t("carnet.table.colBrands")}</th>
                 <SortableTh columnKey="status">{t("carnet.table.colStatus")}</SortableTh>
                 <SortableTh columnKey="priority">{t("carnet.table.colPriority")}</SortableTh>
+                <SortableTh columnKey="visitDate">{t("carnet.table.colVisitDate")}</SortableTh>
                 <SortableTh columnKey="urgency">{t("carnet.table.colUrgency")}</SortableTh>
                 <th className="px-4 py-3">{t("carnet.table.colActions")}</th>
               </tr>
@@ -767,6 +771,14 @@ export default function CarnetTableTab({
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
+                      {visitDates[store.id]
+                        ? new Date(visitDates[store.id]).toLocaleDateString(
+                            lang === "en" ? "en-US" : "fr-FR",
+                            { day: "2-digit", month: "short", year: "numeric" },
+                          )
+                        : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <UrgencyBadge level={storeUrgency(store)} />

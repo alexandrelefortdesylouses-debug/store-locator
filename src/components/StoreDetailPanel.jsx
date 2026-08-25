@@ -25,6 +25,8 @@ export default function StoreDetailPanel({
   onSetPriority,
   tags = [],
   onSetTags,
+  visitDate = null,
+  onSetVisitDate,
   preferredGpsApp = GPS_APPS.GOOGLE,
   routeOrigin = null,
 }) {
@@ -106,6 +108,32 @@ export default function StoreDetailPanel({
           <PrioritySelector value={priority} onChange={(p) => onSetPriority(store.id, p)} />
         )}
         {onSetTags && <TagPicker tags={tags} onChange={(t2) => onSetTags(store.id, t2)} />}
+
+        {onSetVisitDate && (
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+              {t("storeDetail.visitDateLabel")}
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={visitDate || ""}
+                onChange={(e) => onSetVisitDate(store.id, e.target.value)}
+                className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+              />
+              {visitDate && (
+                <button
+                  type="button"
+                  onClick={() => onSetVisitDate(store.id, "")}
+                  aria-label={t("storeDetail.clearVisitDate")}
+                  className="cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-red-500 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-red-400"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mb-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">

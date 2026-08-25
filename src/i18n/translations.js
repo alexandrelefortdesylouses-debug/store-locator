@@ -235,6 +235,7 @@ export const translations = {
     "carnet.table.colBrands": "Marques Thélios",
     "carnet.table.colStatus": "Statut",
     "carnet.table.colPriority": "Potentiel / Priorité",
+    "carnet.table.colVisitDate": "Dernière visite",
     "carnet.table.colUrgency": "Urgence",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Ouvrir la note",
@@ -605,6 +606,8 @@ export const translations = {
     "storeDetail.partner": "Opticien partenaire",
     "storeDetail.close": "Fermer la fiche",
     "storeDetail.brands": "Marques distribuées",
+    "storeDetail.visitDateLabel": "Date de visite",
+    "storeDetail.clearVisitDate": "Retirer la date de visite",
     "storeDetail.hours": "Horaires d'ouverture",
     "storeDetail.directions": "Itinéraire",
 
@@ -852,6 +855,7 @@ export const translations = {
     "carnet.table.colBrands": "Thélios Brands",
     "carnet.table.colStatus": "Status",
     "carnet.table.colPriority": "Potential / Priority",
+    "carnet.table.colVisitDate": "Last visit",
     "carnet.table.colUrgency": "Urgency",
     "carnet.table.colActions": "Actions",
     "carnet.table.actionOpenNote": "Open note",
@@ -1219,6 +1223,8 @@ export const translations = {
     "storeDetail.partner": "Partner optician",
     "storeDetail.close": "Close details",
     "storeDetail.brands": "Brands carried",
+    "storeDetail.visitDateLabel": "Visit date",
+    "storeDetail.clearVisitDate": "Remove visit date",
     "storeDetail.hours": "Opening hours",
     "storeDetail.directions": "Directions",
 
