@@ -27,7 +27,7 @@ const PRIORITY_RANK = Object.fromEntries(PRIORITY_ORDER.map((p, i) => [p, i]));
 
 function NoteIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -40,7 +40,7 @@ function NoteIcon() {
 
 function CalendarIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path strokeLinecap="round" d="M3 10h18M8 3v4M16 3v4" />
     </svg>
@@ -49,7 +49,7 @@ function CalendarIcon() {
 
 function PhoneIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -61,7 +61,7 @@ function PhoneIcon() {
 
 function MapPinIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -74,7 +74,7 @@ function MapPinIcon() {
 
 function FolderIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -89,12 +89,12 @@ function FolderIcon() {
 // has no assigned color in that system and keeps the original neutral
 // outline treatment instead.
 function IconButton({ onClick, href, external, disabled, label, color, children }) {
-  const filledClassName = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white shadow-sm transition ${
+  const filledClassName = `flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white shadow-sm transition ${
     disabled
       ? "cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
       : "cursor-pointer hover:brightness-110 hover:shadow-md active:scale-95"
   }`;
-  const outlineClassName = `flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition ${
+  const outlineClassName = `flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
     disabled
       ? "cursor-not-allowed border-neutral-200 text-neutral-300 dark:border-neutral-800 dark:text-neutral-600"
       : "cursor-pointer border-neutral-300 text-neutral-600 hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
@@ -142,7 +142,7 @@ function telHref(phone) {
 
 function ContactIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={1.75}>
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <circle cx="9" cy="10.5" r="2" />
       <path strokeLinecap="round" d="M5.5 16c.6-1.8 2-2.5 3.5-2.5s2.9.7 3.5 2.5M14.5 9.5h4M14.5 12.5h4" />
@@ -276,6 +276,15 @@ function SortIndicator({ active, direction }) {
     <span className="ml-0.5 inline-block w-2.5 text-amber-700 dark:text-amber-400">
       {direction === "asc" ? "▲" : "▼"}
     </span>
+  );
+}
+
+function SelectIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12l2.5 2.5L16 9" />
+    </svg>
   );
 }
 
@@ -416,6 +425,11 @@ export default function CarnetTableTab({
   const [assigningStore, setAssigningStore] = useState(null);
   const [bulkAssigning, setBulkAssigning] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  // Row checkboxes are hidden by default so the table stays compact and
+  // fits the screen width without horizontal scrolling; this toggle is the
+  // only way to reveal them (and the header "select all" checkbox) for a
+  // multi-select action like bulk folder assignment.
+  const [selectionMode, setSelectionMode] = useState(false);
 
   function toggleStatusFilter(status) {
     setStatusFilter((prev) =>
@@ -436,6 +450,13 @@ export default function CarnetTableTab({
     setAssigningStore(null);
     setBulkAssigning(false);
     if (Array.isArray(storeIdOrIds)) setSelectedIds(new Set());
+  }
+
+  function handleToggleSelectionMode() {
+    setSelectionMode((prev) => {
+      if (prev) setSelectedIds(new Set());
+      return !prev;
+    });
   }
 
   function toggleRowSelected(storeId) {
@@ -534,24 +555,63 @@ export default function CarnetTableTab({
     onCreateRoute(target);
   }
 
-  function SortableTh({ columnKey, children }) {
+  function SortableTh({ columnKey, width, children }) {
     return (
-      <th className="px-4 py-3">
+      <th className={`px-2 py-2 ${width || ""}`}>
         <button
           type="button"
           onClick={() => handleSort(columnKey)}
-          className="flex cursor-pointer items-center whitespace-nowrap hover:text-amber-700 dark:hover:text-amber-400"
+          className="flex min-w-0 cursor-pointer items-center hover:text-amber-700 dark:hover:text-amber-400"
         >
-          {children}
+          <span className="truncate">{children}</span>
           <SortIndicator active={sort.key === columnKey} direction={sort.direction} />
         </button>
       </th>
     );
   }
 
+  // Percentage widths for a table-fixed layout, so the table always fits
+  // the available width instead of forcing horizontal scroll — text cells
+  // truncate/wrap instead of pushing the table wider. Two sets because the
+  // checkbox column only exists in selection mode; the other seven columns
+  // are scaled down slightly to make room for it.
+  const columnWidths = selectionMode
+    ? {
+        checkbox: "w-[4%]",
+        name: "w-[22%]",
+        city: "w-[10%]",
+        brands: "w-[17%]",
+        status: "w-[13%]",
+        priority: "w-[13%]",
+        urgency: "w-[9%]",
+        actions: "w-[12%]",
+      }
+    : {
+        name: "w-[23%]",
+        city: "w-[11%]",
+        brands: "w-[18%]",
+        status: "w-[14%]",
+        priority: "w-[14%]",
+        urgency: "w-[9%]",
+        actions: "w-[11%]",
+      };
+
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={handleToggleSelectionMode}
+          aria-pressed={selectionMode}
+          className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition ${
+            selectionMode
+              ? "border-transparent bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
+              : "border-neutral-300 text-neutral-600 hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+          }`}
+        >
+          <SelectIcon />
+          {selectionMode ? t("carnet.table.selectButtonActive") : t("carnet.table.selectButton")}
+        </button>
         <button
           type="button"
           onClick={handleCreateRouteClick}
@@ -602,7 +662,7 @@ export default function CarnetTableTab({
         </div>
       </div>
 
-      {selectedIds.size > 0 && (
+      {selectionMode && selectedIds.size > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
           <span>{t("carnet.table.selectedCount", { count: selectedIds.size })}</span>
           <button
@@ -627,26 +687,38 @@ export default function CarnetTableTab({
           {stores.length === 0 ? t("carnet.table.emptyPortfolio") : t("carnet.table.noMatch")}
         </p>
       ) : (
-        <div className="thin-scrollbar overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
-          <table className="w-full min-w-[980px] border-collapse text-sm">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700">
+          <table className="w-full table-fixed border-collapse text-sm">
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
-                <th className="w-10 px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    onChange={toggleSelectAll}
-                    aria-label={t("carnet.table.selectAllAria")}
-                    className="h-4 w-4 cursor-pointer accent-amber-600"
-                  />
-                </th>
-                <SortableTh columnKey="name">{t("carnet.table.colName")}</SortableTh>
-                <SortableTh columnKey="city">{t("carnet.table.colCity")}</SortableTh>
-                <th className="px-4 py-3">{t("carnet.table.colBrands")}</th>
-                <SortableTh columnKey="status">{t("carnet.table.colStatus")}</SortableTh>
-                <SortableTh columnKey="priority">{t("carnet.table.colPriority")}</SortableTh>
-                <SortableTh columnKey="urgency">{t("carnet.table.colUrgency")}</SortableTh>
-                <th className="px-4 py-3">{t("carnet.table.colActions")}</th>
+                {selectionMode && (
+                  <th className={`px-2 py-2 ${columnWidths.checkbox}`}>
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={toggleSelectAll}
+                      aria-label={t("carnet.table.selectAllAria")}
+                      className="h-4 w-4 cursor-pointer accent-amber-600"
+                    />
+                  </th>
+                )}
+                <SortableTh columnKey="name" width={columnWidths.name}>
+                  {t("carnet.table.colName")}
+                </SortableTh>
+                <SortableTh columnKey="city" width={columnWidths.city}>
+                  {t("carnet.table.colCity")}
+                </SortableTh>
+                <th className={`px-2 py-2 ${columnWidths.brands}`}>{t("carnet.table.colBrands")}</th>
+                <SortableTh columnKey="status" width={columnWidths.status}>
+                  {t("carnet.table.colStatus")}
+                </SortableTh>
+                <SortableTh columnKey="priority" width={columnWidths.priority}>
+                  {t("carnet.table.colPriority")}
+                </SortableTh>
+                <SortableTh columnKey="urgency" width={columnWidths.urgency}>
+                  {t("carnet.table.colUrgency")}
+                </SortableTh>
+                <th className={`px-2 py-2 ${columnWidths.actions}`}>{t("carnet.table.colActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -662,18 +734,20 @@ export default function CarnetTableTab({
                     onDragStart={(e) => handleDragStart(e, store.id)}
                     className="relative cursor-grab border-b border-neutral-100 transition hover:z-10 hover:bg-amber-50/60 hover:shadow-[0_4px_14px_-4px_rgba(0,0,0,0.15)] last:border-0 active:cursor-grabbing dark:border-neutral-800 dark:hover:bg-neutral-800/60"
                   >
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(store.id)}
-                        onChange={() => toggleRowSelected(store.id)}
-                        aria-label={t("carnet.table.selectRowAria", { name: store.name })}
-                        className="h-4 w-4 cursor-pointer accent-amber-600"
-                      />
-                    </td>
-                    <td className="px-4 py-3 font-serif text-neutral-900 dark:text-neutral-100">
-                      <div className="flex flex-col items-start gap-1">
-                        <span>{store.name}</span>
+                    {selectionMode && (
+                      <td className="px-2 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(store.id)}
+                          onChange={() => toggleRowSelected(store.id)}
+                          aria-label={t("carnet.table.selectRowAria", { name: store.name })}
+                          className="h-4 w-4 cursor-pointer accent-amber-600"
+                        />
+                      </td>
+                    )}
+                    <td className="px-2 py-2 font-serif text-neutral-900 dark:text-neutral-100">
+                      <div className="flex min-w-0 flex-col items-start gap-1">
+                        <span className="w-full truncate">{store.name}</span>
                         {storeFolders.length > 0 && (
                           <span className="flex flex-wrap items-center gap-1">
                             {storeFolders.map((f) => {
@@ -699,11 +773,13 @@ export default function CarnetTableTab({
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">
-                      {deptCode ? `${store.city} (${deptCode})` : store.city}
+                    <td className="px-2 py-2 text-neutral-600 dark:text-neutral-300">
+                      <span className="block truncate">
+                        {deptCode ? `${store.city} (${deptCode})` : store.city}
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex max-w-[220px] flex-wrap gap-1">
+                    <td className="px-2 py-2">
+                      <div className="flex flex-wrap gap-1">
                         {store.brands.map((brand) => {
                           const featured = FEATURED_BRANDS.includes(brand);
                           return (
@@ -721,11 +797,11 @@ export default function CarnetTableTab({
                         })}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <select
                         value={status}
                         onChange={(e) => onSetStatus(store.id, e.target.value || null)}
-                        className={`cursor-pointer rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-400 ${
+                        className={`w-full cursor-pointer truncate rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-400 ${
                           status
                             ? ""
                             : "border-neutral-300 bg-transparent text-neutral-500 shadow-none dark:border-neutral-600 dark:text-neutral-400"
@@ -744,11 +820,11 @@ export default function CarnetTableTab({
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <select
                         value={priority}
                         onChange={(e) => onSetPriority(store.id, e.target.value || null)}
-                        className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium focus:outline-none focus:ring-1 focus:ring-amber-400"
+                        className="w-full cursor-pointer truncate rounded-full border px-2 py-1 text-[10px] font-medium focus:outline-none focus:ring-1 focus:ring-amber-400"
                         style={
                           priority
                             ? { background: PRIORITY_COLORS[priority], color: "white", borderColor: "transparent" }
@@ -763,11 +839,11 @@ export default function CarnetTableTab({
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <UrgencyBadge level={storeUrgency(store)} />
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
+                    <td className="px-2 py-2">
+                      <div className="flex flex-wrap items-center gap-1">
                         <IconButton
                           onClick={() => onOpenNote(store.id)}
                           label={t("carnet.table.actionOpenNote")}

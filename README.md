@@ -1458,6 +1458,19 @@ case à cocher est active ou non — le même principe pour les deux :
   présentes dans des itérations précédentes ont toutes été retirées à la
   demande du client, pour garder le tableau concentré sur les colonnes à
   forte densité d'information.
+- **Tableau compact, sans défilement horizontal** : `table-layout: fixed`
+  avec des largeurs de colonnes en pourcentage (au lieu d'une largeur
+  minimale fixe qui forçait un scroll horizontal) — le texte trop long
+  (nom, ville, marques, statut/priorité dans leur menu déroulant) se
+  tronque avec une ellipse plutôt que d'élargir le tableau, et les icônes
+  d'action passent sur une seconde ligne si la colonne est trop étroite
+  plutôt que déborder. La case à cocher de sélection multiple (colonne
+  d'en-tête + une par ligne) est **masquée par défaut** pour économiser
+  cette largeur ; un bouton "Sélectionner" au-dessus du tableau (à côté de
+  "Créer l'itinéraire"/"Exporter") la fait apparaître pour composer une
+  sélection multi-lignes (dossier en masse, itinéraire ou export ciblés) —
+  un second clic ("Terminer la sélection") la masque à nouveau et efface
+  la sélection en cours.
 - **Colonne Urgence** (`src/utils/urgency.js`, `computeUrgency`) : un badge
   calculé à la volée — 🔥 **À relancer**, ⏰ **À suivre**, 🕐 **Faible**, ou
   aucun badge — qui combine trois signaux déjà présents dans les autres
