@@ -97,11 +97,13 @@ function App() {
   const [addStoreModalOpen, setAddStoreModalOpen] = useState(false);
   const [addStoreInitialValues, setAddStoreInitialValues] = useState(undefined);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  // "Version Beta" hidden sample/demo mode — deliberately not persisted to
-  // localStorage, so it never silently carries over into a later session;
-  // toggled fresh each time from the discreet trigger on the login screen
-  // (LoginScreen), before `currentUser` is set.
-  const [sampleMode, setSampleMode] = useState(false);
+  // "Version Beta" hidden sample/demo mode — on by default (the app opens
+  // restricted to the department-75/Vuarnet-Maui Jim-Julbo sample), and
+  // deliberately not persisted to localStorage so a session that switched
+  // to the full network never silently carries that over to the next one.
+  // Toggled from the discreet trigger on the login screen (LoginScreen),
+  // before `currentUser` is set.
+  const [sampleMode, setSampleMode] = useState(true);
   const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileView, setMobileView] = useState("map");

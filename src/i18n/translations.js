@@ -1,7 +1,7 @@
 export const translations = {
   fr: {
     "header.settings": "Paramètres",
-    "header.storeLocator": "Store Locator",
+    "header.storeLocator": "Digital Prospection Tool",
     "header.search": "Rechercher",
     "header.searchHint": "Recherche globale (⌘K)",
     "header.stats": "Statistiques",
@@ -11,7 +11,7 @@ export const translations = {
     "app.betaTrigger": "Version Beta",
     "app.betaTriggerTooltip": "Accès restreint — Ne pas cliquer",
 
-    "onboarding.welcome.title": "Bienvenue sur le Store Locator Thélios",
+    "onboarding.welcome.title": "Bienvenue sur Digital Prospection Tool",
     "onboarding.welcome.body":
       "Un outil pour retrouver le réseau d'opticiens partenaires et gérer votre activité commerciale sur le terrain. Petite visite en 4 étapes.",
     "onboarding.globalMap.title": "Carte Globale",
@@ -43,7 +43,7 @@ export const translations = {
 
     "login.title": "Connexion",
     "login.description":
-      "Connectez-vous avec votre adresse e-mail Thélios pour accéder au Store Locator.",
+      "Connectez-vous avec votre adresse e-mail Thélios pour accéder à Digital Prospection Tool.",
     "login.emailLabel": "Adresse e-mail",
     "login.passwordLabel": "Mot de passe",
     "login.passwordPlaceholder": "••••••••",
@@ -518,7 +518,7 @@ export const translations = {
     "route.pdfNoteLabel": "Note",
     "route.pdfReportTitle": "Compte-rendu de la journée",
     "route.pdfReportHint": "Espace libre pour vos notes manuscrites ou votre compte-rendu.",
-    "route.pdfFooter": "Généré depuis le Store Locator Thélios",
+    "route.pdfFooter": "Généré depuis Digital Prospection Tool",
     "route.icsExport": "Ajouter à mon agenda (.ics)",
 
     "ics.modalTitle": "Export agenda (.ics)",
@@ -626,7 +626,7 @@ export const translations = {
   },
   en: {
     "header.settings": "Settings",
-    "header.storeLocator": "Store Locator",
+    "header.storeLocator": "Digital Prospection Tool",
     "header.search": "Search",
     "header.searchHint": "Global search (⌘K)",
     "header.stats": "Statistics",
@@ -636,7 +636,7 @@ export const translations = {
     "app.betaTrigger": "Version Beta",
     "app.betaTriggerTooltip": "Restricted access — Do not click",
 
-    "onboarding.welcome.title": "Welcome to the Thélios Store Locator",
+    "onboarding.welcome.title": "Welcome to Digital Prospection Tool",
     "onboarding.welcome.body":
       "A tool to find the partner optician network and manage your field sales activity. A quick 4-step tour.",
     "onboarding.globalMap.title": "Carte Globale",
@@ -667,7 +667,7 @@ export const translations = {
     "commandPalette.actionStats": "Open Statistics",
 
     "login.title": "Sign in",
-    "login.description": "Sign in with your Thélios email address to access the Store Locator.",
+    "login.description": "Sign in with your Thélios email address to access Digital Prospection Tool.",
     "login.emailLabel": "Email address",
     "login.passwordLabel": "Password",
     "login.passwordPlaceholder": "••••••••",
@@ -1137,7 +1137,7 @@ export const translations = {
     "route.pdfNoteLabel": "Note",
     "route.pdfReportTitle": "End-of-day report",
     "route.pdfReportHint": "Free space for handwritten notes or your report.",
-    "route.pdfFooter": "Generated from the Thélios Store Locator",
+    "route.pdfFooter": "Generated from Digital Prospection Tool",
     "route.icsExport": "Add to my calendar (.ics)",
 
     "ics.modalTitle": "Calendar export (.ics)",

@@ -45,7 +45,7 @@ export function buildIcsCalendar(events) {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Thelios Store Locator//FR",
+    "PRODID:-//Digital Prospection Tool//FR",
     "CALSCALE:GREGORIAN",
     body,
     "END:VCALENDAR",

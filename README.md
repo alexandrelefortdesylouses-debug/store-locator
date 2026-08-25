@@ -1,4 +1,4 @@
-# Store Locator — Thélios / LVMH Eyewear
+# Digital Prospection Tool — Thélios / LVMH Eyewear
 
 Application web de localisation d'opticiens partenaires (React + TailwindCSS + Leaflet).
 
@@ -1750,20 +1750,24 @@ réseau (zone rurale, cave d'un magasin...) :
 
 ## Mode "Version Beta" (échantillon caché)
 
-Un déclencheur discret — le texte "Version Beta", tout en bas à gauche de
-la **page de connexion uniquement** (`LoginScreen.jsx`), volontairement
-minuscule et peu contrasté pour ne pas ressembler à un vrai contrôle, avec
-une infobulle au survol ("Accès restreint — Ne pas cliquer") dissuadant d'y
-toucher — bascule l'app dans un mode "échantillon" restreint, pensé pour
-des démonstrations rapides sans avoir à faire défiler l'intégralité du
-réseau (`src/utils/sampleMode.js`) :
+**Actif par défaut** : l'app s'ouvre directement dans ce mode "échantillon"
+restreint — l'utilisateur voit d'abord uniquement les opticiens du
+département 75 avec les marques Vuarnet/Maui Jim/Julbo, pensé pour des
+démonstrations rapides sans avoir à faire défiler l'intégralité du réseau
+(`src/utils/sampleMode.js`). Un déclencheur discret — le texte "Version
+Beta", tout en bas à gauche de la **page de connexion uniquement**
+(`LoginScreen.jsx`), volontairement minuscule et peu contrasté pour ne pas
+ressembler à un vrai contrôle, avec une infobulle au survol ("Accès
+restreint — Ne pas cliquer") dissuadant d'y toucher — permet de basculer
+vers la version complète du réseau d'un simple clic, avant de se connecter :
 
 - **Accessible uniquement avant connexion** : le déclencheur n'existe que
   sur l'écran de connexion — une fois identifié, il disparaît entièrement
   de l'interface (aucune trace dans Carte Globale, Ma Carte ou Mon
-  Carnet). Le mode choisi avant de se connecter reste actif pendant toute
-  la session ; pour en changer, il faut se déconnecter puis revenir à
-  l'écran de connexion.
+  Carnet). Le mode choisi avant de se connecter (échantillon par défaut,
+  ou version complète si on a cliqué sur le déclencheur) reste actif
+  pendant toute la session ; pour en changer, il faut se déconnecter puis
+  revenir à l'écran de connexion.
 
 - **Restrictions appliquées** : uniquement les opticiens du département 75
   (Paris), et parmi leurs marques, seules **Vuarnet**, **Maui Jim** et
@@ -1781,8 +1785,9 @@ réseau (`src/utils/sampleMode.js`) :
   Marques ne propose plus que les trois marques autorisées, etc.
 - **Bascule fluide et sans effet de bord** : un simple `useState` React,
   volontairement **non persisté** en `localStorage` — il repart toujours à
-  "désactivé" au rechargement de la page, pour qu'un mode caché ne survive
-  jamais silencieusement d'une session à l'autre. Portefeuille, favoris,
+  "activé" (échantillon) au rechargement de la page, pour qu'un choix fait
+  pendant une session ne survive jamais silencieusement à la suivante.
+  Portefeuille, favoris,
   dossiers et statuts de "Ma Carte"/"Mon Carnet" ne sont ni lus ni modifiés
   par le filtre : un opticien du portefeuille hors du département 75
   disparaît simplement de la vue tant que le mode est actif, puis

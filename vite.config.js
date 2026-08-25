@@ -19,8 +19,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Thélios — Store Locator',
-        short_name: 'Thélios',
+        name: 'Digital Prospection Tool',
+        short_name: 'DPT',
         description: 'Localisateur d\'opticiens partenaires et CRM terrain Thélios.',
         lang: 'fr',
         start_url: '/',
