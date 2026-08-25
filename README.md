@@ -1418,14 +1418,15 @@ case à cocher est active ou non — le même principe pour les deux :
     carte que le rapport de fin de journée.
   - **Excel (.xlsx)** : mêmes informations de titre/notes/indicateurs en
     lignes d'en-tête au-dessus du tableau de données (colonnes Nom, Ville,
-    Code Postal, Marques Thélios, Statut, Téléphone).
+    Code Postal, Marques, Statut, Téléphone).
 - **Créer l'itinéraire** ajoute les opticiens ciblés (sélection ou dossier
   entier) au trajet en cours (`addRouteStops` dans `App.jsx`, purement
   additif — n'enlève jamais un arrêt déjà présent) et bascule sur l'onglet
   **Agenda & RDV**, où l'optimisation, l'export `.ics` et la fiche PDF de
   tournée déjà existants prennent le relais.
 
-- **Marques Thélios** : badges discrets par opticien (mêmes styles que
+- **Marques** (en-tête de colonne volontairement raccourci — juste
+  "Marques", pas "Marques Thélios") : badges discrets par opticien (mêmes styles que
   partout ailleurs dans l'app — une marque `FEATURED_BRANDS` ressort en
   plein, les autres restent en ton pastel).
 - **Potentiel / Priorité** : un niveau facultatif (Élevée / Moyenne /
@@ -1471,6 +1472,18 @@ case à cocher est active ou non — le même principe pour les deux :
   sélection multi-lignes (dossier en masse, itinéraire ou export ciblés) —
   un second clic ("Terminer la sélection") la masque à nouveau et efface
   la sélection en cours.
+- **Robustesse en anglais** : la copie anglaise (`myCard.status.*`,
+  `carnet.urgency.*`...) est structurellement plus longue que le français
+  d'origine ("Keep an eye" vs "À suivre", "Appointment to set" vs "RDV à
+  fixer"), ce qui faisait déborder le badge Urgence — un simple `<span>`
+  sans troncature — par-dessus la colonne Actions voisine. Deux correctifs
+  complémentaires : le badge est maintenant borné à la largeur de sa
+  cellule et tronque son texte avec une ellipse comme les autres colonnes
+  (l'émoji reste toujours entier) ; et en session anglaise uniquement
+  (`lang === "en"`, classe `carnet-table-compact` définie dans
+  `src/index.css`), la taille de police et le padding des cellules sont
+  légèrement réduits pour donner un peu plus de marge à ces libellés plus
+  longs. Le français, déjà plus compact, garde sa taille normale.
 - **Colonne Urgence** (`src/utils/urgency.js`, `computeUrgency`) : un badge
   calculé à la volée — 🔥 **À relancer**, ⏰ **À suivre**, 🕐 **Faible**, ou
   aucun badge — qui combine trois signaux déjà présents dans les autres

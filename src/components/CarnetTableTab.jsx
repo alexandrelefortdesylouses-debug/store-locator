@@ -262,10 +262,11 @@ function UrgencyBadge({ level }) {
   const emoji = level === URGENCY_LEVELS.HIGH ? "🔥" : level === URGENCY_LEVELS.MEDIUM ? "⏰" : "🕐";
   return (
     <span
-      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+      className="inline-flex max-w-full items-center gap-1 overflow-hidden rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
       style={{ background: URGENCY_COLORS[level] }}
     >
-      {emoji} {t(`carnet.urgency.${level}`)}
+      <span className="shrink-0">{emoji}</span>
+      <span className="truncate">{t(`carnet.urgency.${level}`)}</span>
     </span>
   );
 }
@@ -419,7 +420,7 @@ export default function CarnetTableTab({
   search,
   onSearchChange,
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [statusFilter, setStatusFilter] = useState([]);
   const [sort, setSort] = useState({ key: "name", direction: "asc" });
   const [assigningStore, setAssigningStore] = useState(null);
@@ -688,7 +689,9 @@ export default function CarnetTableTab({
         </p>
       ) : (
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700">
-          <table className="w-full table-fixed border-collapse text-sm">
+          <table
+            className={`w-full table-fixed border-collapse text-sm ${lang === "en" ? "carnet-table-compact" : ""}`}
+          >
             <thead>
               <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
                 {selectionMode && (
