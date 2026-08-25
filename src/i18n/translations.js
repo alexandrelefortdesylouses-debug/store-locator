@@ -9,6 +9,7 @@ export const translations = {
     "header.signOut": "Se déconnecter",
 
     "app.betaTrigger": "Version Beta",
+    "app.betaTriggerTooltip": "Accès restreint — Ne pas cliquer",
 
     "onboarding.welcome.title": "Bienvenue sur le Store Locator Thélios",
     "onboarding.welcome.body":
@@ -633,6 +634,7 @@ export const translations = {
     "header.signOut": "Sign out",
 
     "app.betaTrigger": "Version Beta",
+    "app.betaTriggerTooltip": "Restricted access — Do not click",
 
     "onboarding.welcome.title": "Welcome to the Thélios Store Locator",
     "onboarding.welcome.body":

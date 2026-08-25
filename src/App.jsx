@@ -99,7 +99,8 @@ function App() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   // "Version Beta" hidden sample/demo mode — deliberately not persisted to
   // localStorage, so it never silently carries over into a later session;
-  // toggled fresh each time from the discreet bottom-left trigger.
+  // toggled fresh each time from the discreet trigger on the login screen
+  // (LoginScreen), before `currentUser` is set.
   const [sampleMode, setSampleMode] = useState(false);
   const [pendingCarnetFolderId, setPendingCarnetFolderId] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -671,7 +672,13 @@ function App() {
   }
 
   if (!currentUser) {
-    return <LoginScreen onSignedIn={setCurrentUser} />;
+    return (
+      <LoginScreen
+        onSignedIn={setCurrentUser}
+        sampleMode={sampleMode}
+        onToggleSampleMode={() => setSampleMode((v) => !v)}
+      />
+    );
   }
 
   return (
@@ -966,21 +973,6 @@ function App() {
       />
 
       <ChatWidget stores={stores} />
-
-      {/* Hidden "Version Beta" sample-mode trigger — intentionally
-          unlabeled beyond this plain text, no icon or button styling, so
-          it reads as an incidental build tag rather than a control. */}
-      <button
-        type="button"
-        onClick={() => setSampleMode((v) => !v)}
-        className={`fixed bottom-1 left-2 z-[50] cursor-pointer bg-transparent text-[10px] transition ${
-          sampleMode
-            ? "text-amber-600 opacity-70 dark:text-amber-400"
-            : "text-neutral-400 opacity-40 hover:opacity-60 dark:text-neutral-600"
-        }`}
-      >
-        {t("app.betaTrigger")}
-      </button>
     </div>
   );
 }

@@ -1750,10 +1750,19 @@ réseau (zone rurale, cave d'un magasin...) :
 ## Mode "Version Beta" (échantillon caché)
 
 Un déclencheur discret — le texte "Version Beta", tout en bas à gauche de
-l'écran, volontairement minuscule et peu contrasté pour ne pas ressembler à
-un vrai contrôle — bascule l'app dans un mode "échantillon" restreint,
-pensé pour des démonstrations rapides sans avoir à faire défiler
-l'intégralité du réseau (`src/utils/sampleMode.js`) :
+la **page de connexion uniquement** (`LoginScreen.jsx`), volontairement
+minuscule et peu contrasté pour ne pas ressembler à un vrai contrôle, avec
+une infobulle au survol ("Accès restreint — Ne pas cliquer") dissuadant d'y
+toucher — bascule l'app dans un mode "échantillon" restreint, pensé pour
+des démonstrations rapides sans avoir à faire défiler l'intégralité du
+réseau (`src/utils/sampleMode.js`) :
+
+- **Accessible uniquement avant connexion** : le déclencheur n'existe que
+  sur l'écran de connexion — une fois identifié, il disparaît entièrement
+  de l'interface (aucune trace dans Carte Globale, Ma Carte ou Mon
+  Carnet). Le mode choisi avant de se connecter reste actif pendant toute
+  la session ; pour en changer, il faut se déconnecter puis revenir à
+  l'écran de connexion.
 
 - **Restrictions appliquées** : uniquement les opticiens du département 75
   (Paris), et parmi leurs marques, seules **Vuarnet**, **Maui Jim** et

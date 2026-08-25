@@ -4,7 +4,7 @@ import { signIn, DEFAULT_ADMIN_EMAIL } from "../services/authService";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function LoginScreen({ onSignedIn }) {
+export default function LoginScreen({ onSignedIn, sampleMode, onToggleSampleMode }) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,6 +111,24 @@ export default function LoginScreen({ onSignedIn }) {
           {t("login.localOnlyNote")}
         </p>
       </div>
+
+      {/* Hidden "Version Beta" sample-mode trigger — intentionally
+          unlabeled beyond this plain text, no icon or button styling, so
+          it reads as an incidental build tag rather than a control. Only
+          reachable from the login screen: once signed in there is no way
+          back to it short of signing out again. */}
+      <button
+        type="button"
+        onClick={onToggleSampleMode}
+        title={t("app.betaTriggerTooltip")}
+        className={`fixed bottom-1 left-2 z-[50] cursor-pointer bg-transparent text-[10px] transition ${
+          sampleMode
+            ? "text-amber-600 opacity-70 dark:text-amber-400"
+            : "text-neutral-600 opacity-40 hover:opacity-60"
+        }`}
+      >
+        {t("app.betaTrigger")}
+      </button>
     </div>
   );
 }
