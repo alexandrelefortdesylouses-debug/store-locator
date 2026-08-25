@@ -775,6 +775,7 @@ function App() {
                   routeOrder={routeOrder}
                   viewMode={viewMode}
                   statuses={statuses}
+                  visitNotes={visitNotes}
                   whiteZonesActive={whiteZonesActive}
                   whiteZones={whiteZones}
                 />

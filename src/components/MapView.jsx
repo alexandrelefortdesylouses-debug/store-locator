@@ -17,6 +17,7 @@ import {
   WHITE_ZONE_COLOR,
 } from "../utils/palette";
 import { getHeatmapCalibration } from "../utils/heatmapCalibration";
+import { daysSinceLastVisit, getFreshnessBadgeColor, FRESHNESS_STALE_DAYS } from "../utils/visitFreshness";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const FRANCE_CENTER = [46.6, 2.4];
@@ -37,9 +38,16 @@ const DARK_TILES = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 };
 
-function createPinIcon(color, selected) {
+// `badgeColor`, when set, draws a small ring at the pin's top-right corner
+// on top of its status color — the "hasn't been visited in a while"
+// indicator (see getFreshnessBadgeColor in utils/visitFreshness.js),
+// glanceable across the whole map without opening any single store's fiche.
+function createPinIcon(color, selected, badgeColor = null) {
   const width = selected ? 34 : 26;
   const height = Math.round(width * 1.4);
+  const badge = badgeColor
+    ? `<circle cx="22" cy="8" r="5.5" fill="${badgeColor}" stroke="#ffffff" stroke-width="1.5" />`
+    : "";
 
   return L.divIcon({
     className: "",
@@ -52,6 +60,7 @@ function createPinIcon(color, selected) {
           stroke-width="${selected ? 2 : 1.5}"
         />
         <circle cx="15" cy="15" r="6" fill="#ffffff" opacity="0.95" />
+        ${badge}
       </svg>
     `,
     iconSize: [width, height],
@@ -77,11 +86,18 @@ const statusIcons = Object.fromEntries(
   ]),
 );
 
-function getIcon(store, selected, { viewMode, statuses } = {}) {
+function getIcon(store, selected, { viewMode, statuses, visitNotes } = {}) {
   if (viewMode === "mycard") {
     const status = statuses?.[store.id] || "none";
-    const iconSet = statusIcons[status] || statusIcons.none;
-    return selected ? iconSet.selected : iconSet.default;
+    // Fast path for the common case (no staleness badge needed): reuse the
+    // precomputed icon instead of building a fresh L.divIcon per store.
+    const badgeColor = getFreshnessBadgeColor(visitNotes?.[store.id]);
+    if (!badgeColor) {
+      const iconSet = statusIcons[status] || statusIcons.none;
+      return selected ? iconSet.selected : iconSet.default;
+    }
+    const color = STATUS_COLORS[status] || STATUS_NONE_COLOR;
+    return createPinIcon(color, selected, badgeColor);
   }
   const featured = isFeaturedStore(store);
   if (featured) {
@@ -245,6 +261,7 @@ export default function MapView({
   routeOrder,
   viewMode,
   statuses,
+  visitNotes,
   whiteZonesActive,
   whiteZones = [],
 }) {
@@ -320,11 +337,13 @@ export default function MapView({
         >
           {mappableStores.map((store) => {
             if (routeStopSet.has(store.id)) return null;
+            const staleDays =
+              viewMode === "mycard" ? daysSinceLastVisit(visitNotes?.[store.id]) : null;
             return (
               <Marker
                 key={store.id}
                 position={[store.lat, store.lng]}
-                icon={getIcon(store, store.id === selectedStoreId, { viewMode, statuses })}
+                icon={getIcon(store, store.id === selectedStoreId, { viewMode, statuses, visitNotes })}
                 eventHandlers={{
                   click: () => onSelectStore(store.id),
                 }}
@@ -340,6 +359,11 @@ export default function MapView({
                     </>
                   )}
                 </Popup>
+                {staleDays !== null && staleDays >= FRESHNESS_STALE_DAYS && (
+                  <Tooltip direction="top" offset={[0, -30]}>
+                    {t("map.lastVisitTooltip", { count: staleDays, days: staleDays })}
+                  </Tooltip>
+                )}
               </Marker>
             );
           })}

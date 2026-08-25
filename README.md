@@ -1076,6 +1076,18 @@ Ces deux informations sont reflétées visuellement à trois endroits :
 3. Un filtre "Filtrer par statut" dans le panneau "Ma Carte", pour n'afficher
    que les opticiens d'un ou plusieurs statuts donnés.
 
+**Repère "dernière visite" sur le marqueur** (`src/utils/visitFreshness.js`,
+uniquement sur "Ma Carte") : un petit badge rond apparaît sur le marqueur
+lui-même — 🟠 ambre à partir de 30 jours sans note de visite, 🔴 rouge
+au-delà de 60 — visible sur toute la carte sans avoir à ouvrir chaque fiche
+une par une. Survoler le marqueur affiche une infobulle avec le nombre exact
+de jours. Un opticien jamais visité **n'affiche aucun badge** plutôt qu'une
+fausse alerte "infiniment en retard" — même principe que le score d'urgence
+du Tableau (voir "Mon Carnet" plus bas) : sans date de référence, il n'y a
+rien à comparer. Ce signal ne porte que sur la récence de la dernière
+visite, volontairement distinct du score d'urgence composite qui combine
+aussi statut et priorité.
+
 ### Import de portefeuille (.xlsx / .csv)
 
 Dans "Ma Carte", le bouton **Importer mon portefeuille clients** accepte un
