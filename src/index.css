@@ -47,6 +47,13 @@ body,
 
 body {
   margin: 0;
+  /* Belt-and-braces guard against any stray element pushing the page wider
+   * than the viewport on mobile (a bug there reads as sideways page drift,
+   * not just a cut-off element) — internal panels/tabs that legitimately
+   * scroll horizontally (.no-scrollbar, .thin-scrollbar strips, the map)
+   * keep doing so via their own overflow-x, this only clips overflow at
+   * the outermost level. */
+  overflow-x: hidden;
 }
 
 .leaflet-container {
@@ -76,6 +83,19 @@ body {
 
 .dark .thin-scrollbar::-webkit-scrollbar-thumb {
   background-color: #52525b;
+}
+
+/* Fully hidden scrollbar — for horizontally-scrollable nav strips (main
+ * view-mode tabs, "Mon Carnet" sub-tabs) on mobile, where a visible
+ * scrollbar bar reads as a broken layout rather than an affordance; the
+ * horizontal swipe itself is enough of a hint on a touch device. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mon Carnet table (CarnetTableTab.jsx), English sessions only: English

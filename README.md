@@ -498,6 +498,43 @@ L'interface s'adapte du smartphone au grand écran :
   doigt.
 - Au-delà de `md`, la mise en page desktop (sidebar + carte côte à côte)
   reste inchangée.
+- **Tableau "Mon Carnet" → cartes en dessous de `md`** (`CarnetTableTab.jsx`,
+  composant `StoreCard`) : le tableau à colonnes fixes n'a tout simplement
+  pas la place de s'afficher sur un écran de téléphone, même compacté — en
+  dessous de 768px il est entièrement remplacé (`hidden`/`md:block` sur le
+  tableau, `md:hidden` sur la liste de cartes) par une liste verticale de
+  cartes, une par opticien : nom + ville en ligne 1, badges Statut/Priorité
+  puis marques en ligne 2, et en ligne 3 un bouton principal "Consulter /
+  Éditer" (ouvre la même modale de notes que l'action Note du tableau)
+  accompagné d'un bouton "···" qui ouvre un petit menu regroupant les 4
+  actions restantes (RDV, Appeler, E-mail, GPS, Classer dans un dossier) au
+  lieu d'empiler 6 icônes sur une largeur de carte trop étroite pour les
+  contenir. Le mode sélection multiple (checkboxes) fonctionne à l'identique
+  sur les cartes.
+- **Barres de navigation défilables sans scrollbar visible** : le bandeau
+  d'onglets principal (Carte Globale / Ma Carte / Mon Carnet,
+  `ViewModeToggle.jsx`) et les sous-onglets de Mon Carnet (Tableau / Agenda
+  & RDV / Semaine / Bloc-Notes / Performance, `CarnetView.jsx`) défilent
+  horizontalement (`overflow-x-auto`) plutôt que de forcer un retour à la
+  ligne ou de faire déborder l'en-tête — avec une scrollbar totalement
+  masquée (nouvelle classe utilitaire `.no-scrollbar` dans `src/index.css`,
+  `scrollbar-width: none` + `::-webkit-scrollbar { display: none }`) pour
+  que ça se lise comme une glissade tactile plutôt qu'un défilement de
+  bureau cassé. `min-w-0` sur le conteneur défilant est le détail qui rend
+  ça possible : sans lui, un enfant flex ne se laisse jamais rétrécir
+  en dessous de la largeur de son contenu, et `overflow-x-auto` ne se
+  déclenche donc jamais.
+- **En-tête resserré sur mobile** : padding réduit (`px-2 py-2.5` avant
+  `sm:`), les boutons d'action (Recherche/Statistiques/Administration/
+  Paramètres/Déconnexion) ne rétrécissent plus (`shrink-0`) et défilent eux
+  aussi horizontalement avec scrollbar masquée si jamais ils ne tiennent
+  pas tous sur la largeur — un filet de sécurité qui ne se déclenche pas en
+  usage normal mais évite tout chevauchement de texte.
+- **Garde-fou anti-débordement global** : `overflow-x: hidden` sur `body`
+  (`src/index.css`) empêche qu'un élément égaré ne pousse toute la page en
+  largeur (l'effet "la page glisse de travers" sur mobile) ; les zones qui
+  défilent volontairement (carte, bandeaux d'onglets, panneaux `thin-
+  scrollbar`) gardent leur propre `overflow-x` et ne sont pas affectées.
 
 ## Mode Heatmap et filtre par type de point de vente
 

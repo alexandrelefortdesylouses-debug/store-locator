@@ -427,7 +427,7 @@ export default function CarnetView({
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
       <div className="flex shrink-0 flex-col gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="thin-scrollbar flex gap-1 overflow-x-auto">
+        <div className="no-scrollbar flex min-w-0 max-w-full gap-1 overflow-x-auto">
           {TABS.map((key) => {
             const Icon = TAB_ICONS[key];
             const active = tab === key;
@@ -437,7 +437,7 @@ export default function CarnetView({
                 type="button"
                 onClick={() => setTab(key)}
                 aria-pressed={active}
-                className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition sm:px-4 ${
+                className={`flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition sm:px-4 ${
                   active
                     ? "bg-neutral-900 text-white dark:bg-amber-600 dark:text-neutral-950"
                     : "text-neutral-500 hover:text-amber-700 dark:text-neutral-400 dark:hover:text-amber-400"
@@ -477,7 +477,7 @@ export default function CarnetView({
             sortMode={folderSortMode}
             onSetSortMode={handleSetFolderSortMode}
           />
-          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
             {selectedFolder && (
               <CarnetFolderNotes
                 folder={selectedFolder}
@@ -510,7 +510,7 @@ export default function CarnetView({
           </div>
         </div>
       ) : (
-        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
           {tab === "agenda" && (
             <CarnetAgendaTab
               stops={routeStops}

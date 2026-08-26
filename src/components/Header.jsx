@@ -62,8 +62,8 @@ export default function Header({
   return (
     <header className="relative shrink-0 border-b border-neutral-800 bg-neutral-950">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
-      <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-5 md:px-8">
-        <div className="overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
+      <div className="flex flex-nowrap items-center justify-between gap-2 px-2 py-2.5 sm:px-5 sm:py-3 md:px-8">
+        <div className="shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
           <img
             src="/pwa-icon-512.png"
             alt="Thélios"
@@ -72,18 +72,18 @@ export default function Header({
         </div>
 
         <div className="hidden text-center lg:block">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-neutral-500">
+          <p className="whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-neutral-500">
             {t("header.storeLocator")}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="no-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto sm:gap-3">
           <button
             type="button"
             onClick={onOpenSearch}
             aria-label={t("header.search")}
             title={t("header.searchHint")}
-            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
+            className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
           >
             <SearchIcon />
             <span className="hidden sm:inline">{t("header.search")}</span>
@@ -95,7 +95,7 @@ export default function Header({
             type="button"
             onClick={onOpenStats}
             aria-label={t("header.stats")}
-            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
+            className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
           >
             <StatsIcon />
             <span className="hidden sm:inline">{t("header.stats")}</span>
@@ -105,7 +105,7 @@ export default function Header({
               type="button"
               onClick={onOpenAdmin}
               aria-label={t("header.admin")}
-              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-amber-700/60 px-2.5 text-xs uppercase tracking-wide text-amber-300 transition hover:border-amber-400 hover:text-amber-200 sm:px-4"
+              className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-amber-700/60 px-2.5 text-xs uppercase tracking-wide text-amber-300 transition hover:border-amber-400 hover:text-amber-200 sm:px-4"
             >
               <AdminIcon />
               <span className="hidden sm:inline">{t("header.admin")}</span>
@@ -115,7 +115,7 @@ export default function Header({
             type="button"
             onClick={onOpenSettings}
             aria-label={t("header.settings")}
-            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
+            className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-amber-200/60 hover:text-amber-200 sm:px-4"
           >
             <SettingsIcon />
             <span className="hidden sm:inline">{t("header.settings")}</span>
@@ -126,7 +126,7 @@ export default function Header({
               onClick={onSignOut}
               title={currentUser.email}
               aria-label={t("header.signOut")}
-              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-red-400/60 hover:text-red-300"
+              className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-neutral-700 px-2.5 text-xs uppercase tracking-wide text-neutral-300 transition hover:border-red-400/60 hover:text-red-300"
             >
               <LogoutIcon />
             </button>

@@ -280,6 +280,16 @@ function SortIndicator({ active, direction }) {
   );
 }
 
+function MoreIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+      <circle cx="5" cy="12" r="1.75" />
+      <circle cx="12" cy="12" r="1.75" />
+      <circle cx="19" cy="12" r="1.75" />
+    </svg>
+  );
+}
+
 function SelectIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.75}>
@@ -394,6 +404,232 @@ function ExportMenu({ totalCount, selectedCount, onPick }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+const MENU_ITEM_CLASS =
+  "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-neutral-700 transition hover:bg-amber-50 dark:text-neutral-200 dark:hover:bg-neutral-800";
+const MENU_ITEM_DISABLED_CLASS =
+  "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-neutral-400 dark:text-neutral-600";
+
+// Mobile (<768px) replacement for a table row: the table's fixed-width
+// columns simply don't have room to lay out on a phone screen, so below
+// md the whole <table> is swapped for a vertical stack of these cards
+// instead (see the `md:hidden` / `hidden md:block` split in the main
+// render). Same data, same actions — just re-flowed name+city / status+
+// brand badges / primary+overflow-menu actions instead of seven columns.
+function StoreCard({
+  store,
+  status,
+  priority,
+  urgency,
+  deptCode,
+  storeFolders,
+  onSetStatus,
+  onSetPriority,
+  onOpenNote,
+  onScheduleStore,
+  preferredGpsApp,
+  routeOrigin,
+  onAssignFolder,
+  onSelectFolder,
+  selectionMode,
+  selected,
+  onToggleSelected,
+}) {
+  const { t } = useLanguage();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
+
+  return (
+    <div className="flex gap-2 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
+      {selectionMode && (
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggleSelected}
+          aria-label={t("carnet.table.selectRowAria", { name: store.name })}
+          className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-amber-600"
+        />
+      )}
+      <div className="min-w-0 flex-1">
+        {/* Line 1: name + city */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-serif text-sm text-neutral-900 dark:text-neutral-100">{store.name}</p>
+            <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+              {deptCode ? `${store.city} (${deptCode})` : store.city}
+            </p>
+          </div>
+          <UrgencyBadge level={urgency} />
+        </div>
+
+        {storeFolders.length > 0 && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-1">
+            {storeFolders.map((f) => {
+              const color = FOLDER_COLORS[f.color] || FOLDER_COLORS.gray;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => onSelectFolder(f.id)}
+                  title={t("carnet.folders.badgeAria", { name: f.name })}
+                  className="flex shrink-0 cursor-pointer items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium transition hover:brightness-95"
+                  style={{ borderColor: color, color }}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: color }} />
+                  <span className="max-w-[100px] truncate">{f.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Line 2: status + priority badges, then brands */}
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <select
+            value={status}
+            onChange={(e) => onSetStatus(store.id, e.target.value || null)}
+            aria-label={t("carnet.table.colStatus")}
+            className={`cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-400 ${
+              status
+                ? ""
+                : "border-neutral-300 bg-transparent text-neutral-500 shadow-none dark:border-neutral-600 dark:text-neutral-400"
+            }`}
+            style={
+              status ? { background: STATUS_COLORS[status], color: "white", borderColor: "transparent" } : undefined
+            }
+          >
+            <option value="">{t("myCard.status.none")}</option>
+            {STATUS_ORDER.map((s) => (
+              <option key={s} value={s}>
+                {t(`myCard.status.${s}`)}
+              </option>
+            ))}
+          </select>
+          <select
+            value={priority}
+            onChange={(e) => onSetPriority(store.id, e.target.value || null)}
+            aria-label={t("carnet.table.colPriority")}
+            className="cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium focus:outline-none focus:ring-1 focus:ring-amber-400"
+            style={
+              priority
+                ? { background: PRIORITY_COLORS[priority], color: "white", borderColor: "transparent" }
+                : { borderColor: "#d4d4d4", color: "#57534e" }
+            }
+          >
+            <option value="">{t("carnet.priority.none")}</option>
+            {PRIORITY_ORDER.map((p) => (
+              <option key={p} value={p}>
+                {"★".repeat(PRIORITY_STARS[p])} {t(`carnet.priority.${p}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {store.brands.map((brand) => {
+            const featured = FEATURED_BRANDS.includes(brand);
+            return (
+              <span
+                key={brand}
+                className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
+                  featured
+                    ? "bg-amber-700 text-white dark:bg-amber-700"
+                    : "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                }`}
+              >
+                {brand}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* Line 3: primary action + "..." menu for the rest */}
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenNote(store.id)}
+            className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3 py-2 text-xs font-medium uppercase tracking-wide text-white shadow-sm transition hover:bg-amber-700 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
+          >
+            <NoteIcon />
+            {t("carnet.table.actionViewEdit")}
+          </button>
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={t("carnet.table.moreActions")}
+              aria-expanded={menuOpen}
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-neutral-300 text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+            >
+              <MoreIcon />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full z-30 mt-1 w-56 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onScheduleStore(store);
+                  }}
+                  className={MENU_ITEM_CLASS}
+                >
+                  <CalendarIcon />
+                  {t("carnet.table.actionScheduleRdv")}
+                </button>
+                {store.phone ? (
+                  <a href={telHref(store.phone)} className={MENU_ITEM_CLASS}>
+                    <PhoneIcon />
+                    {t("carnet.table.actionCall")}
+                  </a>
+                ) : (
+                  <span className={MENU_ITEM_DISABLED_CLASS}>
+                    <PhoneIcon />
+                    {t("carnet.table.actionCallDisabled")}
+                  </span>
+                )}
+                {store.email && (
+                  <a href={`mailto:${store.email}`} className={MENU_ITEM_CLASS}>
+                    <ContactIcon />
+                    {t("carnet.contact.openMail")}
+                  </a>
+                )}
+                <a
+                  href={buildPreferredDirectionsUrl(preferredGpsApp, store, routeOrigin)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={MENU_ITEM_CLASS}
+                >
+                  <MapPinIcon />
+                  {t("carnet.table.actionGps")}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onAssignFolder();
+                  }}
+                  className={MENU_ITEM_CLASS}
+                >
+                  <FolderIcon />
+                  {t("carnet.table.actionAssignFolder")}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -688,7 +924,38 @@ export default function CarnetTableTab({
           {stores.length === 0 ? t("carnet.table.emptyPortfolio") : t("carnet.table.noMatch")}
         </p>
       ) : (
-        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700">
+        <>
+          {/* Mobile (<768px): card list instead of the fixed-column table,
+              which has no room to lay out seven columns on a phone. */}
+          <div className="flex flex-col gap-2.5 md:hidden">
+            {rows.map((store) => {
+              const storeFolders = folders.filter((f) => (folderMembers[f.id] || []).includes(store.id));
+              return (
+                <StoreCard
+                  key={store.id}
+                  store={store}
+                  status={statuses[store.id] || ""}
+                  priority={priorities[store.id] || ""}
+                  urgency={storeUrgency(store)}
+                  deptCode={getStoreDeptCode(store)}
+                  storeFolders={storeFolders}
+                  onSetStatus={onSetStatus}
+                  onSetPriority={onSetPriority}
+                  onOpenNote={onOpenNote}
+                  onScheduleStore={onScheduleStore}
+                  preferredGpsApp={preferredGpsApp}
+                  routeOrigin={routeOrigin}
+                  onAssignFolder={() => setAssigningStore(store)}
+                  onSelectFolder={onSelectFolder}
+                  selectionMode={selectionMode}
+                  selected={selectedIds.has(store.id)}
+                  onToggleSelected={() => toggleRowSelected(store.id)}
+                />
+              );
+            })}
+          </div>
+
+          <div className="hidden rounded-xl border border-neutral-200 dark:border-neutral-700 md:block">
           <table
             className={`w-full table-fixed border-collapse text-sm ${lang === "en" ? "carnet-table-compact" : ""}`}
           >
@@ -891,7 +1158,8 @@ export default function CarnetTableTab({
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       {assigningStore && (
