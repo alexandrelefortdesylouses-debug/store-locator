@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import { FOLDER_COLORS, FOLDER_SORT_MODES, sortFolderSiblings } from "../utils/folders";
 
@@ -9,6 +10,56 @@ function MenuIcon() {
       <circle cx="12" cy="12" r="1.6" />
       <circle cx="12" cy="19" r="1.6" />
     </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.75}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+      />
+    </svg>
+  );
+}
+
+// Mobile (<768px) folder switcher/management surface, opened from the
+// compact "📁 [folder] ▾" selector below md — the horizontal scrolling
+// chip strip used above md has no room for folder names, rename/color/
+// subfolder controls once there's more than a couple of custom folders,
+// so mobile gets a dedicated modal reusing the exact same list content
+// (FixedFolderRow/CustomFolderRow tree) as the desktop sidebar instead of
+// a second, divergent implementation.
+function MobileFolderPickerModal({ onClose, children }) {
+  const { t } = useLanguage();
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[1300] flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-neutral-900 sm:max-w-sm sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+          <h3 className="font-serif text-base text-neutral-900 dark:text-neutral-100">
+            {t("carnet.folders.pickerTitle")}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("myCard.close")}
+            className="cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="thin-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">{children}</div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -31,7 +82,16 @@ function ChevronIcon({ expanded }) {
 // subfolder creation, reordering and deleting are handled entirely here.
 // Closes on an outside click, same pattern as SearchBar's suggestion
 // dropdown.
-function FolderMenu({ folder, onRequestRename, onChangeColor, onCreateSubfolder, onMoveUp, onMoveDown, onDelete }) {
+function FolderMenu({
+  folder,
+  onRequestRename,
+  onChangeColor,
+  onCreateSubfolder,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+  alwaysVisible,
+}) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("menu");
@@ -60,7 +120,9 @@ function FolderMenu({ folder, onRequestRename, onChangeColor, onCreateSubfolder,
           setMode("menu");
         }}
         aria-label={t("carnet.folders.menuAria")}
-        className="hidden shrink-0 cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 group-hover:block dark:text-neutral-500 dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+        className={`shrink-0 cursor-pointer rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:hover:text-neutral-200 ${
+          alwaysVisible ? "flex" : "hidden group-hover:block"
+        }`}
       >
         <MenuIcon />
       </button>
@@ -210,6 +272,7 @@ function CustomFolderRow({
   onDelete,
   onDropStore,
   onDropFolder,
+  menuAlwaysVisible,
 }) {
   const { t } = useLanguage();
   const [renaming, setRenaming] = useState(false);
@@ -316,6 +379,7 @@ function CustomFolderRow({
           onMoveUp={onMoveUp}
           onMoveDown={onMoveDown}
           onDelete={onDelete}
+          alwaysVisible={menuAlwaysVisible}
         />
       )}
     </div>
@@ -350,6 +414,21 @@ export default function CarnetFolderSidebar({
   const [showCreate, setShowCreate] = useState(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [collapsedIds, setCollapsedIds] = useState(() => new Set());
+  // Mobile (<768px) only: the "📁 [folder] ▾" selector opens the same
+  // folder tree in a modal instead of the desktop vertical sidebar.
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const activeFolderLabel =
+    selectedFolderId === "all"
+      ? t("carnet.folders.all")
+      : selectedFolderId === "favorites"
+        ? t("carnet.folders.favorites")
+        : folders.find((f) => f.id === selectedFolderId)?.name || t("carnet.folders.all");
+
+  function selectFolder(folderId) {
+    onSelectFolder(folderId);
+    setPickerOpen(false);
+  }
 
   function toggleCollapsed(folderId) {
     setCollapsedIds((prev) => {
@@ -406,7 +485,11 @@ export default function CarnetFolderSidebar({
     );
   }
 
-  function renderFolder(folder, depth) {
+  // menuAlwaysVisible: the "..." row menu is hover-revealed by default
+  // (group-hover:block) to keep the desktop list uncluttered, but that
+  // never shows on a touch device with no hover state — the mobile picker
+  // modal passes true here so rename/color/subfolder stay reachable.
+  function renderFolder(folder, depth, menuAlwaysVisible) {
     const children = folders.filter((f) => f.parentId === folder.id);
     const sortedChildren = sortFolderSiblings(children, sortMode, countsByFolder);
     const hasChildren = children.length > 0;
@@ -428,7 +511,7 @@ export default function CarnetFolderSidebar({
           hasChildren={hasChildren}
           expanded={expanded}
           onToggleExpand={() => toggleCollapsed(folder.id)}
-          onClick={() => onSelectFolder(folder.id)}
+          onClick={() => selectFolder(folder.id)}
           onRename={(name) => onRenameFolder(folder.id, name)}
           onChangeColor={(color) => onChangeFolderColor(folder.id, color)}
           onCreateSubfolder={() => {
@@ -440,9 +523,10 @@ export default function CarnetFolderSidebar({
           onDelete={() => onDeleteFolder(folder.id)}
           onDropStore={onDropStoreOnFolder}
           onDropFolder={onReorderFolderDrop}
+          menuAlwaysVisible={menuAlwaysVisible}
         />
         {showCreate === folder.id && renderCreateForm(depth + 1)}
-        {expanded && sortedChildren.map((child) => renderFolder(child, depth + 1))}
+        {expanded && sortedChildren.map((child) => renderFolder(child, depth + 1, menuAlwaysVisible))}
       </div>
     );
   }
@@ -453,19 +537,23 @@ export default function CarnetFolderSidebar({
     countsByFolder,
   );
 
-  return (
-    <div className="thin-scrollbar flex shrink-0 gap-1 overflow-x-auto border-b border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-900 sm:w-56 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:border-b-0 sm:border-r sm:p-3">
+  // Shared between the desktop vertical sidebar and the mobile picker
+  // modal — same tree, same rename/color/subfolder controls, just a
+  // different wrapper around it depending on viewport.
+  function renderListContent(menuAlwaysVisible) {
+    return (
+    <>
       <FixedFolderRow
         label={t("carnet.folders.all")}
         count={countsByFolder.all}
         active={selectedFolderId === "all"}
-        onClick={() => onSelectFolder("all")}
+        onClick={() => selectFolder("all")}
       />
       <FixedFolderRow
         label={t("carnet.folders.favorites")}
         count={countsByFolder.favorites}
         active={selectedFolderId === "favorites"}
-        onClick={() => onSelectFolder("favorites")}
+        onClick={() => selectFolder("favorites")}
       />
 
       {folders.length > 0 && (
@@ -492,7 +580,7 @@ export default function CarnetFolderSidebar({
           {t("carnet.folders.customTitle")}
         </div>
       )}
-      {topFolders.map((folder) => renderFolder(folder, 0))}
+      {topFolders.map((folder) => renderFolder(folder, 0, menuAlwaysVisible))}
       {showCreate === "root" && renderCreateForm(0)}
 
       {showCreate === null && (
@@ -507,6 +595,48 @@ export default function CarnetFolderSidebar({
           + {t("carnet.folders.newFolder")}
         </button>
       )}
-    </div>
+    </>
+    );
+  }
+
+  return (
+    <>
+      {/* Mobile (<768px): compact selector replaces the horizontal
+          scrolling chip strip, which has no room for folder names, let
+          alone rename/color/subfolder controls, once there's more than a
+          couple of custom folders. Either control opens the same modal. */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-neutral-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900 md:hidden">
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 rounded-full border border-neutral-300 bg-white px-3.5 py-2 text-sm text-neutral-700 transition hover:border-amber-400 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200"
+        >
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="shrink-0">📁</span>
+            <span className="truncate">{activeFolderLabel}</span>
+          </span>
+          <span className="shrink-0 text-neutral-400 dark:text-neutral-500">▾</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          aria-label={t("carnet.folders.manageAria")}
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-300 text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+        >
+          <EditIcon />
+        </button>
+      </div>
+
+      {pickerOpen && (
+        <MobileFolderPickerModal onClose={() => setPickerOpen(false)}>
+          {renderListContent(true)}
+        </MobileFolderPickerModal>
+      )}
+
+      {/* Desktop (≥768px): the existing vertical sidebar tree. */}
+      <div className="thin-scrollbar hidden shrink-0 gap-1 overflow-x-auto border-b border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-900 md:flex md:w-56 md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:p-3">
+        {renderListContent(false)}
+      </div>
+    </>
   );
 }

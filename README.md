@@ -524,17 +524,39 @@ L'interface s'adapte du smartphone au grand écran :
   ça possible : sans lui, un enfant flex ne se laisse jamais rétrécir
   en dessous de la largeur de son contenu, et `overflow-x-auto` ne se
   déclenche donc jamais.
-- **En-tête resserré sur mobile** : padding réduit (`px-2 py-2.5` avant
-  `sm:`), les boutons d'action (Recherche/Statistiques/Administration/
-  Paramètres/Déconnexion) ne rétrécissent plus (`shrink-0`) et défilent eux
-  aussi horizontalement avec scrollbar masquée si jamais ils ne tiennent
-  pas tous sur la largeur — un filet de sécurité qui ne se déclenche pas en
-  usage normal mais évite tout chevauchement de texte.
+- **En-tête noir masqué sur mobile, fusionné dans le bandeau d'onglets**
+  (`Header.jsx` passe `hidden md:block` ; `ViewModeToggle.jsx` gagne le
+  reste) : en dessous de `md`, la barre noire pleine largeur (logo +
+  Recherche/Statistiques/Administration/Paramètres/Déconnexion) disparaît
+  entièrement — elle n'apporte plus qu'une seconde ligne de chrome dont un
+  petit écran n'a pas la place. Son contenu ne disparaît pas pour autant :
+  le monogramme "T" rejoint la gauche du bandeau Carte Globale/Ma
+  Carte/Mon Carnet, et un bouton "☰" à droite de ce même bandeau ouvre un
+  menu déroulant regroupant les cinq actions de l'en-tête. Au-delà de
+  `md`, `ViewModeToggle` revient à son apparence d'origine (juste les trois
+  onglets centrés, sans logo ni menu) et `Header` réapparaît normalement —
+  aucun changement desktop.
 - **Garde-fou anti-débordement global** : `overflow-x: hidden` sur `body`
   (`src/index.css`) empêche qu'un élément égaré ne pousse toute la page en
   largeur (l'effet "la page glisse de travers" sur mobile) ; les zones qui
   défilent volontairement (carte, bandeaux d'onglets, panneaux `thin-
   scrollbar`) gardent leur propre `overflow-x` et ne sont pas affectées.
+- **Dossiers de Mon Carnet : sélecteur + modale sur mobile**
+  (`CarnetFolderSidebar.jsx`) : en dessous de `md`, la colonne verticale de
+  dossiers (arbre desktop) est remplacée par un sélecteur compact "📁 [nom
+  du dossier actif] ▾" plus un bouton crayon adjacent — l'un ou l'autre
+  ouvre une modale (`MobileFolderPickerModal`, portée via `createPortal`)
+  qui réutilise exactement le même arbre de dossiers que le desktop
+  (`FixedFolderRow`/`CustomFolderRow`/`FolderMenu`, une seule
+  implémentation partagée par les deux affichages, appelée avec des
+  wrappers différents) : basculer de dossier, renommer, changer la
+  couleur, créer un sous-dossier — rien n'est retiré par rapport au
+  desktop. Un détail qui aurait autrement cassé la modale silencieusement :
+  le bouton "···" par ligne de dossier n'apparaît qu'au survol sur desktop
+  (`group-hover:block`, pour ne pas surcharger la liste) — un survol qui
+  n'existe pas au doigt sur mobile. La modale passe donc `menuAlwaysVisible`
+  pour que ce bouton reste affiché en permanence dans ce contexte, tout en
+  gardant le comportement hover-only inchangé sur desktop.
 
 ## Mode Heatmap et filtre par type de point de vente
 

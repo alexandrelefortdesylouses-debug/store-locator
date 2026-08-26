@@ -60,7 +60,7 @@ export default function Header({
   const { t } = useLanguage();
 
   return (
-    <header className="relative shrink-0 border-b border-neutral-800 bg-neutral-950">
+    <header className="relative hidden shrink-0 border-b border-neutral-800 bg-neutral-950 md:block">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/50 to-transparent" />
       <div className="flex flex-nowrap items-center justify-between gap-2 px-2 py-2.5 sm:px-5 sm:py-3 md:px-8">
         <div className="shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">

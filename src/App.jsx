@@ -695,7 +695,17 @@ function App() {
         onSignOut={handleSignOut}
       />
 
-      <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+      <ViewModeToggle
+        mode={viewMode}
+        onChange={setViewMode}
+        currentUser={currentUser}
+        isAdmin={checkIsAdmin(currentUser)}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenStats={() => setShowStats(true)}
+        onOpenAdmin={() => setShowAdmin(true)}
+        onOpenSearch={() => setCommandPaletteOpen(true)}
+        onSignOut={handleSignOut}
+      />
 
       {viewMode !== "carnet" && (
         <MobileTabs

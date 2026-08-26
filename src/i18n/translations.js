@@ -1,6 +1,7 @@
 export const translations = {
   fr: {
     "header.settings": "Paramètres",
+    "header.menu": "Menu",
     "header.storeLocator": "Digital Prospection Tool",
     "header.search": "Rechercher",
     "header.searchHint": "Recherche globale (⌘K)",
@@ -267,6 +268,8 @@ export const translations = {
 
     "carnet.folders.all": "Tous les opticiens",
     "carnet.folders.favorites": "Favoris",
+    "carnet.folders.pickerTitle": "Dossiers",
+    "carnet.folders.manageAria": "Gérer les dossiers",
     "carnet.folders.customTitle": "Mes dossiers",
     "carnet.folders.newFolder": "Nouveau dossier",
     "carnet.folders.namePlaceholder": "Nom du dossier…",
@@ -630,6 +633,7 @@ export const translations = {
   },
   en: {
     "header.settings": "Settings",
+    "header.menu": "Menu",
     "header.storeLocator": "Digital Prospection Tool",
     "header.search": "Search",
     "header.searchHint": "Global search (⌘K)",
@@ -893,6 +897,8 @@ export const translations = {
 
     "carnet.folders.all": "All opticians",
     "carnet.folders.favorites": "Favorites",
+    "carnet.folders.pickerTitle": "Folders",
+    "carnet.folders.manageAria": "Manage folders",
     "carnet.folders.customTitle": "My folders",
     "carnet.folders.newFolder": "New folder",
     "carnet.folders.namePlaceholder": "Folder name…",
