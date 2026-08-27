@@ -334,7 +334,7 @@ La sidebar a été restructurée en accordéon compact façon Nike
   en JS) ; le contenu replié reste dans le DOM pour l'animation mais est
   rendu `inert` (non focusable, ignoré des lecteurs d'écran) tant que la
   section est fermée.
-- **Arrondissements de Paris (75001 à 75020)** — une sixième section,
+- **Arrondissement Paris (75001 à 75020)** — une sixième section,
   conditionnelle : elle n'apparaît qu'une fois le département "75 – Paris"
   ou la ville "Paris" sélectionné dans les filtres au-dessus
   (`showArrondissementFilter` dans `App.jsx`, dérivé de
