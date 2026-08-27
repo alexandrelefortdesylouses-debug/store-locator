@@ -140,30 +140,6 @@ table.carnet-table-compact select {
   animation: location-pulse 1.8s ease-out infinite;
 }
 
-/* Ambient bob for the login screen's decorative sunglasses motif
- * (SunglassesDecoration.jsx). Layered under a pointer-driven 3D tilt
- * applied inline by that component, on a separate wrapper element.
- */
-@keyframes glasses-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-}
-
-.login-glasses-float {
-  animation: glasses-float 7s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .login-glasses-float {
-    animation: none;
-  }
-}
-
 /* Dark mode: restyle Leaflet's default chrome (popups, zoom controls) to match the anthracite basemap */
 .dark .leaflet-popup-content-wrapper,
 .dark .leaflet-popup-tip {
