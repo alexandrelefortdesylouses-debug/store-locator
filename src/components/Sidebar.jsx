@@ -11,7 +11,7 @@ import StoreList from "./StoreList";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const DEFAULT_OPEN_SECTIONS = {
-  regions: true,
+  regions: false,
   departments: false,
   cities: false,
   storeType: false,

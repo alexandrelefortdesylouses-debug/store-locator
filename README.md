@@ -322,10 +322,13 @@ La sidebar a été restructurée en accordéon compact façon Nike
   indiquant le nombre de valeurs sélectionnées quand la section est repliée,
   et un chevron qui pivote à l'ouverture. Cliquer le titre déroule/replie la
   section (`aria-expanded` posé sur le bouton pour l'accessibilité) ;
-  plusieurs sections peuvent rester ouvertes en même temps. Seule la section
-  **Régions** est ouverte par défaut, les autres démarrent repliées — cet
-  ordre correspond aussi à celui de la cascade ci-dessus (du plus large au
-  plus précis).
+  plusieurs sections peuvent rester ouvertes en même temps. **Toutes**
+  démarrent repliées par défaut, Régions y compris (`DEFAULT_OPEN_SECTIONS`
+  dans `Sidebar.jsx`) — un panneau de filtres qui s'ouvre avec une section
+  déjà dépliée n'a plus vraiment l'air "compact". L'ordre d'affichage
+  **Régions → Départements → Villes → Type de boutique → Marques**
+  correspond à celui de la cascade ci-dessus (du plus large au plus
+  précis).
   L'animation d'ouverture/fermeture repose sur la technique CSS Grid
   `grid-template-rows: 0fr → 1fr` (transition fluide sans mesurer la hauteur
   en JS) ; le contenu replié reste dans le DOM pour l'animation mais est
@@ -1183,6 +1186,17 @@ Par ailleurs, quand la sidebar elle-même est réduite (`sidebar.jsx`, flèche
 "‹"), le texte vertical à côté de la flèche affiche maintenant "Filtres &
 Recherche" plutôt que "Opticiens Thélios" — plus fidèle à ce que la sidebar
 contient réellement une fois dépliée.
+
+**Compteur de favoris 100% dynamique** : "X favori(s)" affichait jusque-là
+`favoriteIds.length` — un total brut sur l'ensemble du réseau, qui ne
+bougeait pas quand le mode Échantillon ou un filtre (région, marque,
+statut…) masquait une partie des favoris. Il est recalculé à chaque rendu
+depuis `filteredStores` (`App.jsx`, `visibleFavoritesCount`) — exactement
+le même ensemble déjà utilisé pour la carte et la liste de résultats —
+filtré aux favoris : le chiffre reflète donc toujours ce qui est
+effectivement visible, jamais la base complète. Le compteur "importé" reste
+volontairement un total brut (`portfolioIds.length`) — seul le compteur de
+favoris était visé par cette correction.
 
 ### Import de portefeuille (.xlsx / .csv)
 

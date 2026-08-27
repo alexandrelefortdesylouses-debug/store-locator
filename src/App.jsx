@@ -361,6 +361,16 @@ function App() {
     selectedStatuses,
   ]);
 
+  // The "Ma Carte" favorites badge must never show a stale, unfiltered
+  // total: it reflects only the favorites currently visible under sample
+  // mode and whatever sidebar filters (region/city/brand/status…) are
+  // active, recomputed from the same `filteredStores` the map/list already
+  // render — never the raw favoriteIds.length across the whole network.
+  const visibleFavoritesCount = useMemo(
+    () => filteredStores.filter((s) => favoriteIds.includes(s.id)).length,
+    [filteredStores, favoriteIds],
+  );
+
   const selectedStoreBase = stores.find((s) => s.id === selectedStoreId);
   const selectedStore =
     selectedStoreBase && userLocation
@@ -754,7 +764,7 @@ function App() {
                 onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
                 viewMode={viewMode}
                 portfolioCount={portfolioIds.length}
-                favoritesCount={favoriteIds.length}
+                favoritesCount={visibleFavoritesCount}
                 importing={importing}
                 onImportFile={handleImportFile}
                 onResetPortfolio={handleResetPortfolio}
