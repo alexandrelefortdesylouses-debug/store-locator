@@ -28,6 +28,7 @@ import { applySampleFilter } from "./utils/sampleMode";
 import Toast from "./components/Toast";
 import { getStoreRegion } from "./utils/regions";
 import { getStoreDepartment } from "./utils/departments";
+import { getStoreArrondissement } from "./utils/arrondissement";
 import { getStoreType } from "./utils/storeType";
 import { haversineDistanceKm } from "./utils/geo";
 import { exportStoresToXlsx } from "./utils/xlsxExport";
@@ -111,6 +112,10 @@ function App() {
   const [selectedCities, setSelectedCities] = useState([]);
   const [selectedRegions, setSelectedRegions] = useState([]);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
+  // Paris-only sub-filter (75001-75020), only ever shown once Paris/75 is
+  // already selected via the region/department/city filters above — see
+  // showArrondissementFilter below.
+  const [selectedArrondissements, setSelectedArrondissements] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedStoreTypes, setSelectedStoreTypes] = useState([]);
   const [browseAll, setBrowseAll] = useState(false);
@@ -274,11 +279,26 @@ function App() {
     });
   }, [availableCities]);
 
+  // The "Arrondissements (75001 à 75020)" sub-filter only makes sense once
+  // Paris is already narrowed down via the region/department/city filters
+  // above — it stays hidden (and its own selection cleared) otherwise, so
+  // there's never a filter silently narrowing results with no visible
+  // control left to explain or undo it.
+  const showArrondissementFilter =
+    selectedDepartments.includes("75") || selectedCities.includes("Paris");
+
+  useEffect(() => {
+    if (!showArrondissementFilter) {
+      setSelectedArrondissements((prev) => (prev.length === 0 ? prev : []));
+    }
+  }, [showArrondissementFilter]);
+
   const hasActiveFilter =
     search.trim() !== "" ||
     selectedCities.length > 0 ||
     selectedRegions.length > 0 ||
     selectedDepartments.length > 0 ||
+    selectedArrondissements.length > 0 ||
     selectedBrands.length > 0 ||
     selectedStoreTypes.length > 0;
 
@@ -299,6 +319,9 @@ function App() {
         const matchesDepartment =
           selectedDepartments.length === 0 ||
           selectedDepartments.includes(getStoreDepartment(store)?.code);
+        const matchesArrondissement =
+          selectedArrondissements.length === 0 ||
+          selectedArrondissements.includes(getStoreArrondissement(store));
         const matchesBrands =
           selectedBrands.length === 0 ||
           store.brands.some((brand) => selectedBrands.includes(brand));
@@ -310,6 +333,7 @@ function App() {
           matchesCity &&
           matchesRegion &&
           matchesDepartment &&
+          matchesArrondissement &&
           matchesBrands &&
           matchesType
         );
@@ -351,6 +375,7 @@ function App() {
     selectedCities,
     selectedRegions,
     selectedDepartments,
+    selectedArrondissements,
     selectedBrands,
     selectedStoreTypes,
     hasActiveFilter,
@@ -501,6 +526,7 @@ function App() {
     setSelectedCities([]);
     setSelectedRegions([]);
     setSelectedDepartments([]);
+    setSelectedArrondissements([]);
     setSelectedBrands([]);
     setSelectedStoreTypes([]);
     setSelectedStatuses([]);
@@ -791,6 +817,9 @@ function App() {
                 departments={availableDepartments}
                 selectedDepartments={selectedDepartments}
                 onDepartmentsChange={setSelectedDepartments}
+                showArrondissementFilter={showArrondissementFilter}
+                selectedArrondissements={selectedArrondissements}
+                onArrondissementsChange={setSelectedArrondissements}
                 brands={allBrands}
                 selectedBrands={selectedBrands}
                 onToggleBrand={toggleBrand}

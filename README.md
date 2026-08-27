@@ -334,6 +334,26 @@ La sidebar a été restructurée en accordéon compact façon Nike
   en JS) ; le contenu replié reste dans le DOM pour l'animation mais est
   rendu `inert` (non focusable, ignoré des lecteurs d'écran) tant que la
   section est fermée.
+- **Arrondissements de Paris (75001 à 75020)** — une sixième section,
+  conditionnelle : elle n'apparaît qu'une fois le département "75 – Paris"
+  ou la ville "Paris" sélectionné dans les filtres au-dessus
+  (`showArrondissementFilter` dans `App.jsx`, dérivé de
+  `selectedDepartments`/`selectedCities`, jamais d'un état séparé qui
+  pourrait se désynchroniser). Elle disparaît — et sa propre sélection se
+  vide automatiquement — dès que Paris/75 n'est plus sélectionné, pour ne
+  jamais laisser un filtre actif sans contrôle visible pour l'annuler.
+  Contrairement aux régions/départements/villes (dérivés de `stores.json`),
+  la liste des 20 arrondissements est une **constante fixe**
+  (`src/utils/arrondissement.js`, `PARIS_ARRONDISSEMENT_OPTIONS`) — les
+  codes postaux parisiens intra-muros (750XX, plus la variante historique
+  75116 pour une partie du 16ᵉ) encodent directement le numéro
+  d'arrondissement dans leurs deux derniers chiffres, donc `getStoreArrondissement()`
+  n'a besoin d'aucune table de correspondance, contrairement à
+  `getStoreDepartment()`/`getStoreRegion()`. Fonctionne identiquement en
+  mode Échantillon (où le département 75 est déjà l'univers entier une fois
+  sélectionné) et en version complète, sur Carte Globale comme sur Ma
+  Carte — c'est le même filtre `filteredStores` déjà partagé par toutes
+  les autres cases à cocher du panneau, pas une implémentation séparée.
 - Un petit texte d'aide discret ("Une question ? Notre assistant virtuel est
   disponible en bas à droite de votre écran.") est affiché en italique, gris
   clair, sous un filet séparateur, juste en dessous de la dernière catégorie

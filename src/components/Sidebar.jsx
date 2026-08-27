@@ -3,6 +3,7 @@ import SearchBar from "./SearchBar";
 import CitySelect from "./CitySelect";
 import RegionSelect from "./RegionSelect";
 import DepartmentSelect from "./DepartmentSelect";
+import ArrondissementSelect from "./ArrondissementSelect";
 import BrandFilter from "./BrandFilter";
 import StoreTypeFilter from "./StoreTypeFilter";
 import AccordionSection from "./AccordionSection";
@@ -14,6 +15,7 @@ const DEFAULT_OPEN_SECTIONS = {
   regions: false,
   departments: false,
   cities: false,
+  arrondissements: false,
   storeType: false,
   brands: false,
 };
@@ -47,6 +49,9 @@ export default function Sidebar({
   departments,
   selectedDepartments,
   onDepartmentsChange,
+  showArrondissementFilter,
+  selectedArrondissements,
+  onArrondissementsChange,
   brands,
   selectedBrands,
   onToggleBrand,
@@ -166,6 +171,20 @@ export default function Sidebar({
                   onChange={onCitiesChange}
                 />
               </AccordionSection>
+
+              {showArrondissementFilter && (
+                <AccordionSection
+                  title={t("sidebar.arrondissementsTitle")}
+                  count={selectedArrondissements.length}
+                  open={openSections.arrondissements}
+                  onToggle={() => toggleSection("arrondissements")}
+                >
+                  <ArrondissementSelect
+                    selected={selectedArrondissements}
+                    onChange={onArrondissementsChange}
+                  />
+                </AccordionSection>
+              )}
 
               <AccordionSection
                 title={t("sidebar.storeTypeTitle")}
