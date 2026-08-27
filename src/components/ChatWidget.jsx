@@ -61,7 +61,7 @@ export default function ChatWidget({ stores }) {
                 T
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-medium text-white">Assistant Thélios</p>
+                <p className="text-sm font-medium text-white">{t("chat.title")}</p>
                 <p className="text-[10px] uppercase tracking-wide text-amber-200/70">
                   {t("chat.online")}
                 </p>

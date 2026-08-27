@@ -375,7 +375,12 @@ Le chatbot (`src/utils/chatbot.js`) répond aussi dans la langue active
 traduction externe. Pour ajouter une langue, dupliquer un bloc dans
 `translations.js` et l'ajouter au sélecteur dans `SettingsPanel.jsx`.
 
-## Assistant Thélios (chatbot)
+## Assistant T (chatbot)
+
+Anciennement "Assistant Thélios", renommé "Assistant T" (en-tête du widget,
+message d'accueil, libellés d'ouverture/fermeture — `t("chat.title")` et
+`chat.openAria`/`chat.closeAria` dans `translations.js`) pour rester cohérent
+avec le monogramme "T" utilisé ailleurs dans l'app (logo, favicon).
 
 Un widget de chat flottant (bouton en bas à droite) permet aux visiteurs de
 poser des questions en langage naturel sur les opticiens partenaires. Il
@@ -1015,7 +1020,10 @@ onglets (`src/components/SettingsPanel.jsx`) :
       d'itinéraire multi-arrêts (RoutePlanner) propose toujours ses trois
       boutons Google Maps / Waze / Apple Maps explicites, sans en
       présélectionner un — cette préférence ne s'applique qu'aux
-      itinéraires à une seule destination.
+      itinéraires à une seule destination. Une note discrète sous les trois
+      boutons ("Pour les itinéraires à plusieurs étapes, il est recommandé
+      d'utiliser Google Maps.") rappelle ce point, Google Maps étant le
+      service le plus fiable de l'app pour un trajet à plusieurs arrêts.
     - ⚠️ Comme le reste de l'app, ces préférences sont stockées en
       `localStorage`, propres à cet appareil — pas de synchronisation entre
       appareils.
@@ -1156,9 +1164,30 @@ n'accompagne cette date ou les marqueurs de la carte — le score d'urgence
 du Tableau (voir "Mon Carnet" plus bas) reste, lui, basé sur les notes de
 visite datées et non sur cette date manuelle.
 
+### "Ma Carte" : Importer/Statuts repliés par défaut
+
+Le panneau `MyCardPanel.jsx` (titre "Ma Carte" + compteurs importés/favoris
+en haut de la sidebar) regroupait jusque-là, toujours visibles, le bloc
+d'import (portefeuille .xlsx/.csv, ajout manuel, import vCard, réinitialiser
+le portefeuille) et les puces de filtre par statut — la section la plus
+haute et la plus chargée de toute la sidebar, même pour un commercial qui ne
+fait que consulter sa carte. Les deux sont maintenant repliés par défaut
+derrière deux lignes **Importer** / **Statuts**, réutilisant le même
+composant `AccordionSection` que Régions/Départements/Villes/Marques plus
+bas (même interaction, même badge de compteur — ici le nombre de statuts
+actifs) plutôt qu'un bouton ad hoc. `StatusFilter.jsx` a perdu son propre
+titre "Filtrer par statut" au passage : redondant avec l'intitulé "Statuts"
+de la ligne d'accordéon qui l'enveloppe désormais.
+
+Par ailleurs, quand la sidebar elle-même est réduite (`sidebar.jsx`, flèche
+"‹"), le texte vertical à côté de la flèche affiche maintenant "Filtres &
+Recherche" plutôt que "Opticiens Thélios" — plus fidèle à ce que la sidebar
+contient réellement une fois dépliée.
+
 ### Import de portefeuille (.xlsx / .csv)
 
-Dans "Ma Carte", le bouton **Importer mon portefeuille clients** accepte un
+Dans "Ma Carte", le bouton **Importer mon portefeuille clients** (désormais
+sous la ligne d'accordéon "Importer", voir ci-dessus) accepte un
 fichier `.xlsx` ou `.csv` et tente de rapprocher chaque ligne avec la base
 `stores.json` :
 

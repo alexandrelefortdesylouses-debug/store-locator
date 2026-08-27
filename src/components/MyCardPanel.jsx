@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import AccordionSection from "./AccordionSection";
 import StatusFilter from "./StatusFilter";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -28,6 +29,13 @@ function ContactCardIcon() {
   );
 }
 
+// The import block (portfolio file, manual add, vCard, reset) and the
+// status filter both used to render open by default, which made this the
+// tallest, busiest section of the whole sidebar even for a rep who just
+// wants to browse their portfolio. Both now start collapsed behind their
+// own AccordionSection — same expand/collapse component already used for
+// Régions/Départements/Villes/Marques, so the interaction is familiar
+// rather than a one-off toggle button.
 export default function MyCardPanel({
   portfolioCount,
   favoritesCount,
@@ -42,6 +50,8 @@ export default function MyCardPanel({
   const { t } = useLanguage();
   const inputRef = useRef(null);
   const vcardInputRef = useRef(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
 
   return (
     <div className="mb-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40">
@@ -56,74 +66,91 @@ export default function MyCardPanel({
         <span>{t("myCard.favoritesCount", { count: favoritesCount })}</span>
       </div>
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".xlsx,.csv"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onImportFile(file);
-          e.target.value = "";
-        }}
-      />
-
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={importing}
-        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-amber-700 disabled:cursor-wait disabled:opacity-60 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
-      >
-        <ImportIcon />
-        {importing ? t("myCard.importing") : t("myCard.importButton")}
-      </button>
-
-      {onOpenAddStore && (
-        <button
-          type="button"
-          onClick={onOpenAddStore}
-          className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+      <div className="mt-2">
+        <AccordionSection
+          title={t("myCard.importToggle")}
+          open={importOpen}
+          onToggle={() => setImportOpen((v) => !v)}
         >
-          <PlusIcon />
-          {t("myCard.addStoreButton")}
-        </button>
-      )}
-
-      {onImportVCard && (
-        <>
           <input
-            ref={vcardInputRef}
+            ref={inputRef}
             type="file"
-            accept=".vcf"
+            accept=".xlsx,.csv"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) onImportVCard(file);
+              if (file) onImportFile(file);
               e.target.value = "";
             }}
           />
+
           <button
             type="button"
-            onClick={() => vcardInputRef.current?.click()}
-            className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+            onClick={() => inputRef.current?.click()}
+            disabled={importing}
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-amber-700 disabled:cursor-wait disabled:opacity-60 dark:bg-amber-600 dark:text-neutral-950 dark:hover:bg-amber-500"
           >
-            <ContactCardIcon />
-            {t("myCard.importVCardButton")}
+            <ImportIcon />
+            {importing ? t("myCard.importing") : t("myCard.importButton")}
           </button>
-        </>
-      )}
 
-      {portfolioCount > 0 && (
-        <button
-          type="button"
-          onClick={onReset}
-          className="mt-2 w-full cursor-pointer rounded-full border border-neutral-300 px-4 py-2 text-xs text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
-        >
-          {t("myCard.resetPortfolio")}
-        </button>
-      )}
+          {onOpenAddStore && (
+            <button
+              type="button"
+              onClick={onOpenAddStore}
+              className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+            >
+              <PlusIcon />
+              {t("myCard.addStoreButton")}
+            </button>
+          )}
 
-      {onToggleStatus && <StatusFilter selected={selectedStatuses} onToggle={onToggleStatus} />}
+          {onImportVCard && (
+            <>
+              <input
+                ref={vcardInputRef}
+                type="file"
+                accept=".vcf"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onImportVCard(file);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => vcardInputRef.current?.click()}
+                className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+              >
+                <ContactCardIcon />
+                {t("myCard.importVCardButton")}
+              </button>
+            </>
+          )}
+
+          {portfolioCount > 0 && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="mt-2 w-full cursor-pointer rounded-full border border-neutral-300 px-4 py-2 text-xs text-neutral-600 transition hover:border-amber-400 hover:text-amber-700 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500 dark:hover:text-amber-400"
+            >
+              {t("myCard.resetPortfolio")}
+            </button>
+          )}
+        </AccordionSection>
+
+        {onToggleStatus && (
+          <AccordionSection
+            title={t("myCard.statusToggle")}
+            count={selectedStatuses.length}
+            open={statusOpen}
+            onToggle={() => setStatusOpen((v) => !v)}
+          >
+            <StatusFilter selected={selectedStatuses} onToggle={onToggleStatus} />
+          </AccordionSection>
+        )}
+      </div>
     </div>
   );
 }

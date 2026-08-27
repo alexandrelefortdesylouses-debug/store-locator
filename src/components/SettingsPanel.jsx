@@ -201,6 +201,9 @@ function GpsSection({
       </p>
       <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">{t("settingsPanel.gpsAppHint")}</p>
       <GpsAppSelector value={preferredGpsApp} onChange={onSetPreferredGpsApp} />
+      <p className="mt-1.5 text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-500">
+        {t("settingsPanel.gpsAppMultiStopHint")}
+      </p>
     </div>
   );
 }

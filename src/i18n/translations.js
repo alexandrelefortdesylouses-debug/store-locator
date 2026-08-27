@@ -106,6 +106,8 @@ export const translations = {
     "settingsPanel.defaultAddressNotFound": "Adresse introuvable, essayez une formulation plus précise.",
     "settingsPanel.gpsAppLabel": "Application GPS favorite",
     "settingsPanel.gpsAppHint": "Utilisée quand vous cliquez sur l'icône d'itinéraire (📍).",
+    "settingsPanel.gpsAppMultiStopHint":
+      "Pour les itinéraires à plusieurs étapes, il est recommandé d'utiliser Google Maps.",
     "settingsPanel.gpsAppWaze": "Waze",
     "settingsPanel.gpsAppGoogle": "Google Maps",
     "settingsPanel.gpsAppApple": "Apple Maps",
@@ -183,7 +185,7 @@ export const translations = {
     "settingsPanel.faqGuide.visitNote.a":
       "Dans Mon Carnet > Bloc-Notes, sélectionnez l'opticien et ajoutez une note de visite datée — elle alimente automatiquement le Tableau et le Rapport de fin de journée.",
 
-    "sidebar.collapsedLabel": "Opticiens Thélios",
+    "sidebar.collapsedLabel": "Filtres & Recherche",
     "sidebar.expand": "Afficher la liste",
     "sidebar.collapse": "Réduire la liste",
     "sidebar.searchPlaceholder": "Nom, ville ou code postal",
@@ -391,6 +393,8 @@ export const translations = {
     "myCard.portfolioCount_plural": "{count} importés",
     "myCard.favoritesCount": "{count} favori",
     "myCard.favoritesCount_plural": "{count} favoris",
+    "myCard.importToggle": "Importer",
+    "myCard.statusToggle": "Statuts",
     "myCard.importButton": "Importer mon portefeuille clients (.xlsx / .csv)",
     "myCard.importing": "Import en cours…",
     "myCard.resetPortfolio": "Réinitialiser le portefeuille importé",
@@ -437,7 +441,6 @@ export const translations = {
     "myCard.notesPlaceholder": "Ex. Prochain RDV le 12/10, relancer pour la collection Vuarnet…",
     "myCard.statusTitle": "Statut",
     "myCard.priorityTitle": "Potentiel / Priorité",
-    "myCard.statusFilterTitle": "Filtrer par statut",
     "myCard.status.active_client": "Client actif",
     "myCard.status.prospect": "Prospect à contacter",
     "myCard.status.appointment_pending": "RDV à fixer",
@@ -622,14 +625,15 @@ export const translations = {
 
     "settings.close": "Fermer",
 
+    "chat.title": "Assistant T",
     "chat.online": "En ligne",
-    "chat.openAria": "Ouvrir l'assistant Thélios",
-    "chat.closeAria": "Fermer l'assistant Thélios",
+    "chat.openAria": "Ouvrir l'Assistant T",
+    "chat.closeAria": "Fermer l'Assistant T",
     "chat.inputPlaceholder": "Posez votre question…",
     "chat.send": "Envoyer",
     "chat.scopeHint": "Je réponds aux questions sur : ville/code postal · marques · horaires",
     "chat.welcome":
-      "Bonjour, je suis l'Assistant Thélios. Je peux vous renseigner sur 3 sujets : la ville ou le code postal (\"Quels opticiens à Lyon ?\", \"Opticiens au 75011 ?\"), les marques distribuées (\"Où trouver Julbo ?\") et les horaires d'un magasin (\"Horaires du magasin de Nice ?\"). Si une information ne m'a pas été renseignée, je vous le dis plutôt que d'inventer une réponse.",
+      "Bonjour, je suis l'Assistant T. Je peux vous renseigner sur 3 sujets : la ville ou le code postal (\"Quels opticiens à Lyon ?\", \"Opticiens au 75011 ?\"), les marques distribuées (\"Où trouver Julbo ?\") et les horaires d'un magasin (\"Horaires du magasin de Nice ?\"). Si une information ne m'a pas été renseignée, je vous le dis plutôt que d'inventer une réponse.",
   },
   en: {
     "header.settings": "Settings",
@@ -737,6 +741,8 @@ export const translations = {
     "settingsPanel.defaultAddressNotFound": "Address not found, try a more precise search.",
     "settingsPanel.gpsAppLabel": "Favorite GPS app",
     "settingsPanel.gpsAppHint": "Used when you click the directions icon (📍).",
+    "settingsPanel.gpsAppMultiStopHint":
+      "For multi-stop routes, we recommend using Google Maps.",
     "settingsPanel.gpsAppWaze": "Waze",
     "settingsPanel.gpsAppGoogle": "Google Maps",
     "settingsPanel.gpsAppApple": "Apple Maps",
@@ -812,7 +818,7 @@ export const translations = {
     "settingsPanel.faqGuide.visitNote.a":
       "In My Notebook > Notebook, select the optician and add a dated visit note — it automatically feeds the Table and the end-of-day report.",
 
-    "sidebar.collapsedLabel": "Thélios Opticians",
+    "sidebar.collapsedLabel": "Filters & Search",
     "sidebar.expand": "Show list",
     "sidebar.collapse": "Collapse list",
     "sidebar.searchPlaceholder": "Name, city or postal code",
@@ -1020,6 +1026,8 @@ export const translations = {
     "myCard.portfolioCount_plural": "{count} imported",
     "myCard.favoritesCount": "{count} favorite",
     "myCard.favoritesCount_plural": "{count} favorites",
+    "myCard.importToggle": "Import",
+    "myCard.statusToggle": "Statuses",
     "myCard.importButton": "Import my client portfolio (.xlsx / .csv)",
     "myCard.importing": "Importing…",
     "myCard.resetPortfolio": "Reset imported portfolio",
@@ -1066,7 +1074,6 @@ export const translations = {
     "myCard.notesPlaceholder": "E.g. Next appointment on 10/12, follow up on the Vuarnet collection…",
     "myCard.statusTitle": "Status",
     "myCard.priorityTitle": "Potential / Priority",
-    "myCard.statusFilterTitle": "Filter by status",
     "myCard.status.active_client": "Active client",
     "myCard.status.prospect": "Prospect to contact",
     "myCard.status.appointment_pending": "Appointment to set",
@@ -1248,13 +1255,14 @@ export const translations = {
 
     "settings.close": "Close",
 
+    "chat.title": "T Assistant",
     "chat.online": "Online",
-    "chat.openAria": "Open Thélios assistant",
-    "chat.closeAria": "Close Thélios assistant",
+    "chat.openAria": "Open T Assistant",
+    "chat.closeAria": "Close T Assistant",
     "chat.inputPlaceholder": "Ask your question…",
     "chat.send": "Send",
     "chat.scopeHint": "I can help with: city/postal code · brands · opening hours",
     "chat.welcome":
-      "Hello, I'm the Thélios Assistant. I can help with 3 topics: city or postal code (\"Which opticians in Lyon?\", \"Opticians at 75011?\"), brands carried (\"Where to find Julbo?\"), and a shop's opening hours (\"Opening hours for the Nice shop?\"). If I don't have a piece of information, I'll tell you rather than make something up.",
+      "Hello, I'm the T Assistant. I can help with 3 topics: city or postal code (\"Which opticians in Lyon?\", \"Opticians at 75011?\"), brands carried (\"Where to find Julbo?\"), and a shop's opening hours (\"Opening hours for the Nice shop?\"). If I don't have a piece of information, I'll tell you rather than make something up.",
   },
 };
