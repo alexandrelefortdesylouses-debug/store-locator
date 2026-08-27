@@ -33,7 +33,7 @@ function downloadAppointmentIcs(store, dateKey, start, end) {
 
   const ics = buildIcsCalendar([
     {
-      uid: `${store.id}-${dateKey}@thelios-store-locator`,
+      uid: `${store.id}-${dateKey}@store-locator`,
       summary: `RDV : ${store.name}`,
       location: store.address,
       description: "Rendez-vous programmé via l'application.",

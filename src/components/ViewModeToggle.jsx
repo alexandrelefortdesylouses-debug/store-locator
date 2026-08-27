@@ -137,7 +137,7 @@ export default function ViewModeToggle({
   return (
     <div className="flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900 md:justify-center">
       <div className="shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25 md:hidden">
-        <img src="/pwa-icon-512.png" alt="Thélios" className="block h-8 w-8" />
+        <img src="/pwa-icon-512.png" alt="T" className="block h-8 w-8" />
       </div>
 
       <div className="no-scrollbar flex min-w-0 flex-1 overflow-x-auto overflow-y-hidden rounded-full border border-neutral-300 dark:border-neutral-700 md:flex-none md:max-w-full">

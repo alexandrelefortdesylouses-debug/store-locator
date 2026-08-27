@@ -44,7 +44,7 @@ export default function LoginScreen({ onSignedIn, sampleMode, onToggleSampleMode
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4">
           <div className="overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
-            <img src="/pwa-icon-512.png" alt="Thélios" className="block h-11 w-11" />
+            <img src="/pwa-icon-512.png" alt="T" className="block h-11 w-11" />
           </div>
           <p className="text-[10px] uppercase tracking-[0.35em] text-neutral-500">
             {t("header.storeLocator")}

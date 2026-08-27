@@ -676,7 +676,7 @@ function App() {
       await exportStoresToXlsx(
         filteredStores,
         labels,
-        `thelios-opticiens-${filteredStores.length}.xlsx`,
+        `opticiens-${filteredStores.length}.xlsx`,
       );
     } finally {
       setExporting(false);

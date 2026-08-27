@@ -66,7 +66,7 @@ export default function Header({
         <div className="shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
           <img
             src="/pwa-icon-512.png"
-            alt="Thélios"
+            alt="T"
             className="block h-9 w-9 sm:h-11 sm:w-11"
           />
         </div>

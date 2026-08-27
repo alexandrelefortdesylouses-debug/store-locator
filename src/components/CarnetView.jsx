@@ -396,7 +396,7 @@ export default function CarnetView({
       colPhone: t("carnet.export.colPhone"),
       sheetName: currentViewLabel.slice(0, 31) || "Dossier",
       footer: t("route.pdfFooter"),
-      filename: `thelios-dossier-${slug}.pdf`,
+      filename: `dossier-${slug}.pdf`,
     };
   }
 
@@ -404,7 +404,7 @@ export default function CarnetView({
     const notes = selectedFolder ? folderNotes[selectedFolder.id] || "" : "";
     const labels = buildExportLabels(entries);
     if (format === "xlsx") {
-      labels.filename = `thelios-dossier-${slugify(currentViewLabel)}.xlsx`;
+      labels.filename = `dossier-${slugify(currentViewLabel)}.xlsx`;
     }
     if (format === "pdf") {
       await exportFolderToPdf({ title: currentViewLabel, notes, entries, statuses, labels });

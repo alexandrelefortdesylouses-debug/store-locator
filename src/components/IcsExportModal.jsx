@@ -105,7 +105,7 @@ export default function IcsExportModal({ stops, onClose, onExported }) {
       }
 
       return {
-        uid: `${store.id}-${date}-${index}@thelios-store-locator`,
+        uid: `${store.id}-${date}-${index}@store-locator`,
         summary: `RDV : ${store.name} (Étape ${index + 1})`,
         location: store.address,
         description:

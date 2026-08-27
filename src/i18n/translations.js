@@ -17,7 +17,7 @@ export const translations = {
       "Un outil pour retrouver le réseau d'opticiens partenaires et gérer votre activité commerciale sur le terrain. Petite visite en 4 étapes.",
     "onboarding.globalMap.title": "Carte Globale",
     "onboarding.globalMap.body":
-      "L'intégralité du réseau d'opticiens partenaires Thélios, avec recherche, filtres par région/marque, et itinéraires.",
+      "L'intégralité du réseau d'opticiens partenaires, avec recherche, filtres par région/marque, et itinéraires.",
     "onboarding.myCard.title": "Ma Carte",
     "onboarding.myCard.body":
       "Votre portefeuille personnel : importez vos clients, ajoutez des favoris, et retrouvez vos rendez-vous du jour d'un coup d'œil.",
@@ -44,7 +44,7 @@ export const translations = {
 
     "login.title": "Connexion",
     "login.description":
-      "Connectez-vous avec votre adresse e-mail Thélios pour accéder à Digital Prospection Tool.",
+      "Connectez-vous avec votre adresse e-mail professionnelle pour accéder à Digital Prospection Tool.",
     "login.emailLabel": "Adresse e-mail",
     "login.passwordLabel": "Mot de passe",
     "login.passwordPlaceholder": "••••••••",
@@ -141,7 +141,7 @@ export const translations = {
     "account.save": "Enregistrer",
     "settingsPanel.replayOnboarding": "Revoir la visite guidée",
     "settingsPanel.faqStatusTitle": "Statuts & codes couleurs",
-    "settingsPanel.faqStatusDesc.active_client": "L'opticien fait partie de vos clients actifs Thélios.",
+    "settingsPanel.faqStatusDesc.active_client": "L'opticien fait partie de vos clients actifs.",
     "settingsPanel.faqStatusDesc.prospect": "Un contact a été établi, la relation reste à développer.",
     "settingsPanel.faqStatusDesc.appointment_pending": "Un rendez-vous reste à fixer avec cet opticien.",
     "settingsPanel.faqStatusDesc.refused": "L'opticien a décliné ou n'est pas intéressé pour l'instant.",
@@ -204,14 +204,14 @@ export const translations = {
     "sidebar.searchInList": "Rechercher…",
     "sidebar.noMatch": "Aucun résultat",
     "sidebar.brandsTitle": "Marques",
-    "sidebar.theliosBrands": "Marques Thélios",
+    "sidebar.theliosBrands": "Nos marques",
     "sidebar.otherBrands": "Autres marques",
     "sidebar.resetFilters": "Réinitialiser les filtres",
     "sidebar.opticianCount": "{count} opticien",
     "sidebar.opticianCount_plural": "{count} opticiens",
     "sidebar.noResults": "Aucun opticien ne correspond à votre recherche.",
     "sidebar.emptyPrompt":
-      "Utilisez la recherche, une ville, une région ou une marque pour afficher les opticiens partenaires Thélios.",
+      "Utilisez la recherche, une ville, une région ou une marque pour afficher les opticiens partenaires.",
     "sidebar.export": "Exporter la sélection",
     "sidebar.storeTypeTitle": "Type de boutique",
     "sidebar.chatHint":
@@ -424,7 +424,7 @@ export const translations = {
     "myCard.importSummaryTitle": "Résumé de l'import",
     "myCard.importSummaryCount": "{matched}/{total} opticiens identifiés et ajoutés à votre carte",
     "myCard.importSummaryHint":
-      "Le rapprochement se fait sur le nom, la ville et le code postal (les données SIRET ne sont pas disponibles dans la base Thélios).",
+      "Le rapprochement se fait sur le nom, la ville et le code postal (les données SIRET ne sont pas disponibles dans notre base de données).",
     "myCard.unmatchedTitle": "{count} ligne non reconnue",
     "myCard.unmatchedTitle_plural": "{count} lignes non reconnues",
     "myCard.unnamedRow": "(nom manquant)",
@@ -450,7 +450,7 @@ export const translations = {
     "myCard.addTagPlaceholder": "Ajouter une étiquette…",
     "myCard.addTagButton": "Ajouter",
 
-    "map.emptyTitle": "Trouvez un opticien Thélios",
+    "map.emptyTitle": "Trouvez un opticien",
     "map.emptyBody":
       "Veuillez lancer une recherche par ville, région ou marque, ou passer en mode libre pour afficher l'ensemble de la carte.",
     "map.freeMode": "Mode libre",
@@ -463,7 +463,7 @@ export const translations = {
     "map.heatmapAria": "Basculer le mode densité",
     "map.whiteZones": "Zones blanches",
     "map.whiteZonesAria": "Basculer les zones blanches (opportunités de prospection)",
-    "map.whiteZoneTooltip": "{count} opticiens concurrents · 0 Thélios",
+    "map.whiteZoneTooltip": "{count} opticiens concurrents · 0 partenaire",
 
     "geo.unsupported":
       "La géolocalisation n'est pas prise en charge par votre navigateur.",
@@ -521,7 +521,7 @@ export const translations = {
     "route.close": "Fermer le planificateur de trajet",
     "route.pdfExport": "Exporter en PDF (fiche de tournée)",
     "route.pdfExporting": "Génération du PDF…",
-    "route.pdfTitle": "Thélios — Fiche de Tournée",
+    "route.pdfTitle": "Fiche de Tournée",
     "route.pdfDateLabel": "Date",
     "route.pdfRepLabel": "Commercial",
     "route.pdfStopsTitle": "Opticiens à visiter",
@@ -583,15 +583,15 @@ export const translations = {
     "stats.title": "Statistiques réseau",
     "stats.close": "Fermer",
     "stats.totalOpticians": "Opticiens partenaires",
-    "stats.penetrationRate": "Taux de pénétration Thélios",
+    "stats.penetrationRate": "Taux de pénétration",
     "stats.penetrationHint":
-      "Part des opticiens du réseau qui distribuent au moins une marque Thélios (Barton Perreira ou Vuarnet).",
-    "stats.theliosOpticians": "Opticiens Thélios",
+      "Part des opticiens du réseau qui distribuent Barton Perreira ou Vuarnet.",
+    "stats.theliosOpticians": "Nos opticiens",
     "stats.competitorOpticians": "Opticiens concurrents uniquement",
     "stats.byRegion": "Répartition par région",
     "stats.byDepartment": "Répartition par département",
     "stats.byCity": "Top 10 des villes",
-    "stats.legendThelios": "Marques Thélios",
+    "stats.legendThelios": "Nos marques",
     "stats.legendCompetitor": "Marques concurrentes",
     "stats.othersGrouped": "Autres régions",
     "stats.view.geo": "Couverture par Région/Département",
@@ -653,7 +653,7 @@ export const translations = {
       "A tool to find the partner optician network and manage your field sales activity. A quick 4-step tour.",
     "onboarding.globalMap.title": "Carte Globale",
     "onboarding.globalMap.body":
-      "The entire Thélios partner optician network, with search, region/brand filters, and directions.",
+      "The entire partner optician network, with search, region/brand filters, and directions.",
     "onboarding.myCard.title": "Ma Carte",
     "onboarding.myCard.body":
       "Your personal portfolio: import your clients, add favorites, and check today's appointments at a glance.",
@@ -679,7 +679,7 @@ export const translations = {
     "commandPalette.actionStats": "Open Statistics",
 
     "login.title": "Sign in",
-    "login.description": "Sign in with your Thélios email address to access Digital Prospection Tool.",
+    "login.description": "Sign in with your professional email address to access Digital Prospection Tool.",
     "login.emailLabel": "Email address",
     "login.passwordLabel": "Password",
     "login.passwordPlaceholder": "••••••••",
@@ -776,7 +776,7 @@ export const translations = {
     "account.save": "Save",
     "settingsPanel.replayOnboarding": "Replay the guided tour",
     "settingsPanel.faqStatusTitle": "Statuses & color codes",
-    "settingsPanel.faqStatusDesc.active_client": "This optician is one of your active Thélios clients.",
+    "settingsPanel.faqStatusDesc.active_client": "This optician is one of your active clients.",
     "settingsPanel.faqStatusDesc.prospect": "Contact has been made, the relationship is still to be developed.",
     "settingsPanel.faqStatusDesc.appointment_pending": "An appointment still needs to be scheduled with this optician.",
     "settingsPanel.faqStatusDesc.refused": "The optician declined or isn't interested for now.",
@@ -837,14 +837,14 @@ export const translations = {
     "sidebar.searchInList": "Search…",
     "sidebar.noMatch": "No matches",
     "sidebar.brandsTitle": "Brands",
-    "sidebar.theliosBrands": "Thélios Brands",
+    "sidebar.theliosBrands": "Our brands",
     "sidebar.otherBrands": "Other brands",
     "sidebar.resetFilters": "Reset filters",
     "sidebar.opticianCount": "{count} optician",
     "sidebar.opticianCount_plural": "{count} opticians",
     "sidebar.noResults": "No opticians match your search.",
     "sidebar.emptyPrompt":
-      "Use the search, a city, a region or a brand to display Thélios partner opticians.",
+      "Use the search, a city, a region or a brand to display partner opticians.",
     "sidebar.export": "Export selection",
     "sidebar.storeTypeTitle": "Store type",
     "sidebar.chatHint":
@@ -1057,7 +1057,7 @@ export const translations = {
     "myCard.importSummaryTitle": "Import summary",
     "myCard.importSummaryCount": "{matched}/{total} opticians identified and added to your map",
     "myCard.importSummaryHint":
-      "Matching is based on name, city and postal code (SIRET data is not available in the Thélios database).",
+      "Matching is based on name, city and postal code (SIRET data is not available in our database).",
     "myCard.unmatchedTitle": "{count} unrecognized row",
     "myCard.unmatchedTitle_plural": "{count} unrecognized rows",
     "myCard.unnamedRow": "(missing name)",
@@ -1083,7 +1083,7 @@ export const translations = {
     "myCard.addTagPlaceholder": "Add a tag…",
     "myCard.addTagButton": "Add",
 
-    "map.emptyTitle": "Find a Thélios optician",
+    "map.emptyTitle": "Find an optician",
     "map.emptyBody":
       "Please start a search by city, region or brand, or switch to free browse mode to display the entire map.",
     "map.freeMode": "Free browse mode",
@@ -1096,7 +1096,7 @@ export const translations = {
     "map.heatmapAria": "Toggle density mode",
     "map.whiteZones": "White zones",
     "map.whiteZonesAria": "Toggle white zones (prospecting opportunities)",
-    "map.whiteZoneTooltip": "{count} competitor opticians · 0 Thélios",
+    "map.whiteZoneTooltip": "{count} competitor opticians · 0 partner",
 
     "geo.unsupported": "Geolocation is not supported by your browser.",
     "geo.denied":
@@ -1151,7 +1151,7 @@ export const translations = {
     "route.close": "Close route planner",
     "route.pdfExport": "Export as PDF (route sheet)",
     "route.pdfExporting": "Generating PDF…",
-    "route.pdfTitle": "Thélios — Route Sheet",
+    "route.pdfTitle": "Route Sheet",
     "route.pdfDateLabel": "Date",
     "route.pdfRepLabel": "Sales rep",
     "route.pdfStopsTitle": "Opticians to visit",
@@ -1213,15 +1213,15 @@ export const translations = {
     "stats.title": "Network statistics",
     "stats.close": "Close",
     "stats.totalOpticians": "Partner opticians",
-    "stats.penetrationRate": "Thélios penetration rate",
+    "stats.penetrationRate": "Penetration rate",
     "stats.penetrationHint":
-      "Share of the network's opticians carrying at least one Thélios brand (Barton Perreira or Vuarnet).",
-    "stats.theliosOpticians": "Thélios opticians",
+      "Share of the network's opticians carrying Barton Perreira or Vuarnet.",
+    "stats.theliosOpticians": "Our opticians",
     "stats.competitorOpticians": "Competitor-only opticians",
     "stats.byRegion": "Breakdown by region",
     "stats.byDepartment": "Breakdown by department",
     "stats.byCity": "Top 10 cities",
-    "stats.legendThelios": "Thélios brands",
+    "stats.legendThelios": "Our brands",
     "stats.legendCompetitor": "Competitor brands",
     "stats.othersGrouped": "Other regions",
     "stats.view.geo": "Coverage by Region/Department",

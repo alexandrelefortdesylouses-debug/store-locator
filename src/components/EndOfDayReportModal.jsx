@@ -94,8 +94,8 @@ export default function EndOfDayReportModal({ stores, visitNotes, statuses, onCl
       noNote: t("eodReport.noIndividualNote"),
       footer: t("route.pdfFooter"),
       statusLabels,
-      filename: `thelios-rapport-fin-de-journee-${dateStr}.pdf`,
-      docxFilename: `thelios-rapport-fin-de-journee-${dateStr}.docx`,
+      filename: `rapport-fin-de-journee-${dateStr}.pdf`,
+      docxFilename: `rapport-fin-de-journee-${dateStr}.docx`,
     };
   }
 

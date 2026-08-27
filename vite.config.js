@@ -21,7 +21,7 @@ export default defineConfig({
       manifest: {
         name: 'Digital Prospection Tool',
         short_name: 'DPT',
-        description: 'Localisateur d\'opticiens partenaires et CRM terrain Thélios.',
+        description: 'Localisateur d\'opticiens partenaires et CRM terrain.',
         lang: 'fr',
         start_url: '/',
         display: 'standalone',

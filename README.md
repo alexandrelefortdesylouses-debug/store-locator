@@ -40,7 +40,7 @@ npm run preview
   la liste ou sur la carte), avec ville/pays, marques distribuées, horaires
   et bouton d'itinéraire (Google Maps).
 - **Marques mises en avant** : dans le filtre par marque, une section
-  "Marques Thélios" distingue Barton Perreira et Vuarnet du reste des marques.
+  "Nos marques" distingue Barton Perreira et Vuarnet du reste des marques.
   Sur la carte, les opticiens qui distribuent l'une de ces deux marques
   affichent un marqueur doré, les autres un marqueur gris/anthracite (une
   légende en bas à gauche de la carte rappelle ce code couleur).
@@ -436,7 +436,7 @@ approximative pour ces opticiens.
 
 Le bouton **Statistiques** de l'en-tête ouvre `src/components/Dashboard.jsx`,
 qui calcule (`src/utils/stats.js`) et affiche des chiffres clés (nombre total
-d'opticiens, taux de pénétration des marques Thélios, opticiens Thélios vs
+d'opticiens, taux de pénétration de nos marques, "Nos opticiens" vs
 concurrents uniquement), toujours visibles en haut du tableau de bord.
 
 - **Portée dynamique** : le tableau de bord ne recalcule plus systématiquement
@@ -450,11 +450,11 @@ concurrents uniquement), toujours visibles en haut du tableau de bord.
 - **Sélecteur d'indicateur** : un menu déroulant permet de choisir la vue
   affichée, parmi :
   - **Couverture par Région/Département** — deux graphiques en barres
-    (`src/components/BreakdownBarChart.jsx`) opposant opticiens Thélios /
+    (`src/components/BreakdownBarChart.jsx`) opposant "nos opticiens" /
     concurrents, par région puis par département (top 15).
   - **Répartition par Marque** — classement des marques par nombre
     d'opticiens qui les distribuent (`src/components/RankedBarList.jsx`),
-    les deux marques Thélios (Barton Perreira, Vuarnet) mises en évidence en
+    les deux marques maison (Barton Perreira, Vuarnet) mises en évidence en
     doré.
   - **Proportion Flagships vs Indépendants** — répartition par type de
     boutique (`src/components/TypeProportionGauge.jsx`) : une jauge en barre

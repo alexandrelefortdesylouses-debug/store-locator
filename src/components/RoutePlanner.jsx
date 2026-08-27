@@ -350,7 +350,7 @@ export default function RoutePlanner({
           reportTitle: t("route.pdfReportTitle"),
           reportHint: t("route.pdfReportHint"),
           footer: t("route.pdfFooter"),
-          filename: `thelios-tournee-${new Date().toISOString().slice(0, 10)}.pdf`,
+          filename: `tournee-${new Date().toISOString().slice(0, 10)}.pdf`,
         },
       });
     } finally {
