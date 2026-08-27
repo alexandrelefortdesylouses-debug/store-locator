@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { signIn, DEFAULT_ADMIN_EMAIL } from "../services/authService";
+import SunglassesDecoration from "./SunglassesDecoration";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -40,8 +41,10 @@ export default function LoginScreen({ onSignedIn, sampleMode, onToggleSampleMode
   }
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-neutral-950 px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-neutral-950 px-4">
+      <SunglassesDecoration className="absolute right-4 top-6 z-0 w-40 text-amber-500/20 sm:right-8 sm:top-10 sm:w-56 md:right-12 md:top-12 md:w-72" />
+
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4">
           <div className="overflow-hidden rounded-lg shadow-md ring-1 ring-amber-200/25">
             <img src="/pwa-icon-512.png" alt="T" className="block h-11 w-11" />

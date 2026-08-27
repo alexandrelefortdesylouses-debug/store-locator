@@ -930,6 +930,18 @@ L'app est désormais protégée par un écran de connexion
 - **Déconnexion** : bouton dédié dans l'en-tête (icône, e-mail affiché en
   info-bulle), ainsi qu'un bouton "Se déconnecter" dans Paramètres >
   Préférences pour ceux qui préfèrent y accéder depuis là.
+- **Motif décoratif "lunettes"** (`src/components/SunglassesDecoration.jsx`) :
+  une paire de lunettes classiques en ligne (trait fin, sans marque),
+  discrète dans le coin supérieur droit de l'écran de connexion —
+  purement esthétique (`aria-hidden`, `pointer-events-none`), sans
+  incidence sur le formulaire. Deux couches de mouvement superposées sur
+  deux éléments imbriqués distincts pour ne pas se marcher dessus : un
+  léger flottement/rotation ambiant en boucle (`@keyframes glasses-float`
+  dans `src/index.css`), et une bascule 3D (`rotateX`/`rotateY` +
+  `perspective`) qui suit la position du curseur, appliquée en `style`
+  inline par le composant. Les deux sont coupées sous
+  `prefers-reduced-motion: reduce` (media query CSS pour le flottement,
+  écouteur `pointermove` jamais attaché pour la bascule).
 
 ### Panneau d'Administration
 
