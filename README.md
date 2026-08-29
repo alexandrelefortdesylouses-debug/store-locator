@@ -2,6 +2,8 @@
 
 Application web de localisation d'opticiens partenaires (React + TailwindCSS + Leaflet).
 
+*Créé par Alexandre Lefort.*
+
 ## Lancer le projet
 
 ```bash
