@@ -2,7 +2,7 @@
 
 Application web de localisation d'opticiens partenaires (React + TailwindCSS + Leaflet).
 
-*Créé par Alexandre Lefort.*
+*Créé par Alexandre Lefort des Ylouses.*
 
 ## Lancer le projet
 
