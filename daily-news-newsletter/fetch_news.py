@@ -15,9 +15,21 @@ import feedparser
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
+_SOURCE_NAMES = {
+    "lemonde.fr": "Le Monde",
+    "lequipe.fr": "L'Équipe",
+}
+
 
 def _strip_html(text):
     return _TAG_RE.sub("", text).strip()
+
+
+def _source_name(link):
+    for domain, name in _SOURCE_NAMES.items():
+        if domain in link:
+            return name
+    return "Source inconnue"
 
 
 # Chaque rubrique peut combiner plusieurs flux (France + international).
@@ -63,6 +75,7 @@ def fetch_headlines():
                 items.append(
                     {
                         "origine": origin,
+                        "source": _source_name(link),
                         "title": title,
                         "summary": _strip_html(entry.get("summary", "")),
                         "link": link,
