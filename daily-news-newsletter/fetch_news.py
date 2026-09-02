@@ -18,6 +18,8 @@ _TAG_RE = re.compile(r"<[^>]+>")
 _SOURCE_NAMES = {
     "lemonde.fr": "Le Monde",
     "lequipe.fr": "L'Équipe",
+    "franceinfo.fr": "France Info",
+    "francetvinfo.fr": "France Info",
 }
 
 
@@ -32,17 +34,22 @@ def _source_name(link):
     return "Source inconnue"
 
 
-# Chaque rubrique peut combiner plusieurs flux (France + international).
+# Chaque rubrique combine plusieurs flux (France + international, et
+# plusieurs médias pour éviter de dépendre d'une seule ligne éditoriale).
 SOURCES = {
     "Politique": [
         ("France", "https://www.lemonde.fr/politique/rss_full.xml"),
+        ("France", "https://www.francetvinfo.fr/politique.rss"),
         ("Monde", "https://www.lemonde.fr/international/rss_full.xml"),
+        ("Monde", "https://www.francetvinfo.fr/monde.rss"),
     ],
     "Économie": [
         ("France / Monde", "https://www.lemonde.fr/economie/rss_full.xml"),
+        ("France / Monde", "https://www.francetvinfo.fr/economie.rss"),
     ],
     "Sport (hors football)": [
         ("France / Monde", "https://dwh.lequipe.fr/api/edito/rss?path=/"),
+        ("France / Monde", "https://www.francetvinfo.fr/sports.rss"),
     ],
 }
 
