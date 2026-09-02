@@ -14,7 +14,7 @@ load_dotenv()
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 EMAIL_TO = os.environ.get("EMAIL_TO")
 FROM_EMAIL = os.environ.get("FROM_EMAIL", "onboarding@resend.dev")
-SUBJECT = os.environ.get("EMAIL_SUBJECT", "Votre newsletter quotidienne — Monde, France, Sport")
+SUBJECT = os.environ.get("EMAIL_SUBJECT", "Info quotidienne")
 
 
 def main():
