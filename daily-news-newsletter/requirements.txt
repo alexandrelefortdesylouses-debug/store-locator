@@ -1,0 +1,4 @@
+anthropic
+resend
+feedparser
+python-dotenv
