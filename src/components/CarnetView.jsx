@@ -369,7 +369,7 @@ export default function CarnetView({
     const statusLabels = Object.fromEntries(
       Object.values(STORE_STATUSES).map((s) => [s, t(`myCard.status.${s}`)]),
     );
-    const dateValue = new Date().toLocaleDateString(lang === "en" ? "en-US" : "fr-FR", {
+    const dateValue = new Date().toLocaleDateString(lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",

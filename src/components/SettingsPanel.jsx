@@ -26,7 +26,7 @@ function LanguageSection() {
         {t("settingsPanel.languageHint")}
       </p>
       <div className="flex gap-2">
-        {["fr", "en"].map((code) => (
+        {["fr", "en", "it"].map((code) => (
           <button
             key={code}
             type="button"
@@ -38,7 +38,11 @@ function LanguageSection() {
                 : "border-neutral-300 text-neutral-600 hover:border-amber-400 dark:border-neutral-600 dark:text-neutral-300 dark:hover:border-amber-500"
             }`}
           >
-            {code === "fr" ? t("settingsPanel.languageFr") : t("settingsPanel.languageEn")}
+            {code === "fr"
+              ? t("settingsPanel.languageFr")
+              : code === "en"
+                ? t("settingsPanel.languageEn")
+                : t("settingsPanel.languageIt")}
           </button>
         ))}
       </div>

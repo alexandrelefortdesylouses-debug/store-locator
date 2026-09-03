@@ -42,7 +42,7 @@ export default function Dashboard({ stores, isFiltered, onClose }) {
   const { t, lang } = useLanguage();
   const [view, setView] = useState("geo");
   const stats = useMemo(() => computeNetworkStats(stores), [stores]);
-  const locale = lang === "en" ? "en-US" : "fr-FR";
+  const locale = lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR";
   const formatNumber = (n) => n.toLocaleString(locale);
 
   return (

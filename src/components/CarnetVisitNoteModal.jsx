@@ -44,7 +44,7 @@ function useVoiceDictation(onTranscript, lang) {
       return;
     }
     const recognition = new SpeechRecognitionCtor();
-    recognition.lang = lang === "en" ? "en-US" : "fr-FR";
+    recognition.lang = lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onresult = (e) => {
@@ -100,7 +100,7 @@ export default function CarnetVisitNoteModal({ store, status, entries, onAddVisi
   const [pendingPhoto, setPendingPhoto] = useState(null); // { id, previewUrl }
   const [photoBusy, setPhotoBusy] = useState(false);
   const fileInputRef = useRef(null);
-  const locale = lang === "en" ? "en-US" : "fr-FR";
+  const locale = lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR";
 
   const { listening, toggle: toggleDictation, supported: dictationSupported } = useVoiceDictation(
     (transcript) => setDraft((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript)),

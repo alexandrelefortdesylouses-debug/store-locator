@@ -14,7 +14,7 @@ function normalize(text) {
 }
 
 function todayDateString(lang) {
-  return new Date().toLocaleDateString(lang === "en" ? "en-US" : "fr-FR", {
+  return new Date().toLocaleDateString(lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR", {
     weekday: "long",
     year: "numeric",
     month: "long",

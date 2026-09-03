@@ -173,7 +173,7 @@ export default function CarnetWeekTab({
 }) {
   const { t, lang } = useLanguage();
   const [plan, setPlan] = useState(() => getWeekPlan());
-  const locale = lang === "en" ? "en-US" : "fr-FR";
+  const locale = lang === "en" ? "en-US" : lang === "it" ? "it-IT" : "fr-FR";
 
   const days = useMemo(() => {
     const list = [];
