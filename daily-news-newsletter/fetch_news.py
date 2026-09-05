@@ -56,7 +56,10 @@ SOURCES = {
 ENTRIES_PER_FEED = 10
 
 # Filtre grossier pour exclure le football du flux sport généraliste.
-_FOOTBALL_RE = re.compile(r"football|/Football/|ligue 1|ligue 2|champions league|coupe de france", re.IGNORECASE)
+_FOOTBALL_RE = re.compile(
+    r"football|/foot/|\bfoot\b|ligue 1|ligue 2|ligue des champions|champions league|coupe de france|\bpsg\b|europa league",
+    re.IGNORECASE,
+)
 
 
 def _fetch_feed(url):
