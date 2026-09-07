@@ -10,6 +10,7 @@ API Anthropic payante) et l'envoi par send_email.py.
 import json
 import re
 import sys
+import time
 
 import feedparser
 
@@ -62,12 +63,20 @@ _FOOTBALL_RE = re.compile(
 )
 
 
-def _fetch_feed(url):
-    feed = feedparser.parse(url)
-    if feed.bozo and not feed.entries:
-        print(f"Attention : impossible de lire le flux ({url}): {feed.bozo_exception}", file=sys.stderr)
-        return []
-    return feed.entries[:ENTRIES_PER_FEED]
+def _fetch_feed(url, retries=2, delay=2):
+    """France Info bloque parfois les requêtes de façon intermittente
+    (retourne une page d'erreur HTML au lieu du flux RSS) — on retente
+    quelques fois avant d'abandonner ce flux pour ce run."""
+    last_error = None
+    for attempt in range(retries + 1):
+        feed = feedparser.parse(url)
+        if feed.entries:
+            return feed.entries[:ENTRIES_PER_FEED]
+        last_error = feed.bozo_exception if feed.bozo else "flux vide"
+        if attempt < retries:
+            time.sleep(delay)
+    print(f"Attention : impossible de lire le flux ({url}) après {retries + 1} tentatives : {last_error}", file=sys.stderr)
+    return []
 
 
 def fetch_headlines():
