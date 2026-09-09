@@ -54,7 +54,7 @@ SOURCES = {
     ],
 }
 
-ENTRIES_PER_FEED = 10
+ENTRIES_PER_FEED = 25
 
 # Filtre grossier pour exclure le football du flux sport généraliste.
 _FOOTBALL_RE = re.compile(
